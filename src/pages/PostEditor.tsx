@@ -44,6 +44,7 @@ import AIGenerateButton from '@/components/common/AIGenerateButton';
 import AIAutoFillButton from '@/components/common/AIAutoFillButton';
 import PostTemplates from '@/components/posts/PostTemplates';
 import LivePostPreview from '@/components/posts/LivePostPreview';
+import ScrollButtons from '@/components/common/ScrollButtons';
 import { toast } from 'sonner';
 import { 
   PanelLeftClose,
@@ -898,6 +899,8 @@ const PostEditor = () => {
           </Card>
         </div>
       </div>
+
+      <ScrollButtons />
     </div>
   );
 };

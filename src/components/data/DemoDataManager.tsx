@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useBlogStore } from '@/store/blogStore';
 import { useReportStore } from '@/store/reportStore';
+import { useRoadmapStore } from '@/store/roadmapStore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -28,7 +29,7 @@ const DemoDataManager = () => {
   } = useBlogStore();
   
   const { addReport, reports } = useReportStore();
-
+  const { addRoadmap, addSection, addTopic, roadmaps, roadmapSections } = useRoadmapStore();
   const demoCategories = [
     { nameAr: 'البرمجة العامة', nameEn: 'General Programming', slug: 'general-programming', description: 'مواضيع عامة في البرمجة' },
     { nameAr: 'أمن المعلومات', nameEn: 'Security', slug: 'security', description: 'حماية وأمان التطبيقات' },
@@ -556,6 +557,88 @@ curl -H "Authorization: Bearer YOUR_TOKEN" \\
     },
   ];
 
+  // Demo Roadmaps for different technologies
+  const demoRoadmaps = [
+    {
+      languageId: '5', // Laravel
+      title: 'مسار تعلم Laravel',
+      description: 'خطة شاملة لتعلم Laravel من الصفر للاحتراف',
+      sections: [
+        {
+          title: 'الأساسيات',
+          description: 'أساسيات Laravel والمفاهيم الأولية',
+          topics: [
+            { title: 'تثبيت Laravel', description: 'تثبيت Composer و Laravel', completed: true },
+            { title: 'بنية المشروع', description: 'فهم بنية مجلدات Laravel', completed: true },
+            { title: 'Routing', description: 'التوجيه والمسارات', completed: false },
+            { title: 'Controllers', description: 'المتحكمات ومعالجة الطلبات', completed: false },
+          ]
+        },
+        {
+          title: 'قواعد البيانات',
+          description: 'التعامل مع قواعد البيانات',
+          topics: [
+            { title: 'Migrations', description: 'إنشاء الجداول', completed: false },
+            { title: 'Eloquent ORM', description: 'النماذج والعلاقات', completed: false },
+            { title: 'Query Builder', description: 'الاستعلامات المتقدمة', completed: false },
+          ]
+        }
+      ]
+    },
+    {
+      languageId: '6', // Python
+      title: 'Python Learning Path',
+      description: 'Complete Python learning roadmap from basics to advanced',
+      sections: [
+        {
+          title: 'Python Basics',
+          description: 'Core Python concepts',
+          topics: [
+            { title: 'Variables & Data Types', description: 'Understanding Python types', completed: false },
+            { title: 'Control Flow', description: 'If statements and loops', completed: false },
+            { title: 'Functions', description: 'Defining and using functions', completed: false },
+            { title: 'Classes & OOP', description: 'Object-oriented programming', completed: false },
+          ]
+        },
+        {
+          title: 'Advanced Python',
+          description: 'Advanced concepts',
+          topics: [
+            { title: 'Decorators', description: 'Function decorators', completed: false },
+            { title: 'Generators', description: 'Lazy evaluation', completed: false },
+            { title: 'Async/Await', description: 'Asynchronous programming', completed: false },
+          ]
+        }
+      ]
+    },
+    {
+      languageId: '3', // React
+      title: 'React.js Mastery',
+      description: 'Master React.js from fundamentals to advanced patterns',
+      sections: [
+        {
+          title: 'React Fundamentals',
+          description: 'Core React concepts',
+          topics: [
+            { title: 'JSX', description: 'JavaScript XML syntax', completed: false },
+            { title: 'Components', description: 'Functional and class components', completed: false },
+            { title: 'Props & State', description: 'Data flow in React', completed: false },
+            { title: 'Hooks', description: 'useState, useEffect, and custom hooks', completed: false },
+          ]
+        },
+        {
+          title: 'State Management',
+          description: 'Managing application state',
+          topics: [
+            { title: 'Context API', description: 'React built-in state management', completed: false },
+            { title: 'Zustand', description: 'Lightweight state management', completed: false },
+            { title: 'React Query', description: 'Server state management', completed: false },
+          ]
+        }
+      ]
+    },
+  ];
+
   const handleLoadDemoData = async () => {
     setIsLoading(true);
     
@@ -584,6 +667,31 @@ curl -H "Authorization: Bearer YOUR_TOKEN" \\
       // Add reports
       demoReports.forEach(report => addReport(report as any));
       
+      // Add roadmaps
+      demoRoadmaps.forEach(roadmapData => {
+        const roadmapId = addRoadmap({
+          languageId: roadmapData.languageId,
+          title: roadmapData.title,
+          description: roadmapData.description,
+        });
+        
+        roadmapData.sections.forEach((sectionData, sIndex) => {
+          const sectionId = addSection({
+            roadmapId,
+            title: sectionData.title,
+            description: sectionData.description,
+            sortOrder: sIndex + 1,
+          });
+          
+          sectionData.topics.forEach(topicData => {
+            addTopic(sectionId, {
+              title: topicData.title,
+              completed: topicData.completed,
+            });
+          });
+        });
+      });
+      
       toast.success(language === 'ar' ? 'تم تحميل البيانات الوهمية بنجاح!' : 'Demo data loaded successfully!');
     } catch (error) {
       toast.error(language === 'ar' ? 'حدث خطأ أثناء تحميل البيانات' : 'Error loading data');
@@ -593,9 +701,10 @@ curl -H "Authorization: Bearer YOUR_TOKEN" \\
   };
 
   const handleClearAllData = () => {
-    // Clear localStorage for both stores
+    // Clear localStorage for all stores
     localStorage.removeItem('blog-storage');
     localStorage.removeItem('reports-storage');
+    localStorage.removeItem('blog-roadmap-storage');
     
     // Reload to reset state
     window.location.reload();
@@ -603,7 +712,7 @@ curl -H "Authorization: Bearer YOUR_TOKEN" \\
 
   const totalItems = posts.length + categories.length + tags.length + 
     programmingLanguages.length + snippets.length + collections.length + 
-    galleryImages.length + reports.length;
+    galleryImages.length + reports.length + roadmaps.length;
 
   return (
     <Card>
