@@ -15,7 +15,8 @@ import {
   ChevronUp,
   Plus,
   Minus,
-  Moon
+  Moon,
+  Code
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -30,6 +31,8 @@ export interface DisplaySettingsValues {
   lineHeight: number;
   paragraphSpacing: number;
   nightMode: boolean;
+  codeFontSize: number;
+  codeLineHeight: number;
 }
 
 const DEFAULT_SETTINGS: DisplaySettingsValues = {
@@ -37,6 +40,8 @@ const DEFAULT_SETTINGS: DisplaySettingsValues = {
   lineHeight: 1.75,
   paragraphSpacing: 1.5,
   nightMode: false,
+  codeFontSize: 14,
+  codeLineHeight: 1.5,
 };
 
 const STORAGE_KEY = 'report-display-settings';
@@ -66,15 +71,15 @@ const DisplaySettings = ({ onSettingsChange, className }: DisplaySettingsProps) 
   };
 
   const adjustSetting = (
-    key: 'fontSize' | 'lineHeight' | 'paragraphSpacing',
+    key: 'fontSize' | 'lineHeight' | 'paragraphSpacing' | 'codeFontSize' | 'codeLineHeight',
     delta: number
   ) => {
     setSettings(prev => {
       const current = prev[key] as number;
       let newValue: number;
-      if (key === 'fontSize') {
+      if (key === 'fontSize' || key === 'codeFontSize') {
         newValue = Math.min(48, Math.max(10, current + delta));
-      } else if (key === 'lineHeight') {
+      } else if (key === 'lineHeight' || key === 'codeLineHeight') {
         newValue = Math.min(4, Math.max(1, current + delta));
       } else {
         newValue = Math.min(5, Math.max(0.5, current + delta));
@@ -237,6 +242,95 @@ const DisplaySettings = ({ onSettingsChange, className }: DisplaySettingsProps) 
                 min={0.5}
                 max={5}
                 step={0.1}
+                className="w-full"
+              />
+            </div>
+
+            {/* Code Font Size */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label className="flex items-center gap-2 text-sm">
+                  <Code className="h-3.5 w-3.5" />
+                  {language === 'ar' ? 'حجم خط الكود' : 'Code Font Size'}
+                </Label>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={() => adjustSetting('codeFontSize', -2)}
+                  >
+                    <Minus className="h-3 w-3" />
+                  </Button>
+                  <Input
+                    type="number"
+                    value={settings.codeFontSize}
+                    onChange={(e) => updateSetting('codeFontSize', Math.min(48, Math.max(10, Number(e.target.value))))}
+                    className="w-16 h-6 text-center text-xs px-1"
+                    min={10}
+                    max={48}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={() => adjustSetting('codeFontSize', 2)}
+                  >
+                    <Plus className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
+              <Slider
+                value={[settings.codeFontSize]}
+                onValueChange={([value]) => updateSetting('codeFontSize', value)}
+                min={10}
+                max={48}
+                step={1}
+                className="w-full"
+              />
+            </div>
+
+            {/* Code Line Height */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label className="flex items-center gap-2 text-sm">
+                  <AlignJustify className="h-3.5 w-3.5" />
+                  {language === 'ar' ? 'ارتفاع سطر الكود' : 'Code Line Height'}
+                </Label>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={() => adjustSetting('codeLineHeight', -0.1)}
+                  >
+                    <Minus className="h-3 w-3" />
+                  </Button>
+                  <Input
+                    type="number"
+                    value={settings.codeLineHeight.toFixed(2)}
+                    onChange={(e) => updateSetting('codeLineHeight', Math.min(4, Math.max(1, Number(e.target.value))))}
+                    className="w-16 h-6 text-center text-xs px-1"
+                    min={1}
+                    max={4}
+                    step={0.1}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={() => adjustSetting('codeLineHeight', 0.1)}
+                  >
+                    <Plus className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
+              <Slider
+                value={[settings.codeLineHeight]}
+                onValueChange={([value]) => updateSetting('codeLineHeight', value)}
+                min={1}
+                max={4}
+                step={0.05}
                 className="w-full"
               />
             </div>

@@ -56,6 +56,8 @@ const ReportDetails = () => {
     lineHeight: 1.75,
     paragraphSpacing: 1.5,
     nightMode: false,
+    codeFontSize: 14,
+    codeLineHeight: 1.5,
   });
   const contentRef = useRef<HTMLDivElement>(null);
 

@@ -2,10 +2,22 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useBlogStore } from '@/store/blogStore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MessageSquare } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { MessageSquare, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import AdvancedCommentEditor from './AdvancedCommentEditor';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface CommentSectionProps {
   postId: string;
@@ -30,7 +42,7 @@ const renderMarkdown = (text: string) => {
 
 const CommentSection = ({ postId }: CommentSectionProps) => {
   const { t } = useTranslation();
-  const { addComment, getCommentsByPost } = useBlogStore();
+  const { addComment, getCommentsByPost, deleteComment } = useBlogStore();
   const postComments = getCommentsByPost(postId).filter(c => c.status === 'approved');
 
   const [content, setContent] = useState('');
@@ -76,9 +88,40 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
               <div key={comment.id} className="p-4 rounded-lg bg-muted">
                 <div className="flex items-center justify-between mb-2">
                   <span className="font-medium">{comment.authorName}</span>
-                  <span className="text-sm text-muted-foreground">
-                    {format(new Date(comment.createdAt), 'PPp')}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">
+                      {format(new Date(comment.createdAt), 'PPp')}
+                    </span>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-destructive">
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            {t('comments.deleteTitle') || 'حذف التعليق'}
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            {t('comments.deleteConfirm') || 'هل أنت متأكد من حذف هذا التعليق؟'}
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>{t('common.cancel') || 'إلغاء'}</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => {
+                              deleteComment(comment.id);
+                              toast.success(t('comments.deleted') || 'تم حذف التعليق');
+                            }}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            {t('common.delete') || 'حذف'}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 </div>
                 <div 
                   className="text-sm prose prose-sm max-w-none dark:prose-invert"

@@ -35,6 +35,7 @@ import QuickLinks from '@/components/reports/QuickLinks';
 import LivePreview from '@/components/reports/LivePreview';
 import AIFormatButton from '@/components/reports/AIFormatButton';
 import AIAutoFillButton from '@/components/common/AIAutoFillButton';
+import ScrollButtons from '@/components/common/ScrollButtons';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface QuickLink {
@@ -382,6 +383,8 @@ const ReportEditor = () => {
           </Card>
         </div>
       </div>
+
+      <ScrollButtons />
     </div>
   );
 };
