@@ -15,7 +15,8 @@ import {
   FileJson,
   Sparkles,
   Loader2,
-  BookOpen
+  BookOpen,
+  Zap
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -33,6 +34,7 @@ import { useBlogStore } from '@/store/blogStore';
 import BulkImportDialog from '@/components/roadmap/BulkImportDialog';
 import StudyModeDialog from '@/components/roadmap/StudyModeDialog';
 import DefaultRoadmapsButton from '@/components/roadmap/DefaultRoadmapsButton';
+import EnhanceRoadmapDialog from '@/components/roadmap/EnhanceRoadmapDialog';
 import {
   DndContext,
   closestCenter,
@@ -403,7 +405,9 @@ export default function Roadmap() {
   const [isAddTopicOpen, setIsAddTopicOpen] = useState(false);
   const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
   const [isStudyModeOpen, setIsStudyModeOpen] = useState(false);
+  const [isEnhanceDialogOpen, setIsEnhanceDialogOpen] = useState(false);
   const [studyModeRoadmap, setStudyModeRoadmap] = useState<{ id: string; title: string; languageName: string } | null>(null);
+  const [enhanceRoadmap, setEnhanceRoadmap] = useState<{ id: string; title: string; languageName: string } | null>(null);
   const [selectedRoadmapId, setSelectedRoadmapId] = useState<string | null>(null);
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
   const [expandedRoadmaps, setExpandedRoadmaps] = useState<Set<string>>(new Set());
@@ -417,6 +421,48 @@ export default function Roadmap() {
   const openStudyMode = (roadmapId: string, title: string, languageName: string) => {
     setStudyModeRoadmap({ id: roadmapId, title, languageName });
     setIsStudyModeOpen(true);
+  };
+
+  const openEnhanceDialog = (roadmapId: string, title: string, languageName: string) => {
+    setEnhanceRoadmap({ id: roadmapId, title, languageName });
+    setIsEnhanceDialogOpen(true);
+  };
+
+  const handleEnhanceRoadmap = (newSections: any[]) => {
+    if (!enhanceRoadmap) return;
+    
+    const existingSections = roadmapSections.filter(s => s.roadmapId === enhanceRoadmap.id);
+    newSections.forEach((section: any, sIndex: number) => {
+      const sectionId = addSection({
+        roadmapId: enhanceRoadmap.id,
+        title: section.title,
+        description: section.description || '',
+        sortOrder: existingSections.length + sIndex + 1,
+      });
+      
+      section.topics.forEach((topic: any) => {
+        // Add main topic
+        addTopic(sectionId, {
+          title: `📌 ${topic.title}`,
+          completed: false,
+          postId: undefined,
+        });
+        
+        // Add subtopics as separate topics with indentation marker
+        if (topic.subtopics && Array.isArray(topic.subtopics)) {
+          topic.subtopics.forEach((subtopic: string) => {
+            addTopic(sectionId, {
+              title: `   ↳ ${subtopic}`,
+              completed: false,
+              postId: undefined,
+            });
+          });
+        }
+      });
+    });
+    
+    // Expand the roadmap to show new content
+    setExpandedRoadmaps(prev => new Set([...prev, enhanceRoadmap.id]));
   };
 
   // Generate detailed roadmap with AI
@@ -808,6 +854,19 @@ export default function Roadmap() {
                           <span className="font-medium">{progress.percentage}%</span>
                         </div>
                         <Progress value={progress.percentage} className="w-32 h-2" />
+                        {sections.length > 0 && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openEnhanceDialog(roadmap.id, roadmap.title, getLanguageName(roadmap.languageId));
+                            }}
+                            title="تحسين الخريطة بالذكاء الاصطناعي"
+                          >
+                            <Zap className="h-4 w-4" />
+                          </Button>
+                        )}
                         <Button
                           variant="outline"
                           size="sm"
@@ -1012,6 +1071,22 @@ export default function Roadmap() {
           roadmapTitle={studyModeRoadmap.title}
           languageName={studyModeRoadmap.languageName}
           roadmapProgress={getRoadmapProgress(studyModeRoadmap.id)}
+        />
+      )}
+
+      {/* Enhance Roadmap Dialog */}
+      {enhanceRoadmap && (
+        <EnhanceRoadmapDialog
+          isOpen={isEnhanceDialogOpen}
+          onClose={() => {
+            setIsEnhanceDialogOpen(false);
+            setEnhanceRoadmap(null);
+          }}
+          roadmapId={enhanceRoadmap.id}
+          roadmapTitle={enhanceRoadmap.title}
+          languageName={enhanceRoadmap.languageName}
+          sections={roadmapSections.filter(s => s.roadmapId === enhanceRoadmap.id)}
+          onEnhance={handleEnhanceRoadmap}
         />
       )}
     </div>
