@@ -35,6 +35,7 @@ import RelatedPosts from '@/components/post/RelatedPosts';
 import ScrollProgress from '@/components/common/ScrollProgress';
 import DisplaySettings, { DisplaySettingsValues } from '@/components/reports/DisplaySettings';
 import PostSearch from '@/components/post/PostSearch';
+import ContentNavigation from '@/components/navigation/ContentNavigation';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -44,6 +45,7 @@ const PostDetails = () => {
   const { t } = useTranslation();
   const { language, isRTL } = useLanguage();
   const {
+    posts,
     getPostById,
     getCategoryById,
     getTagById,
@@ -53,6 +55,9 @@ const PostDetails = () => {
     collections,
     movePostToCollection,
   } = useBlogStore();
+  
+  // Get all posts for navigation
+  const allPosts = posts.map(p => ({ id: p.id, title: p.title }));
 
   const [displaySettings, setDisplaySettings] = useState<DisplaySettingsValues>({
     fontSize: 16,
@@ -296,6 +301,14 @@ const PostDetails = () => {
 
           {/* Related Posts */}
           <RelatedPosts currentPost={post} />
+          
+          {/* Navigation */}
+          <ContentNavigation 
+            currentId={post.id} 
+            items={allPosts} 
+            baseUrl="/posts"
+            className="mt-6"
+          />
         </div>
       </div>
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Settings as SettingsIcon, Key, Plus, Trash2, TestTube, Check, X, Loader2, Eye, EyeOff, Sparkles, RefreshCw, Zap, Volume2, VolumeX } from 'lucide-react';
+import { Settings as SettingsIcon, Key, Plus, Trash2, TestTube, Check, X, Loader2, Eye, EyeOff, Sparkles, RefreshCw, Zap, Volume2, VolumeX, ExternalLink } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -308,20 +308,46 @@ export default function Settings() {
           
           {/* Default Model Selection */}
           {settings.defaultProvider !== 'lovable' && (
-            <div className="pt-4 border-t">
-              <Label className="mb-2 block">النموذج الافتراضي</Label>
-              <Select value={settings.defaultModel} onValueChange={setDefaultModel}>
-                <SelectTrigger className="w-full max-w-md">
-                  <SelectValue placeholder="اختر النموذج" />
-                </SelectTrigger>
-                <SelectContent>
-                  {getModelsForProvider().map((model) => (
-                    <SelectItem key={model.value} value={model.value}>
-                      {model.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="pt-4 border-t space-y-4">
+              <div>
+                <Label className="mb-2 block">النموذج الافتراضي</Label>
+                <Select value={settings.defaultModel} onValueChange={setDefaultModel}>
+                  <SelectTrigger className="w-full max-w-md">
+                    <SelectValue placeholder="اختر النموذج" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {getModelsForProvider().map((model) => (
+                      <SelectItem key={model.value} value={model.value}>
+                        {model.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {/* Model Links for API Key Creation */}
+              {settings.defaultProvider === 'openrouter' && (
+                <div className="p-3 bg-muted/50 rounded-lg space-y-2">
+                  <Label className="text-sm flex items-center gap-2">
+                    <ExternalLink className="w-4 h-4" />
+                    روابط النماذج (لإنشاء مفتاح API)
+                  </Label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {OPENROUTER_MODELS.map((model) => (
+                      <a
+                        key={model.value}
+                        href={model.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-sm p-2 rounded-md bg-background border hover:border-primary hover:text-primary transition-colors"
+                      >
+                        <ExternalLink className="w-3 h-3 shrink-0" />
+                        <span className="truncate">{model.label}</span>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </CardContent>

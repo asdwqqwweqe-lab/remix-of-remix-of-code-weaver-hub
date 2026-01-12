@@ -29,6 +29,7 @@ import DisplaySettings, { DisplaySettingsValues } from '@/components/reports/Dis
 import PresentationMode from '@/components/reports/PresentationMode';
 import ReportSearch from '@/components/reports/ReportSearch';
 import TextTranslator from '@/components/reports/TextTranslator';
+import ContentNavigation from '@/components/navigation/ContentNavigation';
 import { cn } from '@/lib/utils';
 import {
   AlertDialog,
@@ -46,8 +47,11 @@ const ReportDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { language } = useLanguage();
-  const { getReportById, deleteReport } = useReportStore();
+  const { reports, getReportById, deleteReport } = useReportStore();
   const { posts, collections, getPostById, getCollectionById } = useBlogStore();
+  
+  // Get all reports for navigation
+  const allReports = reports.map(r => ({ id: r.id, title: r.title }));
   
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isPresentationOpen, setIsPresentationOpen] = useState(false);
@@ -476,6 +480,14 @@ const ReportDetails = () => {
 
       {/* Scroll Progress */}
       <ScrollProgress />
+
+      {/* Navigation */}
+      <ContentNavigation 
+        currentId={report.id} 
+        items={allReports} 
+        baseUrl="/reports"
+        className="mt-6"
+      />
 
       {/* Presentation Mode */}
       <PresentationMode
