@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { BookOpen, Copy, Check, Sparkles, Loader2, Send, Award, Trophy, Star, Zap, Target, Medal, Save, History, FileQuestion, CheckCircle2, XCircle } from 'lucide-react';
+import { BookOpen, Copy, Check, Sparkles, Loader2, Send, Award, Trophy, Star, Zap, Target, Medal, Save, History, FileQuestion, CheckCircle2, XCircle, Settings, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 
 interface StudyModeDialogProps {
   isOpen: boolean;
@@ -93,6 +94,19 @@ const StudyModeDialog = ({ isOpen, onClose, sections, roadmapTitle, languageName
   const [showResult, setShowResult] = useState(false);
   const [quizScore, setQuizScore] = useState(0);
   const [answeredQuestions, setAnsweredQuestions] = useState<Set<number>>(new Set());
+
+  // Custom prompt state
+  const defaultPromptTemplate = "أنت معلم برمجة خبير ومتخصص في {{languageName}}. أريد منك شرح المواضيع التالية من خريطة الطريق \"{{roadmapTitle}}\" بطريقة مفصلة ومناسبة للمبتدئين.\n\n**المواضيع المطلوب شرحها:**\n{{topics}}\n\n**متطلبات الشرح:**\n1. ابدأ بمقدمة بسيطة توضح أهمية كل موضوع\n2. اشرح كل مفهوم بالتفصيل مع أمثلة عملية\n3. استخدم أمثلة كود واضحة ومفهومة\n4. أضف تعليقات توضيحية داخل الكود\n5. قدم نصائح وأفضل الممارسات\n6. أضف تمارين بسيطة للتطبيق\n7. اربط المفاهيم ببعضها البعض\n8. استخدم لغة بسيطة وسهلة الفهم\n9. أضف ملاحظات مهمة وتحذيرات شائعة للمبتدئين\n10. اختم بملخص وخطوات التالية\n\n**ملاحظة:** الشرح يجب أن يكون باللغة العربية مع الحفاظ على المصطلحات التقنية بالإنجليزية.";
+
+  const getStoredPrompt = () => {
+    try {
+      return localStorage.getItem('study-prompt-template') || defaultPromptTemplate;
+    } catch {
+      return defaultPromptTemplate;
+    }
+  };
+
+  const [customPromptTemplate, setCustomPromptTemplate] = useState(getStoredPrompt);
 
   useEffect(() => {
     setStudyStats(loadStudyStats(roadmapTitle));
@@ -185,24 +199,22 @@ const StudyModeDialog = ({ isOpen, onClose, sections, roadmapTitle, languageName
   };
 
   const generateStudyPrompt = () => {
-    return `أنت معلم برمجة خبير ومتخصص في ${languageName}. أريد منك شرح المواضيع التالية من خريطة الطريق "${roadmapTitle}" بطريقة مفصلة ومناسبة للمبتدئين.
+    return customPromptTemplate
+      .replace(/\{\{languageName\}\}/g, languageName)
+      .replace(/\{\{roadmapTitle\}\}/g, roadmapTitle)
+      .replace(/\{\{topics\}\}/g, generateTopicsText());
+  };
 
-**المواضيع المطلوب شرحها:**
-${generateTopicsText()}
+  const handleSavePromptTemplate = () => {
+    localStorage.setItem('study-prompt-template', customPromptTemplate);
+    toast.success('تم حفظ قالب البرومبت');
+  };
 
-**متطلبات الشرح:**
-1. ابدأ بمقدمة بسيطة توضح أهمية كل موضوع
-2. اشرح كل مفهوم بالتفصيل مع أمثلة عملية
-3. استخدم أمثلة كود واضحة ومفهومة
-4. أضف تعليقات توضيحية داخل الكود
-5. قدم نصائح وأفضل الممارسات
-6. أضف تمارين بسيطة للتطبيق
-7. اربط المفاهيم ببعضها البعض
-8. استخدم لغة بسيطة وسهلة الفهم
-9. أضف ملاحظات مهمة وتحذيرات شائعة للمبتدئين
-10. اختم بملخص وخطوات التالية
-
-**ملاحظة:** الشرح يجب أن يكون باللغة العربية مع الحفاظ على المصطلحات التقنية بالإنجليزية.`;
+  const handleResetPromptTemplate = () => {
+    setCustomPromptTemplate(defaultPromptTemplate);
+    localStorage.removeItem('study-prompt-template');
+    toast.success('تم إعادة ضبط البرومبت للافتراضي');
+  };
   };
 
   const handleCopy = async () => {
@@ -467,12 +479,15 @@ ${generateTopicsText()}
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="select">اختيار</TabsTrigger>
             <TabsTrigger value="result" disabled={!explanation && !isGenerating}>الشرح</TabsTrigger>
             <TabsTrigger value="quiz" disabled={quizQuestions.length === 0 && !isGeneratingQuiz}>اختبار</TabsTrigger>
             <TabsTrigger value="saved">المحفوظات</TabsTrigger>
             <TabsTrigger value="stats">إحصائيات</TabsTrigger>
+            <TabsTrigger value="settings">
+              <Settings className="h-4 w-4" />
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="select" className="space-y-4">
@@ -774,6 +789,50 @@ ${generateTopicsText()}
               <p className="text-sm text-muted-foreground">
                 {roadmapProgress.completed} من {roadmapProgress.total} موضوع مكتمل
               </p>
+            </div>
+          </TabsContent>
+
+          {/* Settings Tab */}
+          <TabsContent value="settings" className="space-y-4">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="font-semibold">تخصيص قالب البرومبت</h4>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={handleResetPromptTemplate}>
+                    <RotateCcw className="h-4 w-4 ml-1" />
+                    إعادة ضبط
+                  </Button>
+                  <Button size="sm" onClick={handleSavePromptTemplate}>
+                    <Save className="h-4 w-4 ml-1" />
+                    حفظ
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label className="text-sm text-muted-foreground">
+                  استخدم المتغيرات التالية في القالب:
+                </Label>
+                <div className="flex gap-2 flex-wrap">
+                  <Badge variant="secondary">{'{{languageName}}'}</Badge>
+                  <Badge variant="secondary">{'{{roadmapTitle}}'}</Badge>
+                  <Badge variant="secondary">{'{{topics}}'}</Badge>
+                </div>
+              </div>
+
+              <Textarea
+                value={customPromptTemplate}
+                onChange={(e) => setCustomPromptTemplate(e.target.value)}
+                placeholder="قالب البرومبت..."
+                className="min-h-[300px] font-mono text-sm"
+                dir="auto"
+              />
+
+              <div className="p-3 bg-muted/50 rounded-lg">
+                <p className="text-xs text-muted-foreground">
+                  💡 نصيحة: يمكنك تخصيص البرومبت ليناسب أسلوب تعلمك. أضف تعليمات إضافية مثل "اشرح بالأمثلة العملية" أو "ركز على الأخطاء الشائعة".
+                </p>
+              </div>
             </div>
           </TabsContent>
         </Tabs>
