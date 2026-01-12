@@ -305,9 +305,6 @@ export const useRoadmapStore = create<RoadmapStore>()(
           ),
         };
       }),
-            : s
-        ),
-      })),
       
       getRoadmapsByLanguage: (languageId) => {
         return get().roadmaps.filter((r) => r.languageId === languageId);
