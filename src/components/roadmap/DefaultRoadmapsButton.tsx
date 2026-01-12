@@ -16,6 +16,11 @@ import { useRoadmapStore } from '@/store/roadmapStore';
 import { useBlogStore } from '@/store/blogStore';
 import { toast } from 'sonner';
 
+interface DefaultRoadmapTopic {
+  title: string;
+  subTopics?: string[];
+}
+
 interface DefaultRoadmap {
   id: string;
   title: string;
@@ -24,7 +29,12 @@ interface DefaultRoadmap {
   sections: {
     title: string;
     description: string;
-    topics: string[];
+    topics: (string | DefaultRoadmapTopic)[];
+    subSections?: {
+      title: string;
+      description: string;
+      topics: (string | DefaultRoadmapTopic)[];
+    }[];
   }[];
 }
 
@@ -33,32 +43,80 @@ const defaultRoadmaps: DefaultRoadmap[] = [
     id: 'python',
     title: 'Python Developer Roadmap',
     languageName: 'Python',
-    description: 'مسار تعلم Python من المبتدئ إلى المحترف',
+    description: 'مسار تعلم Python من المبتدئ إلى المحترف - شامل ومتكامل',
     sections: [
       {
         title: 'المستوى المبتدئ - الأساسيات',
         description: 'البداية مع Python',
-        topics: ['تثبيت Python', 'المتغيرات وأنواع البيانات', 'العمليات الحسابية', 'المدخلات والمخرجات', 'الجمل الشرطية if/else', 'الحلقات for/while'],
+        topics: [
+          { title: 'تثبيت Python', subTopics: ['تثبيت على Windows', 'تثبيت على Mac/Linux', 'إعداد VS Code'] },
+          { title: 'المتغيرات وأنواع البيانات', subTopics: ['String', 'Integer', 'Float', 'Boolean', 'Type Conversion'] },
+          'العمليات الحسابية',
+          { title: 'المدخلات والمخرجات', subTopics: ['input()', 'print()', 'f-strings'] },
+          { title: 'الجمل الشرطية', subTopics: ['if/else', 'elif', 'Nested Conditions', 'Ternary Operator'] },
+          { title: 'الحلقات', subTopics: ['for Loop', 'while Loop', 'break/continue', 'Loop with else'] }
+        ],
       },
       {
         title: 'المستوى المبتدئ - الدوال والبيانات',
         description: 'التعمق في الأساسيات',
-        topics: ['الدوال Functions', 'المعاملات والقيم الافتراضية', 'القوائم Lists', 'القواميس Dictionaries', 'المجموعات Sets', 'Tuples'],
+        topics: [
+          { title: 'الدوال Functions', subTopics: ['تعريف الدوال', 'Parameters', 'Return Values', 'Scope'] },
+          { title: 'القوائم Lists', subTopics: ['الإنشاء والوصول', 'List Methods', 'List Slicing', 'List Comprehension'] },
+          { title: 'القواميس Dictionaries', subTopics: ['الإنشاء والوصول', 'Dict Methods', 'Nested Dicts', 'Dict Comprehension'] },
+          'المجموعات Sets',
+          'Tuples'
+        ],
       },
       {
         title: 'المستوى المتوسط - البرمجة الكائنية',
         description: 'مفاهيم OOP',
-        topics: ['الفئات والكائنات', 'الوراثة Inheritance', 'التغليف Encapsulation', 'التعددية Polymorphism', 'الفئات المجردة', 'Decorators'],
+        topics: [
+          { title: 'الفئات والكائنات', subTopics: ['Class Definition', '__init__', 'Instance Variables', 'Methods'] },
+          { title: 'الوراثة Inheritance', subTopics: ['Single Inheritance', 'Multiple Inheritance', 'super()'] },
+          'التغليف Encapsulation',
+          'التعددية Polymorphism',
+          { title: 'المفاهيم المتقدمة', subTopics: ['Abstract Classes', '@property', 'Decorators', 'Magic Methods'] }
+        ],
       },
       {
         title: 'المستوى المتقدم - المكتبات والأدوات',
         description: 'أدوات Python المتقدمة',
-        topics: ['pip و virtualenv', 'List Comprehension', 'Generators', 'المعالجة الاستثنائية', 'File I/O', 'Regular Expressions'],
+        topics: [
+          { title: 'إدارة الحزم', subTopics: ['pip', 'virtualenv', 'requirements.txt'] },
+          'List/Dict Comprehension',
+          'Generators و Iterators',
+          { title: 'المعالجة الاستثنائية', subTopics: ['try/except', 'raise', 'Custom Exceptions'] },
+          { title: 'File I/O', subTopics: ['Reading Files', 'Writing Files', 'with Statement', 'JSON/CSV'] },
+          'Regular Expressions'
+        ],
       },
       {
         title: 'المستوى الاحترافي - التخصص',
         description: 'مسارات التخصص',
-        topics: ['NumPy و Pandas', 'Requests و APIs', 'Testing مع pytest', 'Async/Await', 'Multithreading', 'Best Practices'],
+        subSections: [
+          {
+            title: 'Data Science',
+            description: 'علم البيانات',
+            topics: ['NumPy', 'Pandas', 'Matplotlib', 'Seaborn']
+          },
+          {
+            title: 'Web Development',
+            description: 'تطوير الويب',
+            topics: ['Flask', 'Django', 'FastAPI', 'REST APIs']
+          },
+          {
+            title: 'Testing & Best Practices',
+            description: 'الاختبار وأفضل الممارسات',
+            topics: [
+              { title: 'Testing', subTopics: ['pytest', 'unittest', 'Test Coverage'] },
+              { title: 'Async Programming', subTopics: ['async/await', 'asyncio'] },
+              'Type Hints',
+              'PEP 8',
+              'Documentation'
+            ]
+          }
+        ]
       },
     ],
   },
@@ -619,6 +677,44 @@ export default function DefaultRoadmapsButton() {
           languageId: language.id,
         });
 
+        // Helper function to add topics with subtopics
+        const addTopicsToSection = (sectionId: string, topics: (string | DefaultRoadmapTopic)[]) => {
+          topics.forEach(topic => {
+            if (typeof topic === 'string') {
+              // Simple topic without subtopics
+              addTopic(sectionId, {
+                title: topic,
+                completed: false,
+                postId: undefined,
+              });
+            } else {
+              // Topic with subtopics
+              const parentTopicId = sectionId + '_' + Math.random().toString(36).substr(2, 9);
+              addTopic(sectionId, {
+                title: topic.title,
+                completed: false,
+                postId: undefined,
+              });
+              
+              // Get the last added topic to add subtopics to it
+              const section = useRoadmapStore.getState().roadmapSections.find(s => s.id === sectionId);
+              if (section && topic.subTopics) {
+                const lastTopicIndex = section.topics.length - 1;
+                const lastTopic = section.topics[lastTopicIndex];
+                if (lastTopic) {
+                  topic.subTopics.forEach(subTopicTitle => {
+                    addSubTopic(sectionId, lastTopic.id, {
+                      title: subTopicTitle,
+                      completed: false,
+                      postId: undefined,
+                    });
+                  });
+                }
+              }
+            }
+          });
+        };
+
         // Add sections and topics
         roadmap.sections.forEach((section, sIndex) => {
           const sectionId = addSection({
@@ -628,13 +724,22 @@ export default function DefaultRoadmapsButton() {
             sortOrder: sIndex + 1,
           });
 
-          section.topics.forEach(topicTitle => {
-            addTopic(sectionId, {
-              title: topicTitle,
-              completed: false,
-              postId: undefined,
+          // Add topics to main section
+          addTopicsToSection(sectionId, section.topics);
+
+          // Add subsections if they exist
+          if (section.subSections) {
+            section.subSections.forEach((subSection, subIndex) => {
+              const subSectionId = addSection({
+                roadmapId: newRoadmapId,
+                title: `  ↳ ${subSection.title}`,
+                description: subSection.description,
+                sortOrder: sIndex + 1 + (subIndex + 1) * 0.1,
+              });
+              
+              addTopicsToSection(subSectionId, subSection.topics);
             });
-          });
+          }
         });
       }
 

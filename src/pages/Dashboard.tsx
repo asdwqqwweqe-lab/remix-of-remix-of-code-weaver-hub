@@ -25,7 +25,7 @@ import {
 export default function Dashboard() {
   const { language } = useLanguage();
   const { posts, categories, tags } = useBlogStore();
-  const { roadmaps, sections: roadmapSections } = useRoadmapStore();
+  const { roadmaps, roadmapSections } = useRoadmapStore();
 
   // Calculate roadmap progress
   const roadmapsProgress = useMemo(() => {

@@ -24,7 +24,8 @@ import {
   Eye,
   EyeOff,
   FileEdit,
-  FileText
+  FileText,
+  Link as LinkIcon
 } from 'lucide-react';
 import { toast } from 'sonner';
 import MarkdownEditor from '@/components/reports/MarkdownEditor';
@@ -58,6 +59,8 @@ const ReportEditor = () => {
   const [showSidebar, setShowSidebar] = useState(true);
   const [showPreview, setShowPreview] = useState(true);
   const [editorMode, setEditorMode] = useState<'markdown' | 'wysiwyg'>('wysiwyg');
+  const [imageInputMode, setImageInputMode] = useState<'upload' | 'url'>('upload');
+  const [imageUrl, setImageUrl] = useState('');
   const [formData, setFormData] = useState({
     title: '',
     content: '',
@@ -110,6 +113,22 @@ const ReportEditor = () => {
         setFormData(prev => ({ ...prev, featuredImage: event.target?.result as string }));
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleImageUrlAdd = () => {
+    if (!imageUrl.trim()) {
+      toast.error(language === 'ar' ? 'يرجى إدخال رابط الصورة' : 'Please enter image URL');
+      return;
+    }
+    // Validate URL format
+    try {
+      new URL(imageUrl);
+      setFormData(prev => ({ ...prev, featuredImage: imageUrl }));
+      setImageUrl('');
+      toast.success(language === 'ar' ? 'تم إضافة الصورة' : 'Image added');
+    } catch {
+      toast.error(language === 'ar' ? 'رابط غير صالح' : 'Invalid URL');
     }
   };
 
@@ -205,30 +224,83 @@ const ReportEditor = () => {
 
           <div>
             <Label className="mb-1.5 block">{language === 'ar' ? 'الصورة المميزة' : 'Featured Image'}</Label>
-            <div
-              className="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:border-primary transition-colors"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              {formData.featuredImage ? (
-                <div className="relative">
-                  <img src={formData.featuredImage} alt="Featured" className="max-h-32 mx-auto rounded-lg" />
-                  <Button
-                    variant="destructive"
-                    size="icon"
-                    className="absolute top-1 right-1 h-6 w-6"
-                    onClick={(e) => { e.stopPropagation(); setFormData(prev => ({ ...prev, featuredImage: '' })); }}
-                  >
-                    <X className="w-3 h-3" />
+            
+            {/* Toggle between upload and URL */}
+            <div className="flex gap-2 mb-3">
+              <Button
+                type="button"
+                variant={imageInputMode === 'upload' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setImageInputMode('upload')}
+              >
+                <ImagePlus className="w-4 h-4 ml-1" />
+                {language === 'ar' ? 'رفع صورة' : 'Upload Image'}
+              </Button>
+              <Button
+                type="button"
+                variant={imageInputMode === 'url' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setImageInputMode('url')}
+              >
+                <LinkIcon className="w-4 h-4 ml-1" />
+                {language === 'ar' ? 'رابط صورة' : 'Image URL'}
+              </Button>
+            </div>
+
+            {imageInputMode === 'upload' ? (
+              <div
+                className="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:border-primary transition-colors"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {formData.featuredImage ? (
+                  <div className="relative">
+                    <img src={formData.featuredImage} alt="Featured" className="max-h-32 mx-auto rounded-lg" />
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      className="absolute top-1 right-1 h-6 w-6"
+                      onClick={(e) => { e.stopPropagation(); setFormData(prev => ({ ...prev, featuredImage: '' })); }}
+                    >
+                      <X className="w-3 h-3" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    <ImagePlus className="w-8 h-8 mx-auto text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">{language === 'ar' ? 'اضغط لرفع صورة' : 'Click to upload'}</p>
+                  </div>
+                )}
+                <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <Input
+                    type="url"
+                    value={imageUrl}
+                    onChange={(e) => setImageUrl(e.target.value)}
+                    placeholder={language === 'ar' ? 'أدخل رابط الصورة (https://...)' : 'Enter image URL (https://...)'}
+                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleImageUrlAdd())}
+                  />
+                  <Button type="button" onClick={handleImageUrlAdd}>
+                    {language === 'ar' ? 'إضافة' : 'Add'}
                   </Button>
                 </div>
-              ) : (
-                <div className="space-y-1">
-                  <ImagePlus className="w-8 h-8 mx-auto text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">{language === 'ar' ? 'اضغط لرفع صورة' : 'Click to upload'}</p>
-                </div>
-              )}
-              <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-            </div>
+                {formData.featuredImage && (
+                  <div className="relative border rounded-lg p-2">
+                    <img src={formData.featuredImage} alt="Featured" className="max-h-32 mx-auto rounded-lg" />
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      className="absolute top-1 right-1 h-6 w-6"
+                      onClick={() => setFormData(prev => ({ ...prev, featuredImage: '' }))}
+                    >
+                      <X className="w-3 h-3" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div>
