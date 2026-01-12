@@ -251,6 +251,13 @@ const SortableSection = ({
                     updateTopic={updateTopic}
                     assignPostToTopic={assignPostToTopic}
                     deleteTopic={deleteTopic}
+                    addSubTopic={(parentTopicId) => {
+                      const newSubTopic = {
+                        title: 'موضوع فرعي جديد',
+                        completed: false,
+                      };
+                      addSubTopic(section.id, parentTopicId, newSubTopic);
+                    }}
                   />
                 ))}
               </SortableContext>
@@ -287,6 +294,8 @@ const SortableTopic = ({
   updateTopic,
   assignPostToTopic,
   deleteTopic,
+  depth = 0,
+  addSubTopic,
 }: {
   topic: RoadmapTopic;
   sectionId: string;
@@ -297,7 +306,10 @@ const SortableTopic = ({
   updateTopic: (sectionId: string, topicId: string, updates: Partial<RoadmapTopic>) => void;
   assignPostToTopic: (sectionId: string, topicId: string, postId: string | undefined) => void;
   deleteTopic: (sectionId: string, topicId: string) => void;
+  depth?: number;
+  addSubTopic?: (parentTopicId: string) => void;
 }) => {
+  const [isSubTopicsExpanded, setIsSubTopicsExpanded] = useState(true);
   const {
     attributes,
     listeners,
@@ -314,64 +326,116 @@ const SortableTopic = ({
   };
 
   const post = topic.postId ? getPostById(topic.postId) : null;
+  const hasSubTopics = topic.subTopics && topic.subTopics.length > 0;
+  const paddingLeft = depth * 24;
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={`flex items-center gap-3 p-2 rounded-md border ${
-        topic.completed ? 'bg-green-500/10 border-green-500/30' : 'bg-card'
-      }`}
-    >
-      <button {...attributes} {...listeners} className="cursor-grab hover:bg-muted p-1 rounded">
-        <GripVertical className="h-3 w-3 text-muted-foreground" />
-      </button>
-      <Checkbox
-        checked={topic.completed}
-        onCheckedChange={() => toggleTopicComplete(sectionId, topic.id)}
-      />
-      <InlineEdit
-        value={topic.title}
-        onSave={(newTitle) => updateTopic(sectionId, topic.id, { title: newTitle })}
-        className={topic.completed ? 'line-through text-muted-foreground' : ''}
-      />
-      {post && (
+    <div style={{ paddingLeft: `${paddingLeft}px` }}>
+      <div
+        ref={setNodeRef}
+        style={style}
+        className={`flex items-center gap-3 p-2 rounded-md border ${
+          topic.completed ? 'bg-green-500/10 border-green-500/30' : 'bg-card'
+        } mb-2`}
+      >
+        {hasSubTopics && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 w-6 p-0"
+            onClick={() => setIsSubTopicsExpanded(!isSubTopicsExpanded)}
+          >
+            {isSubTopicsExpanded ? (
+              <ChevronDown className="h-3 w-3" />
+            ) : (
+              <ChevronRight className="h-3 w-3" />
+            )}
+          </Button>
+        )}
+        {!hasSubTopics && <div className="w-6" />}
+        <button {...attributes} {...listeners} className="cursor-grab hover:bg-muted p-1 rounded">
+          <GripVertical className="h-3 w-3 text-muted-foreground" />
+        </button>
+        <Checkbox
+          checked={topic.completed}
+          onCheckedChange={() => toggleTopicComplete(sectionId, topic.id)}
+        />
+        <InlineEdit
+          value={topic.title}
+          onSave={(newTitle) => updateTopic(sectionId, topic.id, { title: newTitle })}
+          className={topic.completed ? 'line-through text-muted-foreground' : ''}
+        />
+        {post && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-xs h-6"
+            onClick={() => navigate(`/posts/${post.id}`)}
+          >
+            <FileText className="h-3 w-3 ml-1" />
+            {post.title.substring(0, 20)}...
+          </Button>
+        )}
+        {!post && (
+          <Select
+            value={topic.postId || 'none'}
+            onValueChange={(v) => assignPostToTopic(sectionId, topic.id, v === 'none' ? undefined : v)}
+          >
+            <SelectTrigger className="h-6 w-32 text-xs">
+              <SelectValue placeholder="ربط موضوع" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">بدون ربط</SelectItem>
+              {posts.map((p) => (
+                <SelectItem key={p.id} value={p.id}>
+                  {p.title.substring(0, 30)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+        {depth < 3 && addSubTopic && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 text-xs"
+            onClick={() => addSubTopic(topic.id)}
+          >
+            <Plus className="h-3 w-3 ml-1" />
+            موضوع فرعي
+          </Button>
+        )}
         <Button
           variant="ghost"
           size="sm"
-          className="text-xs h-6"
-          onClick={() => navigate(`/posts/${post.id}`)}
+          className="h-6 w-6 p-0 mr-auto"
+          onClick={() => deleteTopic(sectionId, topic.id)}
         >
-          <FileText className="h-3 w-3 ml-1" />
-          {post.title.substring(0, 20)}...
+          <Trash2 className="h-3 w-3" />
         </Button>
+      </div>
+      
+      {/* Render sub-topics recursively */}
+      {hasSubTopics && isSubTopicsExpanded && (
+        <div className="space-y-1">
+          {topic.subTopics!.sort((a, b) => a.sortOrder - b.sortOrder).map((subTopic) => (
+            <SortableTopic
+              key={subTopic.id}
+              topic={subTopic}
+              sectionId={sectionId}
+              posts={posts}
+              getPostById={getPostById}
+              navigate={navigate}
+              toggleTopicComplete={toggleTopicComplete}
+              updateTopic={updateTopic}
+              assignPostToTopic={assignPostToTopic}
+              deleteTopic={deleteTopic}
+              depth={depth + 1}
+              addSubTopic={addSubTopic}
+            />
+          ))}
+        </div>
       )}
-      {!post && (
-        <Select
-          value={topic.postId || 'none'}
-          onValueChange={(v) => assignPostToTopic(sectionId, topic.id, v === 'none' ? undefined : v)}
-        >
-          <SelectTrigger className="h-6 w-32 text-xs">
-            <SelectValue placeholder="ربط موضوع" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="none">بدون ربط</SelectItem>
-            {posts.map((p) => (
-              <SelectItem key={p.id} value={p.id}>
-                {p.title.substring(0, 30)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      )}
-      <Button
-        variant="ghost"
-        size="sm"
-        className="h-6 w-6 p-0 mr-auto"
-        onClick={() => deleteTopic(sectionId, topic.id)}
-      >
-        <Trash2 className="h-3 w-3" />
-      </Button>
     </div>
   );
 };
@@ -389,6 +453,7 @@ export default function Roadmap() {
     updateSection,
     deleteSection,
     addTopic,
+    addSubTopic,
     updateTopic,
     deleteTopic,
     toggleTopicComplete,

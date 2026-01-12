@@ -11,6 +11,7 @@ import GlobalContextMenu from "@/components/GlobalContextMenu";
 import CustomCssInjector from "@/components/settings/CustomCssInjector";
 import FirebaseAutoSyncProvider from "@/components/settings/FirebaseAutoSyncProvider";
 import Index from "./pages/Index";
+import Dashboard from "./pages/Dashboard";
 import Posts from "./pages/Posts";
 import PostDetails from "./pages/PostDetails";
 import PostEditor from "./pages/PostEditor";
@@ -49,6 +50,7 @@ const App = () => (
                 <MainLayout>
                   <Routes>
                     <Route path="/" element={<Index />} />
+                    <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/posts" element={<Posts />} />
                     <Route path="/posts/new" element={<PostEditor />} />
                     <Route path="/posts/:id" element={<PostDetails />} />

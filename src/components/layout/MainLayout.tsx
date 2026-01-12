@@ -62,6 +62,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
 
   const navItems = [
     { path: '/', icon: Home, label: t('nav.home') },
+    { path: '/dashboard', icon: BarChart3, label: language === 'ar' ? 'لوحة التحكم' : 'Dashboard' },
     { path: '/posts', icon: FileText, label: t('nav.posts') },
     { path: '/posts/new', icon: Plus, label: t('nav.newPost') },
     { path: '/categories', icon: FolderOpen, label: t('nav.categories') },

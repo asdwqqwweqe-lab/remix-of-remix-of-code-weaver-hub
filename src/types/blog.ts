@@ -149,12 +149,15 @@ export interface GalleryImage {
 }
 
 // Roadmap types
+export type PromptLevel = 'beginner' | 'intermediate' | 'advanced';
+
 export interface RoadmapTopic {
   id: string;
   title: string;
   postId?: string;
   completed: boolean;
   sortOrder: number;
+  subTopics?: RoadmapTopic[];
 }
 
 export interface RoadmapSection {
@@ -164,6 +167,7 @@ export interface RoadmapSection {
   description?: string;
   topics: RoadmapTopic[];
   sortOrder: number;
+  subSections?: RoadmapSection[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -174,6 +178,12 @@ export interface Roadmap {
   title: string;
   description?: string;
   sections: string[];
+  promptLevel?: PromptLevel;
+  customPrompts?: {
+    beginner?: string;
+    intermediate?: string;
+    advanced?: string;
+  };
   createdAt: Date;
   updatedAt: Date;
 }

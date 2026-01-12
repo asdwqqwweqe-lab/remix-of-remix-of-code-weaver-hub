@@ -21,6 +21,7 @@ interface RoadmapStore {
   
   // Topic actions
   addTopic: (sectionId: string, topic: Omit<RoadmapTopic, 'id' | 'sortOrder'>) => void;
+  addSubTopic: (sectionId: string, parentTopicId: string, topic: Omit<RoadmapTopic, 'id' | 'sortOrder'>) => void;
   updateTopic: (sectionId: string, topicId: string, updates: Partial<RoadmapTopic>) => void;
   deleteTopic: (sectionId: string, topicId: string) => void;
   toggleTopicComplete: (sectionId: string, topicId: string) => void;
@@ -143,39 +144,127 @@ export const useRoadmapStore = create<RoadmapStore>()(
         }),
       })),
       
-      updateTopic: (sectionId, topicId, updates) => set((state) => ({
-        roadmapSections: state.roadmapSections.map((s) =>
-          s.id === sectionId
-            ? {
-                ...s,
-                topics: s.topics.map((t) => (t.id === topicId ? { ...t, ...updates } : t)),
-                updatedAt: new Date(),
-              }
-            : s
-        ),
-      })),
+      addSubTopic: (sectionId, parentTopicId, topic) => set((state) => {
+        const addSubTopicRecursive = (topics: RoadmapTopic[]): RoadmapTopic[] => {
+          return topics.map((t) => {
+            if (t.id === parentTopicId) {
+              const subTopics = t.subTopics || [];
+              const maxOrder = subTopics.length > 0 ? Math.max(...subTopics.map((st) => st.sortOrder)) : 0;
+              return {
+                ...t,
+                subTopics: [
+                  ...subTopics,
+                  {
+                    ...topic,
+                    id: generateId(),
+                    sortOrder: maxOrder + 1,
+                  },
+                ],
+              };
+            }
+            if (t.subTopics && t.subTopics.length > 0) {
+              return {
+                ...t,
+                subTopics: addSubTopicRecursive(t.subTopics),
+              };
+            }
+            return t;
+          });
+        };
+
+        return {
+          roadmapSections: state.roadmapSections.map((s) => {
+            if (s.id !== sectionId) return s;
+            return {
+              ...s,
+              topics: addSubTopicRecursive(s.topics),
+              updatedAt: new Date(),
+            };
+          }),
+        };
+      }),
       
-      deleteTopic: (sectionId, topicId) => set((state) => ({
-        roadmapSections: state.roadmapSections.map((s) =>
-          s.id === sectionId
-            ? { ...s, topics: s.topics.filter((t) => t.id !== topicId), updatedAt: new Date() }
-            : s
-        ),
-      })),
+      updateTopic: (sectionId, topicId, updates) => set((state) => {
+        const updateTopicRecursive = (topics: RoadmapTopic[]): RoadmapTopic[] => {
+          return topics.map((t) => {
+            if (t.id === topicId) {
+              return { ...t, ...updates };
+            }
+            if (t.subTopics && t.subTopics.length > 0) {
+              return {
+                ...t,
+                subTopics: updateTopicRecursive(t.subTopics),
+              };
+            }
+            return t;
+          });
+        };
+
+        return {
+          roadmapSections: state.roadmapSections.map((s) =>
+            s.id === sectionId
+              ? {
+                  ...s,
+                  topics: updateTopicRecursive(s.topics),
+                  updatedAt: new Date(),
+                }
+              : s
+          ),
+        };
+      }),
       
-      toggleTopicComplete: (sectionId, topicId) => set((state) => ({
-        roadmapSections: state.roadmapSections.map((s) =>
-          s.id === sectionId
-            ? {
-                ...s,
-                topics: s.topics.map((t) =>
-                  t.id === topicId ? { ...t, completed: !t.completed } : t
-                ),
-                updatedAt: new Date(),
+      deleteTopic: (sectionId, topicId) => set((state) => {
+        const deleteTopicRecursive = (topics: RoadmapTopic[]): RoadmapTopic[] => {
+          return topics
+            .filter((t) => t.id !== topicId)
+            .map((t) => {
+              if (t.subTopics && t.subTopics.length > 0) {
+                return {
+                  ...t,
+                  subTopics: deleteTopicRecursive(t.subTopics),
+                };
               }
-            : s
-        ),
-      })),
+              return t;
+            });
+        };
+
+        return {
+          roadmapSections: state.roadmapSections.map((s) =>
+            s.id === sectionId
+              ? { ...s, topics: deleteTopicRecursive(s.topics), updatedAt: new Date() }
+              : s
+          ),
+        };
+      }),
+      
+      toggleTopicComplete: (sectionId, topicId) => set((state) => {
+        const toggleCompleteRecursive = (topics: RoadmapTopic[]): RoadmapTopic[] => {
+          return topics.map((t) => {
+            if (t.id === topicId) {
+              return { ...t, completed: !t.completed };
+            }
+            if (t.subTopics && t.subTopics.length > 0) {
+              return {
+                ...t,
+                subTopics: toggleCompleteRecursive(t.subTopics),
+              };
+            }
+            return t;
+          });
+        };
+
+        return {
+          roadmapSections: state.roadmapSections.map((s) =>
+            s.id === sectionId
+              ? {
+                  ...s,
+                  topics: toggleCompleteRecursive(s.topics),
+                  updatedAt: new Date(),
+                }
+              : s
+          ),
+        };
+      }),
       
       reorderTopics: (sectionId, topicIds) => set((state) => ({
         roadmapSections: state.roadmapSections.map((s) => {
@@ -188,16 +277,34 @@ export const useRoadmapStore = create<RoadmapStore>()(
         }),
       })),
       
-      assignPostToTopic: (sectionId, topicId, postId) => set((state) => ({
-        roadmapSections: state.roadmapSections.map((s) =>
-          s.id === sectionId
-            ? {
-                ...s,
-                topics: s.topics.map((t) =>
-                  t.id === topicId ? { ...t, postId } : t
-                ),
-                updatedAt: new Date(),
-              }
+      assignPostToTopic: (sectionId, topicId, postId) => set((state) => {
+        const assignPostRecursive = (topics: RoadmapTopic[]): RoadmapTopic[] => {
+          return topics.map((t) => {
+            if (t.id === topicId) {
+              return { ...t, postId };
+            }
+            if (t.subTopics && t.subTopics.length > 0) {
+              return {
+                ...t,
+                subTopics: assignPostRecursive(t.subTopics),
+              };
+            }
+            return t;
+          });
+        };
+
+        return {
+          roadmapSections: state.roadmapSections.map((s) =>
+            s.id === sectionId
+              ? {
+                  ...s,
+                  topics: assignPostRecursive(s.topics),
+                  updatedAt: new Date(),
+                }
+              : s
+          ),
+        };
+      }),
             : s
         ),
       })),
@@ -218,12 +325,21 @@ export const useRoadmapStore = create<RoadmapStore>()(
         const sections = get().getSectionsByRoadmap(roadmapId);
         let completed = 0;
         let total = 0;
-        sections.forEach((section) => {
-          section.topics.forEach((topic) => {
+        
+        const countTopicsRecursive = (topics: RoadmapTopic[]) => {
+          topics.forEach((topic) => {
             total++;
             if (topic.completed) completed++;
+            if (topic.subTopics && topic.subTopics.length > 0) {
+              countTopicsRecursive(topic.subTopics);
+            }
           });
+        };
+        
+        sections.forEach((section) => {
+          countTopicsRecursive(section.topics);
         });
+        
         return {
           completed,
           total,
@@ -234,8 +350,22 @@ export const useRoadmapStore = create<RoadmapStore>()(
       getSectionProgress: (sectionId) => {
         const section = get().roadmapSections.find((s) => s.id === sectionId);
         if (!section) return { completed: 0, total: 0, percentage: 0 };
-        const total = section.topics.length;
-        const completed = section.topics.filter((t) => t.completed).length;
+        
+        let completed = 0;
+        let total = 0;
+        
+        const countTopicsRecursive = (topics: RoadmapTopic[]) => {
+          topics.forEach((topic) => {
+            total++;
+            if (topic.completed) completed++;
+            if (topic.subTopics && topic.subTopics.length > 0) {
+              countTopicsRecursive(topic.subTopics);
+            }
+          });
+        };
+        
+        countTopicsRecursive(section.topics);
+        
         return {
           completed,
           total,
