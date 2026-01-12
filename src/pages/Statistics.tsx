@@ -1,10 +1,15 @@
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Link } from 'react-router-dom';
 import { useBlogStore } from '@/store/blogStore';
+import { useReportStore } from '@/store/reportStore';
 import { useRoadmapStore } from '@/store/roadmapStore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui/button';
+import { format } from 'date-fns';
+import { ar, enUS } from 'date-fns/locale';
 import {
   FileText,
   Eye,
@@ -17,6 +22,9 @@ import {
   Map,
   CheckCircle2,
   Circle,
+  Clock,
+  BookOpen,
+  ArrowRight,
 } from 'lucide-react';
 
 const Statistics = () => {
@@ -35,6 +43,7 @@ const Statistics = () => {
     getTagById,
   } = useBlogStore();
 
+  const { reports } = useReportStore();
   const { roadmaps, roadmapSections, getRoadmapProgress } = useRoadmapStore();
 
   // Calculate statistics
@@ -42,6 +51,31 @@ const Statistics = () => {
   const favoritesCount = posts.filter(p => p.isFavorite).length;
   const publishedCount = posts.filter(p => p.status === 'published').length;
   const draftCount = posts.filter(p => p.status === 'draft').length;
+  
+  // Recent activity - combine all content types
+  const recentActivity = [
+    ...posts.map(p => ({ 
+      id: p.id, 
+      title: p.title, 
+      type: 'post' as const, 
+      date: new Date(p.updatedAt),
+      path: `/posts/${p.id}` 
+    })),
+    ...reports.map(r => ({ 
+      id: r.id, 
+      title: r.title, 
+      type: 'report' as const, 
+      date: new Date(r.updatedAt),
+      path: `/reports/${r.id}` 
+    })),
+    ...roadmaps.map(rm => ({ 
+      id: rm.id, 
+      title: rm.title, 
+      type: 'roadmap' as const, 
+      date: new Date(rm.updatedAt),
+      path: `/roadmap` 
+    })),
+  ].sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, 8);
 
   // Posts by programming language
   const postsByLanguage = programmingLanguages.map(lang => ({
@@ -334,6 +368,52 @@ const Statistics = () => {
                 <span className="ms-2 opacity-70">({tag.count})</span>
               </Badge>
             ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Recent Activity */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="w-5 h-5 text-accent" />
+            {language === 'ar' ? 'النشاط الأخير' : 'Recent Activity'}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {recentActivity.map((item) => (
+              <Link 
+                key={`${item.type}-${item.id}`}
+                to={item.path}
+                className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  {item.type === 'post' && <FileText className="w-4 h-4 text-blue-500" />}
+                  {item.type === 'report' && <BookOpen className="w-4 h-4 text-green-500" />}
+                  {item.type === 'roadmap' && <Map className="w-4 h-4 text-purple-500" />}
+                  <div>
+                    <p className="font-medium truncate max-w-[200px] md:max-w-[400px]">{item.title}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {format(item.date, 'PPp', { locale: language === 'ar' ? ar : enUS })}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="text-xs">
+                    {item.type === 'post' ? (language === 'ar' ? 'موضوع' : 'Post') :
+                     item.type === 'report' ? (language === 'ar' ? 'تقرير' : 'Report') :
+                     (language === 'ar' ? 'خريطة' : 'Roadmap')}
+                  </Badge>
+                  <ArrowRight className="w-4 h-4 text-muted-foreground" />
+                </div>
+              </Link>
+            ))}
+            {recentActivity.length === 0 && (
+              <p className="text-center text-muted-foreground py-4">
+                {language === 'ar' ? 'لا يوجد نشاط حديث' : 'No recent activity'}
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>

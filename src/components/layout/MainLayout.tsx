@@ -6,6 +6,8 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import SyncStatusIndicator from '@/components/common/SyncStatusIndicator';
+import SearchTrigger from '@/components/search/SearchTrigger';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import {
   Moon,
   Sun,
@@ -28,6 +30,7 @@ import {
   Map,
   Settings,
   FileText as ReportIcon,
+  Keyboard,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -47,6 +50,9 @@ const MainLayout = ({ children }: MainLayoutProps) => {
     const saved = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
     return saved === 'true';
   });
+  
+  // Initialize keyboard shortcuts
+  const { showShortcutsHelp } = useKeyboardShortcuts();
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_COLLAPSED_KEY, sidebarCollapsed.toString());
@@ -190,7 +196,17 @@ const MainLayout = ({ children }: MainLayoutProps) => {
           <div className="flex-1" />
 
           <div className="flex items-center gap-2">
+            <SearchTrigger />
             <SyncStatusIndicator />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={showShortcutsHelp}
+              className="hidden lg:flex"
+              title={language === 'ar' ? 'اختصارات لوحة المفاتيح' : 'Keyboard shortcuts'}
+            >
+              <Keyboard className="w-5 h-5" />
+            </Button>
             <Button
               variant="ghost"
               size="icon"

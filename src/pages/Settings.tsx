@@ -21,13 +21,16 @@ import FirebaseSettings from '@/components/settings/FirebaseSettings';
 import DataBackupManager from '@/components/settings/DataBackupManager';
 import { AIProvider } from '@/types/blog';
 
+// Free OpenRouter Models Only - https://openrouter.ai/models?pricing=free
 const OPENROUTER_MODELS = [
-  { value: 'google/gemini-2.5-flash-exp:free', label: 'Gemini 2.5 Flash (Free)' },
-  { value: 'google/gemini-2.0-flash-exp:free', label: 'Gemini 2.0 Flash (Free)' },
-  { value: 'amazon/nova-2-lite-v1:free', label: 'Amazon Nova 2 Lite (Free)' },
-  { value: 'google/gemini-pro', label: 'Gemini Pro' },
-  { value: 'openai/gpt-4o-mini', label: 'GPT-4o Mini' },
-  { value: 'anthropic/claude-3-haiku', label: 'Claude 3 Haiku' },
+  { value: 'google/gemini-2.5-flash-exp:free', label: 'Gemini 2.5 Flash (Free)', url: 'https://openrouter.ai/google/gemini-2.5-flash-preview-05-20' },
+  { value: 'google/gemini-2.0-flash-exp:free', label: 'Gemini 2.0 Flash (Free)', url: 'https://openrouter.ai/google/gemini-2.0-flash-exp:free' },
+  { value: 'xiaomi/mimo-v2-flash:free', label: 'Xiaomi MiMo V2 Flash (Free)', url: 'https://openrouter.ai/xiaomi/mimo-v2-flash:free' },
+  { value: 'deepseek/deepseek-chat-v3-0324:free', label: 'DeepSeek Chat V3 (Free)', url: 'https://openrouter.ai/deepseek/deepseek-chat-v3-0324:free' },
+  { value: 'qwen/qwen3-235b-a22b:free', label: 'Qwen3 235B (Free)', url: 'https://openrouter.ai/qwen/qwen3-235b-a22b:free' },
+  { value: 'meta-llama/llama-4-maverick:free', label: 'Llama 4 Maverick (Free)', url: 'https://openrouter.ai/meta-llama/llama-4-maverick:free' },
+  { value: 'microsoft/phi-4:free', label: 'Microsoft Phi-4 (Free)', url: 'https://openrouter.ai/microsoft/phi-4:free' },
+  { value: 'mistralai/mistral-small-3.1-24b-instruct:free', label: 'Mistral Small 3.1 (Free)', url: 'https://openrouter.ai/mistralai/mistral-small-3.1-24b-instruct:free' },
 ];
 
 const AI_PROVIDERS = [

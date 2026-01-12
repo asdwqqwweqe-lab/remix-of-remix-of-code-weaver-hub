@@ -82,7 +82,7 @@ export async function testOpenRouterKey(key: string): Promise<{ success: boolean
         'Authorization': `Bearer ${key}`,
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash-exp:free',
+        model: 'google/gemini-2.0-flash-exp:free',
         messages: [{ role: 'user', content: 'Hi' }],
       }),
     });
