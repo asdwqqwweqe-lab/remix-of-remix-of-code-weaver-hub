@@ -168,11 +168,11 @@ const ReportEditor = () => {
           <Button variant="ghost" size="icon" onClick={() => setShowSidebar(!showSidebar)} title={showSidebar ? 'Hide sidebar' : 'Show sidebar'}>
             {showSidebar ? <PanelLeftClose className="w-4 h-4" /> : <PanelLeft className="w-4 h-4" />}
           </Button>
-          <Button variant="ghost" size="icon" onClick={() => setShowPreview(!showPreview)} title={showPreview ? 'Hide preview' : 'Show preview'}>
+          <Button variant="ghost" size="icon" onClick={() => setShowPreview(!showPreview)} title={showPreview ? 'Hide preview' : 'Show preview'} data-preview-toggle>
             {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </Button>
         </div>
-        <Button onClick={handleSave} disabled={!formData.title.trim() || !formData.content.trim()}>
+        <Button onClick={handleSave} disabled={!formData.title.trim() || !formData.content.trim()} data-save-button>
           <Save className="w-4 h-4 me-2" />
           {language === 'ar' ? 'حفظ' : 'Save'}
         </Button>
