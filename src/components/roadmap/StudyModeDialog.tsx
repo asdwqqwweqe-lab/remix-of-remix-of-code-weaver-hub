@@ -215,7 +215,6 @@ const StudyModeDialog = ({ isOpen, onClose, sections, roadmapTitle, languageName
     localStorage.removeItem('study-prompt-template');
     toast.success('تم إعادة ضبط البرومبت للافتراضي');
   };
-  };
 
   const handleCopy = async () => {
     if (selectedTopics.size === 0) {
