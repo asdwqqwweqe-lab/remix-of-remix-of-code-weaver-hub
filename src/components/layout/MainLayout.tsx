@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import SyncStatusIndicator from '@/components/common/SyncStatusIndicator';
 import SearchTrigger from '@/components/search/SearchTrigger';
+import QuickNotes from '@/components/notes/QuickNotes';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import {
   Moon,
@@ -236,6 +237,9 @@ const MainLayout = ({ children }: MainLayoutProps) => {
         <main className="flex-1 p-4 md:p-6 lg:p-8">
           {children}
         </main>
+        
+        {/* Quick Notes */}
+        <QuickNotes />
       </div>
     </div>
   );
