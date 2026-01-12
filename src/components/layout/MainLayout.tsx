@@ -6,6 +6,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import SyncStatusIndicator from '@/components/common/SyncStatusIndicator';
+import StorageTypeIndicator from '@/components/common/StorageTypeIndicator';
 import SearchTrigger from '@/components/search/SearchTrigger';
 import QuickNotes from '@/components/notes/QuickNotes';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
@@ -199,6 +200,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
           <div className="flex items-center gap-2">
             <SearchTrigger />
             <SyncStatusIndicator />
+            <StorageTypeIndicator />
             <Button
               variant="ghost"
               size="icon"
