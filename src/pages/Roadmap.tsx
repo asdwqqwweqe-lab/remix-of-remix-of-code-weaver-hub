@@ -32,6 +32,7 @@ import { useRoadmapStore } from '@/store/roadmapStore';
 import { useBlogStore } from '@/store/blogStore';
 import BulkImportDialog from '@/components/roadmap/BulkImportDialog';
 import StudyModeDialog from '@/components/roadmap/StudyModeDialog';
+import DefaultRoadmapsButton from '@/components/roadmap/DefaultRoadmapsButton';
 import {
   DndContext,
   closestCenter,
@@ -675,6 +676,7 @@ export default function Roadmap() {
           <h1 className="text-3xl font-bold">خريطة الطريق</h1>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
+          <DefaultRoadmapsButton />
           <Button variant="outline" onClick={() => setIsBulkImportOpen(true)}>
             <FileJson className="h-4 w-4 ml-2" />
             استيراد JSON
