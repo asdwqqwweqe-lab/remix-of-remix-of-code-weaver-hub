@@ -20,7 +20,7 @@ interface RoadmapStore {
   reorderSections: (roadmapId: string, sectionIds: string[]) => void;
   
   // Topic actions
-  addTopic: (sectionId: string, topic: Omit<RoadmapTopic, 'id' | 'sortOrder'>) => void;
+  addTopic: (sectionId: string, topic: Omit<RoadmapTopic, 'id' | 'sortOrder'>) => string;
   addSubTopic: (sectionId: string, parentTopicId: string, topic: Omit<RoadmapTopic, 'id' | 'sortOrder'>) => void;
   updateTopic: (sectionId: string, topicId: string, updates: Partial<RoadmapTopic>) => void;
   deleteTopic: (sectionId: string, topicId: string) => void;
@@ -125,24 +125,28 @@ export const useRoadmapStore = create<RoadmapStore>()(
         }),
       })),
       
-      addTopic: (sectionId, topic) => set((state) => ({
-        roadmapSections: state.roadmapSections.map((s) => {
-          if (s.id !== sectionId) return s;
-          const maxOrder = s.topics.length > 0 ? Math.max(...s.topics.map((t) => t.sortOrder)) : 0;
-          return {
-            ...s,
-            topics: [
-              ...s.topics,
-              {
-                ...topic,
-                id: generateId(),
-                sortOrder: maxOrder + 1,
-              },
-            ],
-            updatedAt: new Date(),
-          };
-        }),
-      })),
+      addTopic: (sectionId, topic) => {
+        const id = generateId();
+        set((state) => ({
+          roadmapSections: state.roadmapSections.map((s) => {
+            if (s.id !== sectionId) return s;
+            const maxOrder = s.topics.length > 0 ? Math.max(...s.topics.map((t) => t.sortOrder)) : 0;
+            return {
+              ...s,
+              topics: [
+                ...s.topics,
+                {
+                  ...topic,
+                  id,
+                  sortOrder: maxOrder + 1,
+                },
+              ],
+              updatedAt: new Date(),
+            };
+          }),
+        }));
+        return id;
+      },
       
       addSubTopic: (sectionId, parentTopicId, topic) => set((state) => {
         const addSubTopicRecursive = (topics: RoadmapTopic[]): RoadmapTopic[] => {

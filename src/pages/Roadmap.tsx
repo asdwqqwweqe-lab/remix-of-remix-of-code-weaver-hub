@@ -139,6 +139,7 @@ const SortableSection = ({
   reorderTopics,
   updateSection,
   updateTopic,
+  addSubTopic,
 }: {
   section: RoadmapSection;
   sectionProgress: { completed: number; total: number; percentage: number };
@@ -156,6 +157,7 @@ const SortableSection = ({
   reorderTopics: (sectionId: string, topicIds: string[]) => void;
   updateSection: (id: string, updates: Partial<RoadmapSection>) => void;
   updateTopic: (sectionId: string, topicId: string, updates: Partial<RoadmapTopic>) => void;
+  addSubTopic: (sectionId: string, parentTopicId: string, topic: Omit<RoadmapTopic, 'id' | 'sortOrder'>) => void;
 }) => {
   const {
     attributes,
@@ -1023,6 +1025,7 @@ export default function Roadmap() {
                                 reorderTopics={reorderTopics}
                                 updateSection={updateSection}
                                 updateTopic={updateTopic}
+                                addSubTopic={addSubTopic}
                               />
                             ))}
                           </div>
