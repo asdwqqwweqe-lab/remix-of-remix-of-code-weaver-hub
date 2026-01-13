@@ -1692,17 +1692,16 @@ export default function DefaultRoadmapsButton() {
                 postId: undefined,
               });
 
-              // Add subtopics immediately
-              if (topic.subTopics && topic.subTopics.length > 0 && parentTopicId) {
+              if (topic.subTopics && topic.subTopics.length > 0) {
                 console.log(`    Adding ${topic.subTopics.length} subtopics to: ${topic.title}`);
                 topic.subTopics.forEach((subTopicTitle, subIndex) => {
                   try {
-                    const subTopicId = addSubTopic(sectionId, parentTopicId, {
+                    addSubTopic(sectionId, parentTopicId, {
                       title: subTopicTitle,
                       completed: false,
                       postId: undefined,
                     });
-                    console.log(`      [${subIndex}] Added subtopic: ${subTopicTitle} (ID: ${subTopicId})`);
+                    console.log(`      [${subIndex}] Added subtopic: ${subTopicTitle}`);
                   } catch (error) {
                     console.error(`      Error adding subtopic "${subTopicTitle}":`, error);
                   }
