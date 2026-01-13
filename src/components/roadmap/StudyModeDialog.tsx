@@ -213,13 +213,26 @@ const StudyModeDialog = ({ isOpen, onClose, sections, roadmapTitle, languageName
 
   const generateTopicsText = () => {
     const selectedItems: string[] = [];
+    
+    const processTopics = (topics: typeof sections[0]['topics'], prefix: string = '') => {
+      topics.forEach(topic => {
+        if (selectedTopics.has(topic.id)) {
+          selectedItems.push(`${prefix}- ${topic.title}`);
+          // Add subtopics if they exist
+          if (topic.subTopics && topic.subTopics.length > 0) {
+            topic.subTopics.forEach(subTopic => {
+              selectedItems.push(`${prefix}  - ${subTopic.title}`);
+            });
+          }
+        }
+      });
+    };
+    
     sections.forEach(section => {
       const sectionTopics = section.topics.filter(t => selectedTopics.has(t.id));
       if (sectionTopics.length > 0) {
         selectedItems.push(`\n## ${section.title}`);
-        sectionTopics.forEach(topic => {
-          selectedItems.push(`- ${topic.title}`);
-        });
+        processTopics(section.topics);
       }
     });
     return selectedItems.join('\n');
@@ -562,16 +575,37 @@ const StudyModeDialog = ({ isOpen, onClose, sections, roadmapTitle, languageName
                     
                     <div className="mr-6 space-y-1">
                       {section.topics.map(topic => (
-                        <div key={topic.id} className="flex items-center gap-2">
-                          <Checkbox
-                            checked={selectedTopics.has(topic.id)}
-                            onCheckedChange={() => toggleTopic(topic.id, section.id)}
-                          />
-                          <span className={`text-sm ${topic.title.startsWith('↳') ? 'text-muted-foreground mr-2' : ''}`}>
-                            {topic.title}
-                          </span>
-                          {topic.completed && (
-                            <Badge variant="secondary" className="text-xs">مكتمل</Badge>
+                        <div key={topic.id} className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <Checkbox
+                              checked={selectedTopics.has(topic.id)}
+                              onCheckedChange={() => toggleTopic(topic.id, section.id)}
+                            />
+                            <span className={`text-sm ${topic.title.startsWith('↳') ? 'text-muted-foreground mr-2' : ''}`}>
+                              {topic.title}
+                            </span>
+                            {topic.completed && (
+                              <Badge variant="secondary" className="text-xs">مكتمل</Badge>
+                            )}
+                            {topic.subTopics && topic.subTopics.length > 0 && (
+                              <Badge variant="outline" className="text-xs">
+                                {topic.subTopics.length} فرعي
+                              </Badge>
+                            )}
+                          </div>
+                          {/* Show subtopics */}
+                          {topic.subTopics && topic.subTopics.length > 0 && selectedTopics.has(topic.id) && (
+                            <div className="mr-8 space-y-1 border-r-2 border-muted pr-3">
+                              {topic.subTopics.map(subTopic => (
+                                <div key={subTopic.id} className="flex items-center gap-2 text-muted-foreground">
+                                  <span className="text-xs">↳</span>
+                                  <span className="text-xs">{subTopic.title}</span>
+                                  {subTopic.completed && (
+                                    <Badge variant="secondary" className="text-[10px]">✓</Badge>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
                           )}
                         </div>
                       ))}
