@@ -157,6 +157,8 @@ const SortableSection = ({
   updateSection: (id: string, updates: Partial<RoadmapSection>) => void;
   updateTopic: (sectionId: string, topicId: string, updates: Partial<RoadmapTopic>) => void;
 }) => {
+  const [isEnhancing, setIsEnhancing] = useState(false);
+  
   const {
     attributes,
     listeners,
@@ -221,6 +223,41 @@ const SortableSection = ({
             <Button
               variant="ghost"
               size="sm"
+              onClick={async () => {
+                setIsEnhancing(true);
+                try {
+                  const { generateEnhancedTopics } = await import('@/lib/gemini');
+                  const enhancedTopics = await generateEnhancedTopics(
+                    section.title,
+                    section.description || '',
+                    section.topics.map(t => t.title)
+                  );
+                  
+                  // Add new topics
+                  const { addTopic } = useRoadmapStore.getState();
+                  enhancedTopics.forEach((topicTitle: string, index: number) => {
+                    addTopic(section.id, {
+                      title: topicTitle,
+                      completed: false,
+                      sortOrder: section.topics.length + index + 1,
+                    });
+                  });
+                  
+                  toast.success(`تم إضافة ${enhancedTopics.length} موضوع جديد`);
+                } catch (error) {
+                  toast.error('فشل تحسين القسم');
+                } finally {
+                  setIsEnhancing(false);
+                }
+              }}
+              disabled={isEnhancing}
+              title="تحسين القسم بالذكاء الاصطناعي"
+            >
+              {isEnhancing ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => deleteSection(section.id)}
             >
               <Trash2 className="h-3 w-3" />
@@ -256,7 +293,7 @@ const SortableSection = ({
                         title: 'موضوع فرعي جديد',
                         completed: false,
                       };
-                      addSubTopic(section.id, parentTopicId, newSubTopic);
+                      useRoadmapStore.getState().addSubTopic(section.id, parentTopicId, newSubTopic);
                     }}
                   />
                 ))}

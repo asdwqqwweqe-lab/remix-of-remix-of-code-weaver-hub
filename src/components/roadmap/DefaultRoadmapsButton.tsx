@@ -29,7 +29,7 @@ interface DefaultRoadmap {
   sections: {
     title: string;
     description: string;
-    topics: (string | DefaultRoadmapTopic)[];
+    topics?: (string | DefaultRoadmapTopic)[];
     subSections?: {
       title: string;
       description: string;
@@ -1375,7 +1375,7 @@ export default function DefaultRoadmapsButton() {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedRoadmaps, setSelectedRoadmaps] = useState<Set<string>>(new Set());
   
-  const { addRoadmap, addSection, addTopic, roadmaps } = useRoadmapStore();
+  const { addRoadmap, addSection, addTopic, addSubTopic, roadmaps } = useRoadmapStore();
   const { programmingLanguages, addProgrammingLanguage } = useBlogStore();
 
   const toggleRoadmap = (id: string) => {
@@ -1440,46 +1440,79 @@ export default function DefaultRoadmapsButton() {
           languageId: language.id,
         });
 
-        // Helper function to add topics with subtopics
+        // Helper function to add topics with subtopics - FIXED VERSION
         const addTopicsToSection = (sectionId: string, topics: (string | DefaultRoadmapTopic)[]) => {
-          topics.forEach(topic => {
+          if (!topics || topics.length === 0) {
+            console.log(`No topics to add for section: ${sectionId}`);
+            return;
+          }
+          
+          console.log(`Adding ${topics.length} topics to section: ${sectionId}`);
+          
+          topics.forEach((topic, index) => {
             if (typeof topic === 'string') {
               // Simple topic without subtopics
-              addTopic(sectionId, {
+              console.log(`  [${index}] Adding simple topic: ${topic}`);
+              const topicId = addTopic(sectionId, {
                 title: topic,
                 completed: false,
                 postId: undefined,
               });
             } else {
-              // Topic with subtopics
-              const parentTopicId = sectionId + '_' + Math.random().toString(36).substr(2, 9);
-              addTopic(sectionId, {
+              // Topic with subtopics - create parent topic first
+              console.log(`  [${index}] Adding topic with subtopics: ${topic.title} (${topic.subTopics?.length || 0} subtopics)`);
+              const parentTopicId = addTopic(sectionId, {
                 title: topic.title,
                 completed: false,
                 postId: undefined,
               });
               
-              // Get the last added topic to add subtopics to it
-              const section = useRoadmapStore.getState().roadmapSections.find(s => s.id === sectionId);
-              if (section && topic.subTopics) {
-                const lastTopicIndex = section.topics.length - 1;
-                const lastTopic = section.topics[lastTopicIndex];
-                if (lastTopic) {
-                  topic.subTopics.forEach(subTopicTitle => {
-                    addSubTopic(sectionId, lastTopic.id, {
+              // Add subtopics immediately
+              if (topic.subTopics && topic.subTopics.length > 0 && parentTopicId) {
+                console.log(`    Adding ${topic.subTopics.length} subtopics to: ${topic.title}`);
+                topic.subTopics.forEach((subTopicTitle, subIndex) => {
+                  try {
+                    const subTopicId = addSubTopic(sectionId, parentTopicId, {
                       title: subTopicTitle,
                       completed: false,
                       postId: undefined,
                     });
-                  });
-                }
+                    console.log(`      [${subIndex}] Added subtopic: ${subTopicTitle} (ID: ${subTopicId})`);
+                  } catch (error) {
+                    console.error(`      Error adding subtopic "${subTopicTitle}":`, error);
+                  }
+                });
               }
             }
           });
+          
+          console.log(`✓ Finished adding topics to section: ${sectionId}`);
         };
 
         // Add sections and topics
         roadmap.sections.forEach((section, sIndex) => {
+          // Skip creating main section if it only has subsections without topics
+          if (!section.topics || section.topics.length === 0) {
+            if (section.subSections && section.subSections.length > 0) {
+              console.log(`Skipping main section "${section.title}" - only has subsections`);
+              // Add subsections directly
+              console.log(`Adding ${section.subSections.length} subsections for: ${section.title}`);
+              section.subSections.forEach((subSection, subIndex) => {
+                console.log(`  - Subsection: ${subSection.title} with ${subSection.topics?.length || 0} topics`);
+                const subSectionId = addSection({
+                  roadmapId: newRoadmapId,
+                  title: subSection.title,
+                  description: subSection.description,
+                  sortOrder: sIndex + 1 + (subIndex + 1) * 0.1,
+                });
+                
+                addTopicsToSection(subSectionId, subSection.topics);
+              });
+              return; // Skip the rest for this section
+            }
+          }
+          
+          // Create main section with topics
           const sectionId = addSection({
             roadmapId: newRoadmapId,
             title: section.title,
@@ -1487,12 +1520,16 @@ export default function DefaultRoadmapsButton() {
             sortOrder: sIndex + 1,
           });
 
-          // Add topics to main section
-          addTopicsToSection(sectionId, section.topics);
+          // Add topics to main section if they exist
+          if (section.topics && section.topics.length > 0) {
+            addTopicsToSection(sectionId, section.topics);
+          }
 
           // Add subsections if they exist
           if (section.subSections) {
+            console.log(`Adding ${section.subSections.length} subsections for: ${section.title}`);
             section.subSections.forEach((subSection, subIndex) => {
+              console.log(`  - Subsection: ${subSection.title} with ${subSection.topics?.length || 0} topics`);
               const subSectionId = addSection({
                 roadmapId: newRoadmapId,
                 title: `  ↳ ${subSection.title}`,
@@ -1548,36 +1585,57 @@ export default function DefaultRoadmapsButton() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {defaultRoadmaps.map((roadmap) => (
-            <div
-              key={roadmap.id}
-              className={`border rounded-lg p-3 cursor-pointer transition-colors ${
-                selectedRoadmaps.has(roadmap.id)
-                  ? 'border-primary bg-primary/5'
-                  : 'hover:border-primary/50'
-              }`}
-              onClick={() => toggleRoadmap(roadmap.id)}
-            >
-              <div className="flex items-start gap-3">
-                <Checkbox
-                  checked={selectedRoadmaps.has(roadmap.id)}
-                  onCheckedChange={() => toggleRoadmap(roadmap.id)}
-                />
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-medium text-sm truncate">{roadmap.title}</h4>
-                  <p className="text-xs text-muted-foreground mt-1">{roadmap.description}</p>
-                  <div className="flex items-center gap-2 mt-2">
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">
-                      {roadmap.languageName}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {roadmap.sections.length} أقسام
-                    </span>
+          {defaultRoadmaps.map((roadmap) => {
+            const totalSubsections = roadmap.sections.reduce((sum, s) => sum + (s.subSections?.length || 0), 0);
+            const totalTopicsWithSubtopics = roadmap.sections.reduce((sum, section) => {
+              const mainTopics = (section.topics || []).filter(t => typeof t === 'object' && t.subTopics).length;
+              const subSectionTopics = (section.subSections || []).reduce((subSum, sub) => 
+                subSum + (sub.topics || []).filter(t => typeof t === 'object' && t.subTopics).length, 0
+              );
+              return sum + mainTopics + subSectionTopics;
+            }, 0);
+            
+            return (
+              <div
+                key={roadmap.id}
+                className={`border rounded-lg p-3 cursor-pointer transition-colors ${
+                  selectedRoadmaps.has(roadmap.id)
+                    ? 'border-primary bg-primary/5'
+                    : 'hover:border-primary/50'
+                }`}
+                onClick={() => toggleRoadmap(roadmap.id)}
+              >
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    checked={selectedRoadmaps.has(roadmap.id)}
+                    onCheckedChange={() => toggleRoadmap(roadmap.id)}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-medium text-sm truncate">{roadmap.title}</h4>
+                    <p className="text-xs text-muted-foreground mt-1">{roadmap.description}</p>
+                    <div className="flex items-center gap-2 mt-2 flex-wrap">
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                        {roadmap.languageName}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        📚 {roadmap.sections.length} أقسام
+                      </span>
+                      {totalSubsections > 0 && (
+                        <span className="text-xs text-muted-foreground">
+                          ↳ {totalSubsections} فهرس فرعي
+                        </span>
+                      )}
+                      {totalTopicsWithSubtopics > 0 && (
+                        <span className="text-xs text-muted-foreground">
+                          🔸 {totalTopicsWithSubtopics} موضوع مفصّل
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <DialogFooter className="mt-4">
