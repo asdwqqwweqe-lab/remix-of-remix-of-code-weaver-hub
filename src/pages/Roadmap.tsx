@@ -16,8 +16,10 @@ import {
   Sparkles,
   Loader2,
   BookOpen,
-  Zap
+  Zap,
+  FolderTree
 } from 'lucide-react';
+import { NumberBadge, getColorByIndex } from '@/components/roadmap/NumberBadge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -139,6 +141,8 @@ const SortableSection = ({
   reorderTopics,
   updateSection,
   updateTopic,
+  addSubTopic,
+  sectionIndex,
 }: {
   section: RoadmapSection;
   sectionProgress: { completed: number; total: number; percentage: number };
@@ -156,9 +160,9 @@ const SortableSection = ({
   reorderTopics: (sectionId: string, topicIds: string[]) => void;
   updateSection: (id: string, updates: Partial<RoadmapSection>) => void;
   updateTopic: (sectionId: string, topicId: string, updates: Partial<RoadmapTopic>) => void;
+  addSubTopic: (sectionId: string, parentTopicId: string, topic: Omit<RoadmapTopic, 'id' | 'sortOrder'>) => void;
+  sectionIndex: number;
 }) => {
-  const [isEnhancing, setIsEnhancing] = useState(false);
-  
   const {
     attributes,
     listeners,
@@ -190,13 +194,19 @@ const SortableSection = ({
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="border rounded-lg">
+    <div ref={setNodeRef} style={style} className="border rounded-lg overflow-hidden">
       <Collapsible open={isSectionExpanded} onOpenChange={() => toggleSectionExpand(section.id)}>
         <div className="flex items-center justify-between p-3 bg-muted/30">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <button {...attributes} {...listeners} className="cursor-grab hover:bg-muted p-1 rounded">
               <GripVertical className="h-4 w-4 text-muted-foreground" />
             </button>
+            <NumberBadge
+              number={sectionIndex + 1}
+              shape="square"
+              colorClass={getColorByIndex('section', sectionIndex)}
+              size="md"
+            />
             <div className="flex items-center gap-2">
               <CollapsibleTrigger className="flex items-center gap-1 hover:opacity-80">
                 {isSectionExpanded ? (
@@ -223,41 +233,6 @@ const SortableSection = ({
             <Button
               variant="ghost"
               size="sm"
-              onClick={async () => {
-                setIsEnhancing(true);
-                try {
-                  const { generateEnhancedTopics } = await import('@/lib/gemini');
-                  const enhancedTopics = await generateEnhancedTopics(
-                    section.title,
-                    section.description || '',
-                    section.topics.map(t => t.title)
-                  );
-                  
-                  // Add new topics
-                  const { addTopic } = useRoadmapStore.getState();
-                  enhancedTopics.forEach((topicTitle: string, index: number) => {
-                    addTopic(section.id, {
-                      title: topicTitle,
-                      completed: false,
-                      sortOrder: section.topics.length + index + 1,
-                    });
-                  });
-                  
-                  toast.success(`تم إضافة ${enhancedTopics.length} موضوع جديد`);
-                } catch (error) {
-                  toast.error('فشل تحسين القسم');
-                } finally {
-                  setIsEnhancing(false);
-                }
-              }}
-              disabled={isEnhancing}
-              title="تحسين القسم بالذكاء الاصطناعي"
-            >
-              {isEnhancing ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
               onClick={() => deleteSection(section.id)}
             >
               <Trash2 className="h-3 w-3" />
@@ -276,7 +251,7 @@ const SortableSection = ({
                 items={section.topics.map(t => t.id)}
                 strategy={verticalListSortingStrategy}
               >
-                {section.topics.sort((a, b) => a.sortOrder - b.sortOrder).map((topic) => (
+                {section.topics.sort((a, b) => a.sortOrder - b.sortOrder).map((topic, topicIdx) => (
                   <SortableTopic
                     key={topic.id}
                     topic={topic}
@@ -288,12 +263,13 @@ const SortableSection = ({
                     updateTopic={updateTopic}
                     assignPostToTopic={assignPostToTopic}
                     deleteTopic={deleteTopic}
+                    topicIndex={topicIdx}
                     addSubTopic={(parentTopicId) => {
                       const newSubTopic = {
                         title: 'موضوع فرعي جديد',
                         completed: false,
                       };
-                      useRoadmapStore.getState().addSubTopic(section.id, parentTopicId, newSubTopic);
+                      addSubTopic(section.id, parentTopicId, newSubTopic);
                     }}
                   />
                 ))}
@@ -333,6 +309,7 @@ const SortableTopic = ({
   deleteTopic,
   depth = 0,
   addSubTopic,
+  topicIndex = 0,
 }: {
   topic: RoadmapTopic;
   sectionId: string;
@@ -345,6 +322,7 @@ const SortableTopic = ({
   deleteTopic: (sectionId: string, topicId: string) => void;
   depth?: number;
   addSubTopic?: (parentTopicId: string) => void;
+  topicIndex?: number;
 }) => {
   const [isSubTopicsExpanded, setIsSubTopicsExpanded] = useState(true);
   const {
@@ -366,13 +344,37 @@ const SortableTopic = ({
   const hasSubTopics = topic.subTopics && topic.subTopics.length > 0;
   const paddingLeft = depth * 24;
 
+  // Determine badge shape and color based on depth
+  const getBadgeConfig = () => {
+    if (depth === 0) return { shape: 'circle' as const, level: 'topic' as const };
+    if (depth === 1) return { shape: 'hexagon' as const, level: 'subTopic' as const };
+    return { shape: 'diamond' as const, level: 'subTopic' as const };
+  };
+  
+  const { shape, level } = getBadgeConfig();
+
   return (
-    <div style={{ paddingLeft: `${paddingLeft}px` }}>
+    <div style={{ paddingLeft: `${paddingLeft}px` }} className="relative">
+      {/* Tree connector lines */}
+      {depth > 0 && (
+        <div 
+          className="absolute right-0 top-0 bottom-0 border-r-2 border-dashed opacity-30"
+          style={{ 
+            right: `${paddingLeft - 12}px`,
+            borderColor: depth === 1 ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))'
+          }}
+        />
+      )}
+      
       <div
         ref={setNodeRef}
         style={style}
-        className={`flex items-center gap-3 p-2 rounded-md border ${
-          topic.completed ? 'bg-green-500/10 border-green-500/30' : 'bg-card'
+        className={`flex items-center gap-3 p-2 rounded-md border transition-all ${
+          topic.completed 
+            ? 'bg-green-500/10 border-green-500/30' 
+            : depth === 0 
+              ? 'bg-card hover:bg-muted/50' 
+              : 'bg-muted/20 hover:bg-muted/40'
         } mb-2`}
       >
         {hasSubTopics && (
@@ -390,6 +392,15 @@ const SortableTopic = ({
           </Button>
         )}
         {!hasSubTopics && <div className="w-6" />}
+        
+        {/* Number Badge */}
+        <NumberBadge
+          number={topicIndex + 1}
+          shape={shape}
+          colorClass={getColorByIndex(level, topicIndex)}
+          size={depth === 0 ? 'md' : 'sm'}
+        />
+        
         <button {...attributes} {...listeners} className="cursor-grab hover:bg-muted p-1 rounded">
           <GripVertical className="h-3 w-3 text-muted-foreground" />
         </button>
@@ -402,6 +413,15 @@ const SortableTopic = ({
           onSave={(newTitle) => updateTopic(sectionId, topic.id, { title: newTitle })}
           className={topic.completed ? 'line-through text-muted-foreground' : ''}
         />
+        
+        {/* Sub-topics count badge */}
+        {hasSubTopics && (
+          <Badge variant="outline" className="text-[10px] h-5">
+            <FolderTree className="h-3 w-3 ml-1" />
+            {topic.subTopics!.length}
+          </Badge>
+        )}
+        
         {post && (
           <Button
             variant="ghost"
@@ -454,8 +474,8 @@ const SortableTopic = ({
       
       {/* Render sub-topics recursively */}
       {hasSubTopics && isSubTopicsExpanded && (
-        <div className="space-y-1">
-          {topic.subTopics!.sort((a, b) => a.sortOrder - b.sortOrder).map((subTopic) => (
+        <div className="space-y-1 relative">
+          {topic.subTopics!.sort((a, b) => a.sortOrder - b.sortOrder).map((subTopic, subIdx) => (
             <SortableTopic
               key={subTopic.id}
               topic={subTopic}
@@ -469,6 +489,7 @@ const SortableTopic = ({
               deleteTopic={deleteTopic}
               depth={depth + 1}
               addSubTopic={addSubTopic}
+              topicIndex={subIdx}
             />
           ))}
         </div>
@@ -927,13 +948,13 @@ export default function Roadmap() {
             </CardContent>
           </Card>
         ) : (
-          filteredRoadmaps.map((roadmap) => {
+          filteredRoadmaps.map((roadmap, roadmapIdx) => {
             const progress = getRoadmapProgress(roadmap.id);
             const sections = roadmapSections.filter((s) => s.roadmapId === roadmap.id);
             const isExpanded = expandedRoadmaps.has(roadmap.id);
             
             return (
-              <Card key={roadmap.id}>
+              <Card key={roadmap.id} className="overflow-hidden">
                 <Collapsible open={isExpanded} onOpenChange={() => toggleRoadmapExpand(roadmap.id)}>
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
@@ -943,12 +964,22 @@ export default function Roadmap() {
                         ) : (
                           <ChevronRight className="h-5 w-5" />
                         )}
+                        {/* Roadmap Number Badge */}
+                        <NumberBadge
+                          number={roadmapIdx + 1}
+                          shape="hexagon"
+                          colorClass={getColorByIndex('roadmap', roadmapIdx)}
+                          size="lg"
+                        />
                         <div
                           className="w-4 h-4 rounded-full"
                           style={{ backgroundColor: getLanguageColor(roadmap.languageId) }}
                         />
                         <CardTitle className="text-xl">{roadmap.title}</CardTitle>
                         <Badge variant="secondary">{getLanguageName(roadmap.languageId)}</Badge>
+                        <Badge variant="outline" className="text-xs">
+                          {sections.length} قسم
+                        </Badge>
                       </CollapsibleTrigger>
                       <div className="flex items-center gap-2">
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -1041,7 +1072,7 @@ export default function Roadmap() {
                           strategy={verticalListSortingStrategy}
                         >
                           <div className="space-y-3 mr-4">
-                            {sections.sort((a, b) => a.sortOrder - b.sortOrder).map((section) => (
+                            {sections.sort((a, b) => a.sortOrder - b.sortOrder).map((section, sectionIdx) => (
                               <SortableSection
                                 key={section.id}
                                 section={section}
@@ -1060,6 +1091,8 @@ export default function Roadmap() {
                                 reorderTopics={reorderTopics}
                                 updateSection={updateSection}
                                 updateTopic={updateTopic}
+                                addSubTopic={addSubTopic}
+                                sectionIndex={sectionIdx}
                               />
                             ))}
                           </div>

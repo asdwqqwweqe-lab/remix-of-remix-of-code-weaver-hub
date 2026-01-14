@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
+import { NumberBadge, getColorByIndex } from './NumberBadge';
 import { BookOpen, Copy, Check, Sparkles, Loader2, Send, Award, Trophy, Star, Zap, Target, Medal, Save, History, FileQuestion, CheckCircle2, XCircle, Settings, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -213,13 +214,26 @@ const StudyModeDialog = ({ isOpen, onClose, sections, roadmapTitle, languageName
 
   const generateTopicsText = () => {
     const selectedItems: string[] = [];
+    
+    const processTopics = (topics: typeof sections[0]['topics'], prefix: string = '') => {
+      topics.forEach(topic => {
+        if (selectedTopics.has(topic.id)) {
+          selectedItems.push(`${prefix}- ${topic.title}`);
+          // Add subtopics if they exist
+          if (topic.subTopics && topic.subTopics.length > 0) {
+            topic.subTopics.forEach(subTopic => {
+              selectedItems.push(`${prefix}  - ${subTopic.title}`);
+            });
+          }
+        }
+      });
+    };
+    
     sections.forEach(section => {
       const sectionTopics = section.topics.filter(t => selectedTopics.has(t.id));
       if (sectionTopics.length > 0) {
         selectedItems.push(`\n## ${section.title}`);
-        sectionTopics.forEach(topic => {
-          selectedItems.push(`- ${topic.title}`);
-        });
+        processTopics(section.topics);
       }
     });
     return selectedItems.join('\n');
@@ -547,31 +561,76 @@ const StudyModeDialog = ({ isOpen, onClose, sections, roadmapTitle, languageName
 
             <ScrollArea className="h-[300px] border rounded-lg p-4">
               <div className="space-y-4">
-                {sections.map(section => (
+                {sections.map((section, sectionIndex) => (
                   <div key={section.id} className="space-y-2">
-                    <div className="flex items-center gap-2">
+                    {/* Section Header with Square Badge */}
+                    <div className="flex items-center gap-3 p-2 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
                       <Checkbox
                         checked={selectedSections.has(section.id)}
                         onCheckedChange={() => toggleSection(section.id)}
                       />
-                      <span className="font-semibold">{section.title}</span>
-                      <Badge variant="outline" className="text-xs">
+                      <NumberBadge
+                        number={sectionIndex + 1}
+                        shape="square"
+                        colorClass={getColorByIndex('section', sectionIndex)}
+                        size="md"
+                      />
+                      <span className="font-bold text-base">{section.title}</span>
+                      <Badge variant="outline" className="text-xs mr-auto">
                         {section.topics.filter(t => selectedTopics.has(t.id)).length}/{section.topics.length}
                       </Badge>
                     </div>
                     
-                    <div className="mr-6 space-y-1">
-                      {section.topics.map(topic => (
-                        <div key={topic.id} className="flex items-center gap-2">
-                          <Checkbox
-                            checked={selectedTopics.has(topic.id)}
-                            onCheckedChange={() => toggleTopic(topic.id, section.id)}
-                          />
-                          <span className={`text-sm ${topic.title.startsWith('↳') ? 'text-muted-foreground mr-2' : ''}`}>
-                            {topic.title}
-                          </span>
-                          {topic.completed && (
-                            <Badge variant="secondary" className="text-xs">مكتمل</Badge>
+                    {/* Topics List */}
+                    <div className="mr-6 space-y-2">
+                      {section.topics.map((topic, topicIndex) => (
+                        <div key={topic.id} className="space-y-2">
+                          {/* Topic with Circle Badge */}
+                          <div className="flex items-center gap-3 p-2 rounded-md hover:bg-muted/30 transition-colors border-r-2 border-primary/30 pr-3">
+                            <Checkbox
+                              checked={selectedTopics.has(topic.id)}
+                              onCheckedChange={() => toggleTopic(topic.id, section.id)}
+                            />
+                            <NumberBadge
+                              number={topicIndex + 1}
+                              shape="circle"
+                              colorClass={getColorByIndex('topic', topicIndex)}
+                              size="sm"
+                            />
+                            <span className="text-sm font-medium">{topic.title}</span>
+                            {topic.completed && (
+                              <Badge variant="secondary" className="text-xs bg-green-500/20 text-green-600">
+                                ✓ مكتمل
+                              </Badge>
+                            )}
+                            {topic.subTopics && topic.subTopics.length > 0 && (
+                              <Badge variant="outline" className="text-xs bg-primary/10">
+                                {topic.subTopics.length} فرعي
+                              </Badge>
+                            )}
+                          </div>
+                          
+                          {/* SubTopics with Hexagon Badge */}
+                          {topic.subTopics && topic.subTopics.length > 0 && selectedTopics.has(topic.id) && (
+                            <div className="mr-10 space-y-1 border-r-2 border-dashed border-muted-foreground/30 pr-3">
+                              {topic.subTopics.map((subTopic, subIndex) => (
+                                <div 
+                                  key={subTopic.id} 
+                                  className="flex items-center gap-2 p-1.5 rounded hover:bg-muted/20 transition-colors"
+                                >
+                                  <NumberBadge
+                                    number={subIndex + 1}
+                                    shape="hexagon"
+                                    colorClass={getColorByIndex('subTopic', subIndex)}
+                                    size="sm"
+                                  />
+                                  <span className="text-xs text-muted-foreground">{subTopic.title}</span>
+                                  {subTopic.completed && (
+                                    <Badge variant="secondary" className="text-[10px] bg-green-500/20 text-green-600">✓</Badge>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
                           )}
                         </div>
                       ))}

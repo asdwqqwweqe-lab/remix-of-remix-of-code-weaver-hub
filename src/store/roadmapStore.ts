@@ -126,7 +126,7 @@ export const useRoadmapStore = create<RoadmapStore>()(
       })),
       
       addTopic: (sectionId, topic) => {
-        const topicId = generateId();
+        const id = generateId();
         set((state) => ({
           roadmapSections: state.roadmapSections.map((s) => {
             if (s.id !== sectionId) return s;
@@ -137,7 +137,7 @@ export const useRoadmapStore = create<RoadmapStore>()(
                 ...s.topics,
                 {
                   ...topic,
-                  id: topicId,
+                  id,
                   sortOrder: maxOrder + 1,
                 },
               ],
@@ -145,7 +145,7 @@ export const useRoadmapStore = create<RoadmapStore>()(
             };
           }),
         }));
-        return topicId;
+        return id;
       },
       
       addSubTopic: (sectionId, parentTopicId, topic) => set((state) => {
