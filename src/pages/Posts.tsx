@@ -15,6 +15,17 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import {
   Search,
   Filter,
   Tag,
@@ -26,7 +37,9 @@ import {
   LayoutGrid,
   List as ListIcon,
   LayoutList,
+  Trash2,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ar, enUS } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -63,7 +76,13 @@ const Posts = () => {
     getLanguageById,
     toggleFavorite,
     clearFilters,
+    deletePost,
   } = useBlogStore();
+
+  const handleDeletePost = (postId: string, postTitle: string) => {
+    deletePost(postId);
+    toast.success(`تم حذف الموضوع "${postTitle}" بنجاح`);
+  };
 
   const filteredPosts = getFilteredPosts();
   const [showFilters, setShowFilters] = useState(false);
@@ -143,14 +162,40 @@ const Posts = () => {
                   {post.viewsCount}
                 </div>
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="shrink-0"
-                onClick={() => toggleFavorite(post.id)}
-              >
-                <Star className={`w-4 h-4 ${post.isFavorite ? 'fill-accent text-accent' : ''}`} />
-              </Button>
+              <div className="flex items-center gap-1 shrink-0">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => toggleFavorite(post.id)}
+                >
+                  <Star className={`w-4 h-4 ${post.isFavorite ? 'fill-accent text-accent' : ''}`} />
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>هل أنت متأكد من حذف هذا الموضوع؟</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        سيتم حذف الموضوع "{post.title}" نهائياً ولا يمكن التراجع عن هذا الإجراء.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                      <AlertDialogAction
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        onClick={() => handleDeletePost(post.id, post.title)}
+                      >
+                        حذف
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -163,14 +208,40 @@ const Posts = () => {
           <CardContent className="p-4 flex flex-col h-full">
             <div className="flex items-center justify-between mb-3">
               <TextImage text={post.title} size="md" variant="gradient" />
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => toggleFavorite(post.id)}
-              >
-                <Star className={`w-4 h-4 ${post.isFavorite ? 'fill-accent text-accent' : ''}`} />
-              </Button>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => toggleFavorite(post.id)}
+                >
+                  <Star className={`w-4 h-4 ${post.isFavorite ? 'fill-accent text-accent' : ''}`} />
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>هل أنت متأكد من حذف هذا الموضوع؟</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        سيتم حذف الموضوع "{post.title}" نهائياً ولا يمكن التراجع عن هذا الإجراء.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                      <AlertDialogAction
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        onClick={() => handleDeletePost(post.id, post.title)}
+                      >
+                        حذف
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             </div>
 
             <div className="flex flex-wrap gap-1 mb-2">
@@ -310,13 +381,39 @@ const Posts = () => {
               </div>
             </div>
 
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => toggleFavorite(post.id)}
-            >
-              <Star className={`w-5 h-5 ${post.isFavorite ? 'fill-accent text-accent' : ''}`} />
-            </Button>
+            <div className="flex flex-col gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => toggleFavorite(post.id)}
+              >
+                <Star className={`w-5 h-5 ${post.isFavorite ? 'fill-accent text-accent' : ''}`} />
+              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                    <Trash2 className="w-5 h-5" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>هل أنت متأكد من حذف هذا الموضوع؟</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      سيتم حذف الموضوع "{post.title}" نهائياً ولا يمكن التراجع عن هذا الإجراء.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                    <AlertDialogAction
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      onClick={() => handleDeletePost(post.id, post.title)}
+                    >
+                      حذف
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
           </div>
         </CardContent>
       </Card>
