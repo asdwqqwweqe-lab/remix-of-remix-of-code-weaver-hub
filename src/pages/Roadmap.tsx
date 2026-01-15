@@ -17,7 +17,8 @@ import {
   Loader2,
   BookOpen,
   Zap,
-  FolderTree
+  FolderTree,
+  Download
 } from 'lucide-react';
 import { NumberBadge, getColorByIndex } from '@/components/roadmap/NumberBadge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -836,6 +837,49 @@ export default function Roadmap() {
       reorderSections(roadmapId, newOrder);
     }
   };
+
+  // Export roadmap as JSON
+  const exportRoadmap = (roadmap: typeof roadmaps[0]) => {
+    const sections = roadmapSections
+      .filter(s => s.roadmapId === roadmap.id)
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .map(section => ({
+        title: section.title,
+        description: section.description,
+        topics: section.topics.sort((a, b) => a.sortOrder - b.sortOrder).map(topic => ({
+          title: topic.title,
+          completed: topic.completed,
+          subTopics: topic.subTopics?.sort((a, b) => a.sortOrder - b.sortOrder).map(sub => ({
+            title: sub.title,
+            completed: sub.completed,
+            subTopics: sub.subTopics?.map(subSub => ({
+              title: subSub.title,
+              completed: subSub.completed
+            }))
+          }))
+        }))
+      }));
+
+    const exportData = {
+      title: roadmap.title,
+      description: roadmap.description,
+      language: getLanguageName(roadmap.languageId),
+      progress: getRoadmapProgress(roadmap.id),
+      exportedAt: new Date().toISOString(),
+      sections
+    };
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `roadmap-${roadmap.title.replace(/\s+/g, '-')}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success(`تم تصدير خريطة "${roadmap.title}" بنجاح`);
+  };
   
   return (
     <div className="space-y-6">
@@ -1026,6 +1070,18 @@ export default function Roadmap() {
                           title="وضع الدراسة"
                         >
                           <BookOpen className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            exportRoadmap(roadmap);
+                          }}
+                          title="تصدير الخريطة"
+                          className="text-green-600 hover:text-green-700 border-green-500/50 hover:border-green-600"
+                        >
+                          <Download className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="destructive"
