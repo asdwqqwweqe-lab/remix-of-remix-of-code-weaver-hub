@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Settings as SettingsIcon, Key, Plus, Trash2, TestTube, Check, X, Loader2, Eye, EyeOff, Sparkles, RefreshCw, Zap, Volume2, VolumeX, ExternalLink } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Settings as SettingsIcon, Key, Plus, Trash2, TestTube, Check, X, Loader2, Eye, EyeOff, Sparkles, RefreshCw, Zap, Volume2, VolumeX, ExternalLink, LogOut } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,6 +21,7 @@ import DemoDataManager from '@/components/data/DemoDataManager';
 import FirebaseSettings from '@/components/settings/FirebaseSettings';
 import DataBackupManager from '@/components/settings/DataBackupManager';
 import { AIProvider } from '@/types/blog';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Free OpenRouter Models Only - https://openrouter.ai/models?pricing=free
 const OPENROUTER_MODELS = [
@@ -60,18 +62,18 @@ const incrementUsage = () => {
 export default function Settings() {
   const { t } = useTranslation();
   const { toast } = useToast();
-  const { 
-    settings, 
-    addOpenRouterKey, 
-    removeOpenRouterKey, 
-    toggleKeyActive, 
+  const {
+    settings,
+    addOpenRouterKey,
+    removeOpenRouterKey,
+    toggleKeyActive,
     addGeminiKey,
     removeGeminiKey,
     toggleGeminiKeyActive,
     setDefaultModel,
-    setDefaultProvider 
+    setDefaultProvider
   } = useSettingsStore();
-  
+
   // OpenRouter state
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newKeyName, setNewKeyName] = useState('');
@@ -80,7 +82,7 @@ export default function Settings() {
   const [testResults, setTestResults] = useState<Record<string, { success: boolean; message: string }>>({});
   const [showKeys, setShowKeys] = useState<Record<string, boolean>>({});
   const [isAdding, setIsAdding] = useState(false);
-  
+
   // Gemini state
   const [isGeminiDialogOpen, setIsGeminiDialogOpen] = useState(false);
   const [newGeminiKeyName, setNewGeminiKeyName] = useState('');
@@ -89,11 +91,11 @@ export default function Settings() {
   const [geminiTestResults, setGeminiTestResults] = useState<Record<string, { success: boolean; message: string; model?: string }>>({});
   const [showGeminiKeys, setShowGeminiKeys] = useState<Record<string, boolean>>({});
   const [isAddingGemini, setIsAddingGemini] = useState(false);
-  
+
   // Lovable AI usage tracking
   const [dailyUsage, setDailyUsage] = useState(getStoredUsage());
   const usagePercentage = Math.min((dailyUsage / DAILY_LIMIT) * 100, 100);
-  
+
   const handleAddKey = async () => {
     if (!newKeyName.trim() || !newKeyValue.trim()) {
       toast({
@@ -103,11 +105,11 @@ export default function Settings() {
       });
       return;
     }
-    
+
     setIsAdding(true);
-    
+
     const result = await testOpenRouterKey(newKeyValue.trim());
-    
+
     if (result.success) {
       addOpenRouterKey(newKeyValue.trim(), newKeyName.trim());
       setNewKeyName('');
@@ -124,10 +126,10 @@ export default function Settings() {
         variant: 'destructive',
       });
     }
-    
+
     setIsAdding(false);
   };
-  
+
   const handleAddGeminiKey = async () => {
     if (!newGeminiKeyName.trim() || !newGeminiKeyValue.trim()) {
       toast({
@@ -137,11 +139,11 @@ export default function Settings() {
       });
       return;
     }
-    
+
     setIsAddingGemini(true);
-    
+
     const result = await testGeminiKey(newGeminiKeyValue.trim());
-    
+
     if (result.success) {
       addGeminiKey(newGeminiKeyValue.trim(), newGeminiKeyName.trim());
       setNewGeminiKeyName('');
@@ -158,10 +160,10 @@ export default function Settings() {
         variant: 'destructive',
       });
     }
-    
+
     setIsAddingGemini(false);
   };
-  
+
   const handleTestKey = async (keyId: string, keyValue: string) => {
     setTestingKeyId(keyId);
     const result = await testOpenRouterKey(keyValue);
@@ -174,7 +176,7 @@ export default function Settings() {
     }));
     setTestingKeyId(null);
   };
-  
+
   const handleTestGeminiKey = async (keyId: string, keyValue: string) => {
     setGeminiTestingKeyId(keyId);
     const result = await testGeminiKey(keyValue);
@@ -188,20 +190,20 @@ export default function Settings() {
     }));
     setGeminiTestingKeyId(null);
   };
-  
+
   const toggleShowKey = (keyId: string) => {
     setShowKeys((prev) => ({ ...prev, [keyId]: !prev[keyId] }));
   };
-  
+
   const toggleShowGeminiKey = (keyId: string) => {
     setShowGeminiKeys((prev) => ({ ...prev, [keyId]: !prev[keyId] }));
   };
-  
+
   const maskKey = (key: string) => {
     if (key.length <= 10) return '••••••••••';
     return key.substring(0, 10) + '••••••••••••••••••••';
   };
-  
+
   const getModelsForProvider = () => {
     switch (settings.defaultProvider) {
       case 'gemini':
@@ -212,14 +214,14 @@ export default function Settings() {
         return GEMINI_MODELS_LIST;
     }
   };
-  
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
         <SettingsIcon className="h-8 w-8 text-primary" />
         <h1 className="text-3xl font-bold">الإعدادات</h1>
       </div>
-      
+
       {/* AI Provider Selection */}
       <Card>
         <CardHeader>
@@ -236,17 +238,15 @@ export default function Settings() {
             {AI_PROVIDERS.map((provider) => (
               <div
                 key={provider.value}
-                className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                  settings.defaultProvider === provider.value
-                    ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
-                    : 'border-border hover:border-primary/50'
-                }`}
+                className={`p-4 border rounded-lg cursor-pointer transition-all ${settings.defaultProvider === provider.value
+                  ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
+                  : 'border-border hover:border-primary/50'
+                  }`}
                 onClick={() => setDefaultProvider(provider.value as AIProvider)}
               >
                 <div className="flex items-center gap-2">
-                  <div className={`w-3 h-3 rounded-full ${
-                    settings.defaultProvider === provider.value ? 'bg-primary' : 'bg-muted'
-                  }`} />
+                  <div className={`w-3 h-3 rounded-full ${settings.defaultProvider === provider.value ? 'bg-primary' : 'bg-muted'
+                    }`} />
                   <span className="font-medium">{provider.label}</span>
                   {provider.value === 'lovable' && (
                     <Badge variant="secondary" className="text-xs">
@@ -259,7 +259,7 @@ export default function Settings() {
               </div>
             ))}
           </div>
-          
+
           {/* Lovable AI Usage Stats */}
           {settings.defaultProvider === 'lovable' && (
             <div className="pt-4 border-t space-y-3">
@@ -279,7 +279,7 @@ export default function Settings() {
                   ⚠️ اقتربت من الحد اليومي. يمكنك إضافة مفاتيح Gemini أو OpenRouter كبديل.
                 </div>
               )}
-              
+
               {/* Sound Notifications Toggle */}
               <div className="pt-4 border-t">
                 <div className="flex items-center justify-between">
@@ -305,7 +305,7 @@ export default function Settings() {
               </div>
             </div>
           )}
-          
+
           {/* Default Model Selection */}
           {settings.defaultProvider !== 'lovable' && (
             <div className="pt-4 border-t space-y-4">
@@ -324,7 +324,7 @@ export default function Settings() {
                   </SelectContent>
                 </Select>
               </div>
-              
+
               {/* Model Links for API Key Creation */}
               {settings.defaultProvider === 'openrouter' && (
                 <div className="p-3 bg-muted/50 rounded-lg space-y-2">
@@ -352,7 +352,7 @@ export default function Settings() {
           )}
         </CardContent>
       </Card>
-      
+
       {/* API Keys Management */}
       <Card>
         <CardHeader>
@@ -370,7 +370,7 @@ export default function Settings() {
               <TabsTrigger value="gemini">Gemini API</TabsTrigger>
               <TabsTrigger value="openrouter">OpenRouter API</TabsTrigger>
             </TabsList>
-            
+
             {/* Gemini Keys Tab */}
             <TabsContent value="gemini" className="space-y-4">
               <div className="flex justify-end">
@@ -418,7 +418,7 @@ export default function Settings() {
                   </DialogContent>
                 </Dialog>
               </div>
-              
+
               {settings.geminiKeys?.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   لم يتم إضافة أي مفاتيح Gemini بعد. أضف مفتاحاً للبدء.
@@ -511,7 +511,7 @@ export default function Settings() {
                 </div>
               )}
             </TabsContent>
-            
+
             {/* OpenRouter Keys Tab */}
             <TabsContent value="openrouter" className="space-y-4">
               <div className="flex justify-end">
@@ -559,7 +559,7 @@ export default function Settings() {
                   </DialogContent>
                 </Dialog>
               </div>
-              
+
               {settings.openRouterKeys.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   لم يتم إضافة أي مفاتيح OpenRouter بعد. أضف مفتاحاً للبدء.
@@ -655,13 +655,13 @@ export default function Settings() {
           </Tabs>
         </CardContent>
       </Card>
-      
+
       {/* Firebase Settings */}
       <FirebaseSettings />
-      
+
       {/* Data Backup */}
       <DataBackupManager />
-      
+
       {/* Custom CSS */}
       <CustomCssManager />
 
