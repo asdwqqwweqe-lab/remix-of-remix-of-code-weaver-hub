@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,14 +17,15 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { 
-  Plus, 
-  Search, 
-  FileText, 
-  Edit, 
-  Trash2, 
-  Eye, 
+import {
+  Plus,
+  Search,
+  FileText,
+  Edit,
+  Trash2,
+  Eye,
   Calendar,
   Image as ImageIcon,
 } from 'lucide-react';
@@ -31,6 +33,7 @@ import { format } from 'date-fns';
 import { ar, enUS } from 'date-fns/locale';
 import Pagination from '@/components/common/Pagination';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 const ITEMS_PER_PAGE = 6;
 
@@ -38,16 +41,19 @@ const Reports = () => {
   const { t } = useTranslation();
   const { language } = useLanguage();
   const navigate = useNavigate();
-  const { 
-    searchQuery, 
-    setSearchQuery, 
-    getFilteredReports, 
-    deleteReport 
+  const {
+    searchQuery,
+    setSearchQuery,
+    getFilteredReports,
+    deleteReport,
+    deleteMultipleReports
   } = useReportStore();
 
   const [currentPage, setCurrentPage] = useState(1);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState<string | null>(null);
+  const [selectedReports, setSelectedReports] = useState<string[]>([]);
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
 
   const reports = getFilteredReports();
   const totalPages = Math.ceil(reports.length / ITEMS_PER_PAGE);
@@ -66,6 +72,32 @@ const Reports = () => {
       deleteReport(selectedReport);
       setIsDeleteOpen(false);
       setSelectedReport(null);
+      toast.success(language === 'ar' ? 'تم حذف التقرير بنجاح' : 'Report deleted successfully');
+    }
+  };
+
+  const handleBulkDelete = () => {
+    deleteMultipleReports(selectedReports);
+    toast.success(
+      language === 'ar'
+        ? `تم حذف ${selectedReports.length} تقرير بنجاح`
+        : `${selectedReports.length} reports deleted successfully`
+    );
+    setSelectedReports([]);
+    setShowBulkDeleteDialog(false);
+  };
+
+  const toggleSelectReport = (id: string) => {
+    setSelectedReports(prev =>
+      prev.includes(id) ? prev.filter(reportId => reportId !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedReports.length === paginatedReports.length) {
+      setSelectedReports([]);
+    } else {
+      setSelectedReports(paginatedReports.map(r => r.id));
     }
   };
 
@@ -78,8 +110,8 @@ const Reports = () => {
             {language === 'ar' ? 'التقارير' : 'Reports'}
           </h1>
           <p className="text-muted-foreground mt-1">
-            {language === 'ar' 
-              ? `${reports.length} تقرير` 
+            {language === 'ar'
+              ? `${reports.length} تقرير`
               : `${reports.length} reports`}
           </p>
         </div>
@@ -88,6 +120,67 @@ const Reports = () => {
           {language === 'ar' ? 'تقرير جديد' : 'New Report'}
         </Button>
       </div>
+
+      {/* Bulk Actions Toolbar */}
+      {paginatedReports.length > 0 && (
+        <Card className="p-3">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <Checkbox
+                checked={selectedReports.length === paginatedReports.length && paginatedReports.length > 0}
+                onCheckedChange={toggleSelectAll}
+                aria-label={language === 'ar' ? 'تحديد الكل' : 'Select all'}
+              />
+              <span className="text-sm text-muted-foreground">
+                {selectedReports.length > 0
+                  ? language === 'ar'
+                    ? `تم تحديد ${selectedReports.length} تقرير`
+                    : `${selectedReports.length} selected`
+                  : language === 'ar'
+                    ? 'تحديد الكل'
+                    : 'Select all'}
+              </span>
+            </div>
+            {selectedReports.length > 0 && (
+              <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" size="sm" className="gap-2">
+                    <Trash2 className="w-4 h-4" />
+                    {language === 'ar'
+                      ? `حذف المحدد (${selectedReports.length})`
+                      : `Delete selected (${selectedReports.length})`}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      {language === 'ar' ? 'تأكيد الحذف المتعدد' : 'Confirm Bulk Delete'}
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      {language === 'ar'
+                        ? `هل أنت متأكد من حذف ${selectedReports.length} تقرير؟ لا يمكن التراجع عن هذا الإجراء.`
+                        : `Are you sure you want to delete ${selectedReports.length} reports? This action cannot be undone.`}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>
+                      {language === 'ar' ? 'إلغاء' : 'Cancel'}
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      onClick={handleBulkDelete}
+                    >
+                      {language === 'ar'
+                        ? `حذف (${selectedReports.length})`
+                        : `Delete (${selectedReports.length})`}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+          </div>
+        </Card>
+      )}
 
       {/* Search */}
       <div className="relative max-w-md">
@@ -107,16 +200,16 @@ const Reports = () => {
       {paginatedReports.length > 0 ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {paginatedReports.map((report) => (
-            <Card 
-              key={report.id} 
+            <Card
+              key={report.id}
               className="group hover:shadow-lg transition-shadow cursor-pointer"
               onClick={() => navigate(`/reports/${report.id}`)}
             >
               {/* Featured Image */}
               {report.featuredImage ? (
                 <div className="aspect-video overflow-hidden rounded-t-lg">
-                  <img 
-                    src={report.featuredImage} 
+                  <img
+                    src={report.featuredImage}
                     alt={report.title}
                     className="w-full h-full object-cover transition-transform group-hover:scale-105"
                   />
@@ -126,10 +219,16 @@ const Reports = () => {
                   <ImageIcon className="w-12 h-12 text-muted-foreground/30" />
                 </div>
               )}
-              
+
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2">
+                    <Checkbox
+                      checked={selectedReports.includes(report.id)}
+                      onCheckedChange={() => toggleSelectReport(report.id)}
+                      onClick={(e) => e.stopPropagation()}
+                      aria-label={`${language === 'ar' ? 'تحديد' : 'Select'} ${report.title}`}
+                    />
                     <FileText className="w-5 h-5 text-primary shrink-0" />
                     <CardTitle className="text-lg line-clamp-1">{report.title}</CardTitle>
                   </div>
@@ -174,7 +273,7 @@ const Reports = () => {
                 <p className="text-sm text-muted-foreground line-clamp-2">
                   {report.content.replace(/[#*`\[\]]/g, '').substring(0, 120)}...
                 </p>
-                
+
                 {report.tags.length > 0 && (
                   <div className="flex flex-wrap gap-1">
                     {report.tags.slice(0, 3).map((tag) => (
@@ -189,11 +288,11 @@ const Reports = () => {
                     )}
                   </div>
                 )}
-                
+
                 <div className="flex items-center gap-1 text-xs text-muted-foreground pt-2 border-t">
                   <Calendar className="w-3.5 h-3.5" />
-                  {format(new Date(report.updatedAt), 'PPP', { 
-                    locale: language === 'ar' ? ar : enUS 
+                  {format(new Date(report.updatedAt), 'PPP', {
+                    locale: language === 'ar' ? ar : enUS
                   })}
                 </div>
               </CardContent>
@@ -208,8 +307,8 @@ const Reports = () => {
               {language === 'ar' ? 'لا توجد تقارير' : 'No reports yet'}
             </h3>
             <p className="text-muted-foreground mb-4">
-              {language === 'ar' 
-                ? 'أنشئ تقريرك الأول الآن' 
+              {language === 'ar'
+                ? 'أنشئ تقريرك الأول الآن'
                 : 'Create your first report now'}
             </p>
             <Button onClick={() => navigate('/reports/new')} className="gap-2">
@@ -237,7 +336,7 @@ const Reports = () => {
               {language === 'ar' ? 'حذف التقرير' : 'Delete Report'}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {language === 'ar' 
+              {language === 'ar'
                 ? 'هل أنت متأكد من حذف هذا التقرير؟ لا يمكن التراجع عن هذا الإجراء.'
                 : 'Are you sure you want to delete this report? This action cannot be undone.'}
             </AlertDialogDescription>

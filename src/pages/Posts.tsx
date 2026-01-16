@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
   SelectContent,
@@ -45,6 +46,7 @@ import { ar, enUS } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import Pagination from '@/components/common/Pagination';
 import TextImage from '@/components/common/TextImage';
+import { PostCard } from '@/components/posts/PostCard';
 
 type ViewMode = 'list' | 'grid' | 'compact';
 
@@ -77,6 +79,7 @@ const Posts = () => {
     toggleFavorite,
     clearFilters,
     deletePost,
+    deleteMultiplePosts,
   } = useBlogStore();
 
   const handleDeletePost = (postId: string, postTitle: string) => {
@@ -88,6 +91,31 @@ const Posts = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedPosts, setSelectedPosts] = useState<string[]>([]);
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
+
+  const handleBulkDelete = () => {
+    deleteMultiplePosts(selectedPosts);
+    toast.success(`تم حذف ${selectedPosts.length} موضوع بنجاح`);
+    setSelectedPosts([]);
+    setShowBulkDeleteDialog(false);
+  };
+
+  const toggleSelectPost = (postId: string) => {
+    setSelectedPosts(prev =>
+      prev.includes(postId)
+        ? prev.filter(id => id !== postId)
+        : [...prev, postId]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedPosts.length === paginatedPosts.length) {
+      setSelectedPosts([]);
+    } else {
+      setSelectedPosts(paginatedPosts.map(p => p.id));
+    }
+  };
 
   // Reset page when filters change
   const totalPages = Math.ceil(filteredPosts.length / ITEMS_PER_PAGE);
@@ -107,7 +135,7 @@ const Posts = () => {
     setCurrentPage(1);
   };
 
-  const hasActiveFilters = searchQuery || selectedCategoryId || selectedTagIds.length > 0 || 
+  const hasActiveFilters = searchQuery || selectedCategoryId || selectedTagIds.length > 0 ||
     selectedLanguageIds.length > 0 || selectedStatus;
 
   const toggleTagFilter = (tagId: string) => {
@@ -139,9 +167,15 @@ const Posts = () => {
           <CardContent className="p-4">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3 flex-1 min-w-0">
+                <Checkbox
+                  checked={selectedPosts.includes(post.id)}
+                  onCheckedChange={() => toggleSelectPost(post.id)}
+                  onClick={(e) => e.stopPropagation()}
+                  aria-label={`تحديد ${post.title}`}
+                />
                 <TextImage text={post.title} size="sm" variant="gradient" />
-                <Badge 
-                  variant="outline" 
+                <Badge
+                  variant="outline"
                   className={cn(
                     "text-xs shrink-0",
                     post.status === 'published' ? 'status-published' : post.status === 'draft' ? 'status-draft' : 'status-archived'
@@ -150,7 +184,7 @@ const Posts = () => {
                   {t(`posts.status${post.status.charAt(0).toUpperCase() + post.status.slice(1)}`)}
                 </Badge>
                 <Link to={`/posts/${post.id}`} className="flex-1 min-w-0">
-                  <h3 
+                  <h3
                     className="font-medium hover:text-accent transition-colors truncate"
                     dir={post.mainLanguage === 'ar' ? 'rtl' : 'ltr'}
                   >
@@ -250,8 +284,8 @@ const Posts = () => {
                   {language === 'ar' ? category.nameAr : category.nameEn}
                 </Badge>
               )}
-              <Badge 
-                variant="outline" 
+              <Badge
+                variant="outline"
                 className={cn(
                   "text-xs",
                   post.status === 'published' ? 'status-published' : post.status === 'draft' ? 'status-draft' : 'status-archived'
@@ -262,7 +296,7 @@ const Posts = () => {
             </div>
 
             <Link to={`/posts/${post.id}`}>
-              <h3 
+              <h3
                 className="text-lg font-semibold hover:text-accent transition-colors line-clamp-2 mb-2"
                 dir={post.mainLanguage === 'ar' ? 'rtl' : 'ltr'}
               >
@@ -270,7 +304,7 @@ const Posts = () => {
               </h3>
             </Link>
 
-            <p 
+            <p
               className="text-sm text-muted-foreground line-clamp-2 mb-3 flex-1"
               dir={post.mainLanguage === 'ar' ? 'rtl' : 'ltr'}
             >
@@ -279,9 +313,9 @@ const Posts = () => {
 
             <div className="flex flex-wrap gap-1 mb-3">
               {postLangs.slice(0, 2).map((lang) => lang && (
-                <Badge 
+                <Badge
                   key={lang.id}
-                  variant="outline" 
+                  variant="outline"
                   className="text-xs"
                   style={{ borderColor: lang.color, color: lang.color }}
                 >
@@ -319,8 +353,8 @@ const Posts = () => {
                       {language === 'ar' ? category.nameAr : category.nameEn}
                     </Badge>
                   )}
-                  <Badge 
-                    variant="outline" 
+                  <Badge
+                    variant="outline"
                     className={post.status === 'published' ? 'status-published' : post.status === 'draft' ? 'status-draft' : 'status-archived'}
                   >
                     {t(`posts.status${post.status.charAt(0).toUpperCase() + post.status.slice(1)}`)}
@@ -331,7 +365,7 @@ const Posts = () => {
                 </div>
 
                 <Link to={`/posts/${post.id}`}>
-                  <h3 
+                  <h3
                     className="text-xl font-semibold hover:text-accent transition-colors line-clamp-1"
                     dir={post.mainLanguage === 'ar' ? 'rtl' : 'ltr'}
                   >
@@ -339,7 +373,7 @@ const Posts = () => {
                   </h3>
                 </Link>
 
-                <p 
+                <p
                   className="text-muted-foreground mt-1 line-clamp-2"
                   dir={post.mainLanguage === 'ar' ? 'rtl' : 'ltr'}
                 >
@@ -349,8 +383,8 @@ const Posts = () => {
                 <div className="flex flex-wrap gap-2 mt-3">
                   {postLangs.map((lang) => lang && (
                     <Link key={lang.id} to={`/languages/${lang.slug}`}>
-                      <Badge 
-                        variant="outline" 
+                      <Badge
+                        variant="outline"
                         className="text-xs"
                         style={{ borderColor: lang.color, color: lang.color }}
                       >
@@ -469,6 +503,53 @@ const Posts = () => {
         </div>
       </div>
 
+      {/* Bulk Actions Toolbar */}
+      {paginatedPosts.length > 0 && (
+        <Card className="p-3">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <Checkbox
+                checked={selectedPosts.length === paginatedPosts.length && paginatedPosts.length > 0}
+                onCheckedChange={toggleSelectAll}
+                aria-label="تحديد الكل"
+              />
+              <span className="text-sm text-muted-foreground">
+                {selectedPosts.length > 0
+                  ? `تم تحديد ${selectedPosts.length} موضوع`
+                  : 'تحديد الكل'}
+              </span>
+            </div>
+            {selectedPosts.length > 0 && (
+              <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" size="sm" className="gap-2">
+                    <Trash2 className="w-4 h-4" />
+                    حذف المحدد ({selectedPosts.length})
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>تأكيد الحذف المتعدد</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      هل أنت متأكد من حذف {selectedPosts.length} موضوع؟ لا يمكن التراجع عن هذا الإجراء.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                    <AlertDialogAction
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      onClick={handleBulkDelete}
+                    >
+                      حذف ({selectedPosts.length})
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+          </div>
+        </Card>
+      )}
+
       {/* Search & Filters */}
       <div className="space-y-4">
         <div className="flex flex-col sm:flex-row gap-3">
@@ -579,7 +660,7 @@ const Posts = () => {
                       key={lang.id}
                       variant={selectedLanguageIds.includes(lang.id) ? 'default' : 'outline'}
                       className="cursor-pointer"
-                      style={{ 
+                      style={{
                         borderColor: lang.color,
                         backgroundColor: selectedLanguageIds.includes(lang.id) ? lang.color : 'transparent',
                         color: selectedLanguageIds.includes(lang.id) ? '#fff' : 'inherit'
@@ -598,8 +679,8 @@ const Posts = () => {
 
       {/* Posts List */}
       <div className={cn(
-        viewMode === 'grid' 
-          ? "grid sm:grid-cols-2 lg:grid-cols-3 gap-4" 
+        viewMode === 'grid'
+          ? "grid sm:grid-cols-2 lg:grid-cols-3 gap-4"
           : "space-y-4"
       )}>
         {paginatedPosts.length === 0 ? (
@@ -615,7 +696,22 @@ const Posts = () => {
             </CardContent>
           </Card>
         ) : (
-          paginatedPosts.map(renderPostCard)
+          paginatedPosts.map((post) => (
+            <PostCard
+              key={post.id}
+              post={post}
+              viewMode={viewMode}
+              language={language}
+              selectedPosts={selectedPosts}
+              t={t}
+              getCategoryById={getCategoryById}
+              getTagById={getTagById}
+              getLanguageById={getLanguageById}
+              toggleFavorite={toggleFavorite}
+              deletePost={deletePost}
+              toggleSelectPost={toggleSelectPost}
+            />
+          ))
         )}
       </div>
 
