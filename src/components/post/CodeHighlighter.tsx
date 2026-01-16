@@ -20,19 +20,23 @@ interface CodeHighlighterProps {
   showTableOfContents?: boolean;
   externalFontSize?: number;
   externalLineHeight?: number;
+  externalCodeFontSize?: number;
+  externalCodeLineHeight?: number;
   useExternalSettings?: boolean;
 }
 
 const FONT_SIZE_KEY = 'code-font-size';
 const LINE_HEIGHT_KEY = 'code-line-height';
 
-const CodeHighlighter = ({ 
-  content, 
-  className, 
-  dir, 
+const CodeHighlighter = ({
+  content,
+  className,
+  dir,
   showTableOfContents = true,
   externalFontSize,
   externalLineHeight,
+  externalCodeFontSize,
+  externalCodeLineHeight,
   useExternalSettings = false,
 }: CodeHighlighterProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -48,8 +52,8 @@ const CodeHighlighter = ({
   // Use external settings if provided, otherwise use internal
   const fontSize = useExternalSettings && externalFontSize !== undefined ? externalFontSize : internalFontSize;
   const lineHeight = useExternalSettings && externalLineHeight !== undefined ? externalLineHeight : internalLineHeight;
-  const setFontSize = useExternalSettings ? () => {} : setInternalFontSize;
-  const setLineHeight = useExternalSettings ? () => {} : setInternalLineHeight;
+  const setFontSize = useExternalSettings ? () => { } : setInternalFontSize;
+  const setLineHeight = useExternalSettings ? () => { } : setInternalLineHeight;
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Extract table of contents from markdown content
@@ -58,17 +62,17 @@ const CodeHighlighter = ({
     const lines = content.split('\n');
     const headings: { level: number; text: string; id: string }[] = [];
     let inCodeBlock = false;
-    
+
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
-      
+
       if (line.trim().startsWith('```')) {
         inCodeBlock = !inCodeBlock;
         continue;
       }
-      
+
       if (inCodeBlock) continue;
-      
+
       const headingMatch = line.match(/^(#{1,6})\s+(.+)$/);
       if (headingMatch) {
         const level = headingMatch[1].length;
@@ -78,12 +82,12 @@ const CodeHighlighter = ({
           .replace(/\*/g, '')
           .replace(/`/g, '')
           .trim();
-        
+
         const id = text
           .toLowerCase()
           .replace(/[^\w\u0600-\u06FF]+/g, '-')
           .replace(/^-|-$/g, '');
-        
+
         if (text && id) {
           headings.push({ level, text, id });
         }
@@ -206,7 +210,7 @@ const CodeHighlighter = ({
     // Preprocess to handle HTML content
     const processedContent = preprocessContent(markdownContent);
     const parts = processedContent.split(/(```[\s\S]*?```)/g);
-    
+
     return parts.map((part, index) => {
       const codeMatch = part.match(/```([^\n`]*)\n?([\s\S]*?)```/);
       if (codeMatch) {
@@ -214,7 +218,12 @@ const CodeHighlighter = ({
         const code = codeMatch[2].replace(/^\n+|\n+$/g, '');
         return (
           <div key={index} className="my-4">
-            <SimpleCodeBlock code={code} language={lang} />
+            <SimpleCodeBlock
+              code={code}
+              language={lang}
+              fontSize={useExternalSettings && externalCodeFontSize !== undefined ? externalCodeFontSize : 14}
+              lineHeight={useExternalSettings && externalCodeLineHeight !== undefined ? externalCodeLineHeight : 1.5}
+            />
           </div>
         );
       }
@@ -223,13 +232,13 @@ const CodeHighlighter = ({
       const tableRegex = /\|(.+)\|\n\|[-:| ]+\|\n((?:\|.+\|\n?)+)/g;
       let processedPart = part;
       let tableMatch;
-      
+
       while ((tableMatch = tableRegex.exec(part)) !== null) {
         const headers = tableMatch[1].split('|').map(h => h.trim()).filter(Boolean);
-        const rows = tableMatch[2].trim().split('\n').map(row => 
+        const rows = tableMatch[2].trim().split('\n').map(row =>
           row.split('|').map(cell => cell.trim()).filter(Boolean)
         );
-        
+
         const tableHtml = `
           <div class="my-4 overflow-x-auto rounded-lg border border-border/50">
             <table class="w-full text-sm">
@@ -295,7 +304,7 @@ const CodeHighlighter = ({
         .replace(/^- \[ \] (.*$)/gm, '<li class="flex items-center gap-2"><span class="w-4 h-4 rounded border border-border"></span><span>$1</span></li>')
         .replace(/^- (.*$)/gm, '<li class="flex items-start gap-2 ms-1"><span class="w-1.5 h-1.5 rounded-full bg-primary/60 mt-2 shrink-0"></span><span>$1</span></li>')
         .replace(/^\d+\. (.*$)/gm, '<li class="ms-4 list-decimal marker:text-primary marker:font-semibold">$1</li>');
-      
+
       // Clean up spacing - preserve newlines for paragraph separation
       html = html
         .replace(/<br\s*\/?>/gi, '')
@@ -309,7 +318,7 @@ const CodeHighlighter = ({
       html = html.replace(/(<li class="flex.*?<\/li>)+/g, (match) => {
         return `<ul class="my-3 space-y-0.5">${match}</ul>`;
       });
-      
+
       html = html.replace(/(<li class="ms-4.*?<\/li>)+/g, (match) => {
         return `<ol class="my-3 space-y-0.5">${match}</ol>`;
       });
@@ -320,8 +329,8 @@ const CodeHighlighter = ({
       }
 
       return (
-        <div 
-          key={index} 
+        <div
+          key={index}
           className="max-w-none post-styled-content"
           style={{
             fontSize: `${fontSize}px`,
@@ -409,82 +418,82 @@ const CodeHighlighter = ({
     )}>
       {/* Controls - only show when not using external settings */}
       {!useExternalSettings && (
-      <div className={cn(
-        "flex items-center gap-2 p-2 bg-muted/50 rounded-lg border border-border",
-        isFullscreen ? "sticky top-0 z-10 mx-6 mt-6 mb-3" : "mb-3"
-      )}>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => adjustFontSize(-2)}
-          title="تصغير الخط"
-        >
-          <ZoomOut className="w-4 h-4" />
-        </Button>
-        <Slider
-          value={[fontSize]}
-          onValueChange={([v]) => setFontSize(v)}
-          min={12}
-          max={32}
-          step={1}
-          className="w-20"
-        />
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => adjustFontSize(2)}
-          title="تكبير الخط"
-        >
-          <ZoomIn className="w-4 h-4" />
-        </Button>
-        <span className="text-xs text-muted-foreground min-w-[3rem]">{fontSize}px</span>
+        <div className={cn(
+          "flex items-center gap-2 p-2 bg-muted/50 rounded-lg border border-border",
+          isFullscreen ? "sticky top-0 z-10 mx-6 mt-6 mb-3" : "mb-3"
+        )}>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => adjustFontSize(-2)}
+            title="تصغير الخط"
+          >
+            <ZoomOut className="w-4 h-4" />
+          </Button>
+          <Slider
+            value={[fontSize]}
+            onValueChange={([v]) => setFontSize(v)}
+            min={12}
+            max={32}
+            step={1}
+            className="w-20"
+          />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => adjustFontSize(2)}
+            title="تكبير الخط"
+          >
+            <ZoomIn className="w-4 h-4" />
+          </Button>
+          <span className="text-xs text-muted-foreground min-w-[3rem]">{fontSize}px</span>
 
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="ghost" size="icon" title="المسافات">
-              <AlignVerticalSpaceAround className="w-4 h-4" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-56" align="start">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">ارتفاع السطر</label>
-                <div className="flex items-center gap-2">
-                  <Slider
-                    value={[lineHeight]}
-                    onValueChange={([v]) => setLineHeight(v)}
-                    min={1.2}
-                    max={3}
-                    step={0.1}
-                    className="flex-1"
-                  />
-                  <span className="text-xs text-muted-foreground w-8">{lineHeight.toFixed(1)}</span>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="icon" title="المسافات">
+                <AlignVerticalSpaceAround className="w-4 h-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-56" align="start">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">ارتفاع السطر</label>
+                  <div className="flex items-center gap-2">
+                    <Slider
+                      value={[lineHeight]}
+                      onValueChange={([v]) => setLineHeight(v)}
+                      min={1.2}
+                      max={3}
+                      step={0.1}
+                      className="flex-1"
+                    />
+                    <span className="text-xs text-muted-foreground w-8">{lineHeight.toFixed(1)}</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          </PopoverContent>
-        </Popover>
+            </PopoverContent>
+          </Popover>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={resetSettings}
-          title="إعادة تعيين"
-        >
-          <RotateCcw className="w-4 h-4" />
-        </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={resetSettings}
+            title="إعادة تعيين"
+          >
+            <RotateCcw className="w-4 h-4" />
+          </Button>
 
-        <div className="flex-1" />
+          <div className="flex-1" />
 
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setIsFullscreen(!isFullscreen)}
-          title={isFullscreen ? "إغلاق وضع التركيز" : "وضع التركيز"}
-        >
-          {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-        </Button>
-      </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsFullscreen(!isFullscreen)}
+            title={isFullscreen ? "إغلاق وضع التركيز" : "وضع التركيز"}
+          >
+            {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+          </Button>
+        </div>
       )}
 
       <div className={cn(
@@ -530,7 +539,7 @@ const CodeHighlighter = ({
         <article
           ref={containerRef}
           className={cn(
-            className, 
+            className,
             isFullscreen && "px-6 pb-6",
             showTableOfContents && tableOfContents.length > 0 ? "lg:col-span-3 order-1 lg:order-2" : ""
           )}

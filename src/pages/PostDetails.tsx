@@ -55,7 +55,7 @@ const PostDetails = () => {
     collections,
     movePostToCollection,
   } = useBlogStore();
-  
+
   // Get all posts for navigation
   const allPosts = posts.map(p => ({ id: p.id, title: p.title }));
 
@@ -128,8 +128,8 @@ const PostDetails = () => {
         {/* Sidebar */}
         <div className="space-y-4 order-2 lg:order-1">
           {/* Display Settings */}
-          <DisplaySettings 
-            onSettingsChange={handleSettingsChange} 
+          <DisplaySettings
+            onSettingsChange={handleSettingsChange}
             className="sticky top-4"
           />
 
@@ -197,22 +197,22 @@ const PostDetails = () => {
                   </Badge>
                 </Link>
               )}
-              <Badge 
-                variant="outline" 
+              <Badge
+                variant="outline"
                 className={post.status === 'published' ? 'status-published' : post.status === 'draft' ? 'status-draft' : 'status-archived'}
               >
                 {t(`posts.status${post.status.charAt(0).toUpperCase() + post.status.slice(1)}`)}
               </Badge>
             </div>
 
-            <h1 
+            <h1
               className="text-3xl md:text-4xl font-bold"
               dir={post.mainLanguage === 'ar' ? 'rtl' : 'ltr'}
             >
               {post.title}
             </h1>
 
-            <p 
+            <p
               className="text-xl text-muted-foreground"
               dir={post.mainLanguage === 'ar' ? 'rtl' : 'ltr'}
             >
@@ -245,7 +245,7 @@ const PostDetails = () => {
               <div className="flex flex-wrap gap-2">
                 {postLangs.map((lang) => lang && (
                   <Link key={lang.id} to={`/languages/${lang.slug}`}>
-                    <Badge 
+                    <Badge
                       className="cursor-pointer"
                       style={{ backgroundColor: lang.color, color: '#fff' }}
                     >
@@ -274,7 +274,7 @@ const PostDetails = () => {
           <Separator />
 
           {/* Content */}
-          <div 
+          <div
             className="post-content"
             style={{
               '--paragraph-spacing': `${displaySettings.paragraphSpacing}rem`,
@@ -291,6 +291,8 @@ const PostDetails = () => {
               useExternalSettings={true}
               externalFontSize={displaySettings.fontSize}
               externalLineHeight={displaySettings.lineHeight}
+              externalCodeFontSize={displaySettings.codeFontSize}
+              externalCodeLineHeight={displaySettings.codeLineHeight}
             />
           </div>
 
@@ -301,11 +303,11 @@ const PostDetails = () => {
 
           {/* Related Posts */}
           <RelatedPosts currentPost={post} />
-          
+
           {/* Navigation */}
-          <ContentNavigation 
-            currentId={post.id} 
-            items={allPosts} 
+          <ContentNavigation
+            currentId={post.id}
+            items={allPosts}
             baseUrl="/posts"
             className="mt-6"
           />

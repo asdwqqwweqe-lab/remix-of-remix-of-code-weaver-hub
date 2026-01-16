@@ -8,6 +8,8 @@ interface SimpleCodeBlockProps {
   code: string;
   language: string;
   className?: string;
+  fontSize?: number;
+  lineHeight?: number;
 }
 
 const escapeHtml = (text: string) =>
@@ -18,7 +20,7 @@ const escapeHtml = (text: string) =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 
-const SimpleCodeBlock = ({ code, language, className }: SimpleCodeBlockProps) => {
+const SimpleCodeBlock = ({ code, language, className, fontSize, lineHeight }: SimpleCodeBlockProps) => {
   const [copied, setCopied] = useState(false);
 
   const highlighted = useMemo(() => {
@@ -83,6 +85,10 @@ const SimpleCodeBlock = ({ code, language, className }: SimpleCodeBlockProps) =>
             highlighted.usedLanguage !== 'auto' ? `language-${highlighted.usedLanguage}` : ''
           )}
           dir="ltr"
+          style={{
+            fontSize: fontSize ? `${fontSize}px` : undefined,
+            lineHeight: lineHeight || undefined,
+          }}
           dangerouslySetInnerHTML={{ __html: highlighted.html }}
         />
       </pre>
