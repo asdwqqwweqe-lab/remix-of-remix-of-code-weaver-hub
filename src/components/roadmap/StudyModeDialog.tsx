@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { NumberBadge, getColorByIndex } from './NumberBadge';
-import { BookOpen, Copy, Check, Sparkles, Loader2, Send, Award, Trophy, Star, Zap, Target, Medal, Save, History, FileQuestion, CheckCircle2, XCircle, Settings, RotateCcw } from 'lucide-react';
+import { BookOpen, Copy, Check, Sparkles, Loader2, Send, Award, Trophy, Star, Zap, Target, Medal, Save, History, FileQuestion, CheckCircle2, XCircle, Settings, RotateCcw, ChevronDown, ChevronUp } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -79,6 +80,7 @@ const StudyModeDialog = ({ isOpen, onClose, sections, roadmapTitle, languageName
   const [selectedSections, setSelectedSections] = useState<Set<string>>(new Set());
   const [selectedTopics, setSelectedTopics] = useState<Set<string>>(new Set());
   const [copied, setCopied] = useState(false);
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(sections.map(s => s.id)));
   const [isGenerating, setIsGenerating] = useState(false);
   const [explanation, setExplanation] = useState('');
   const [activeTab, setActiveTab] = useState('select');
@@ -281,6 +283,76 @@ const StudyModeDialog = ({ isOpen, onClose, sections, roadmapTitle, languageName
     setCopied(true);
     toast.success('تم نسخ البرومبت بنجاح! الصقه في ChatGPT أو Claude');
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  // Generate prompt for a specific section
+  const generateSectionPrompt = (section: RoadmapSection) => {
+    const sectionTopics = section.topics.map(topic => {
+      let topicText = `- ${topic.title}`;
+      if (topic.subTopics && topic.subTopics.length > 0) {
+        topic.subTopics.forEach(subTopic => {
+          topicText += `\n  - ${subTopic.title}`;
+        });
+      }
+      return topicText;
+    }).join('\n');
+
+    const template = promptLevel === 'custom' ? customPromptTemplate : PROMPT_TEMPLATES[promptLevel];
+    return template
+      .replace(/\{\{languageName\}\}/g, languageName)
+      .replace(/\{\{roadmapTitle\}\}/g, roadmapTitle)
+      .replace(/\{\{topics\}\}/g, `\n## ${section.title}\n${sectionTopics}`);
+  };
+
+  // Generate prompt for a specific topic with subtopics
+  const generateTopicPrompt = (section: RoadmapSection, topic: RoadmapSection['topics'][0]) => {
+    let topicText = `- ${topic.title}`;
+    if (topic.subTopics && topic.subTopics.length > 0) {
+      topic.subTopics.forEach(subTopic => {
+        topicText += `\n  - ${subTopic.title}`;
+      });
+    }
+
+    const template = promptLevel === 'custom' ? customPromptTemplate : PROMPT_TEMPLATES[promptLevel];
+    return template
+      .replace(/\{\{languageName\}\}/g, languageName)
+      .replace(/\{\{roadmapTitle\}\}/g, roadmapTitle)
+      .replace(/\{\{topics\}\}/g, `\n## ${section.title}\n${topicText}`);
+  };
+
+  // Copy section prompt
+  const handleCopySectionPrompt = async (section: RoadmapSection) => {
+    const prompt = generateSectionPrompt(section);
+    await navigator.clipboard.writeText(prompt);
+    toast.success(`تم نسخ برومبت قسم "${section.title}"`);
+  };
+
+  // Copy topic prompt
+  const handleCopyTopicPrompt = async (section: RoadmapSection, topic: RoadmapSection['topics'][0]) => {
+    const prompt = generateTopicPrompt(section, topic);
+    await navigator.clipboard.writeText(prompt);
+    toast.success(`تم نسخ برومبت "${topic.title}"`);
+  };
+
+  // Toggle section expansion
+  const toggleSectionExpansion = (sectionId: string) => {
+    const newExpanded = new Set(expandedSections);
+    if (newExpanded.has(sectionId)) {
+      newExpanded.delete(sectionId);
+    } else {
+      newExpanded.add(sectionId);
+    }
+    setExpandedSections(newExpanded);
+  };
+
+  // Expand all sections
+  const expandAllSections = () => {
+    setExpandedSections(new Set(sections.map(s => s.id)));
+  };
+
+  // Collapse all sections
+  const collapseAllSections = () => {
+    setExpandedSections(new Set());
   };
 
   const handleAIGenerate = async () => {
@@ -545,11 +617,19 @@ const StudyModeDialog = ({ isOpen, onClose, sections, roadmapTitle, languageName
           </TabsList>
 
           <TabsContent value="select" className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-2">
               <p className="text-sm text-muted-foreground">
                 اختر المواضيع التي تريد دراستها
               </p>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
+                <Button variant="outline" size="sm" onClick={expandAllSections}>
+                  <ChevronDown className="h-4 w-4 ml-1" />
+                  فتح الكل
+                </Button>
+                <Button variant="outline" size="sm" onClick={collapseAllSections}>
+                  <ChevronUp className="h-4 w-4 ml-1" />
+                  طي الكل
+                </Button>
                 <Button variant="outline" size="sm" onClick={selectAll}>
                   تحديد الكل
                 </Button>
@@ -562,9 +642,23 @@ const StudyModeDialog = ({ isOpen, onClose, sections, roadmapTitle, languageName
             <ScrollArea className="h-[300px] border rounded-lg p-4">
               <div className="space-y-4">
                 {sections.map((section, sectionIndex) => (
-                  <div key={section.id} className="space-y-2">
+                  <Collapsible 
+                    key={section.id} 
+                    open={expandedSections.has(section.id)}
+                    onOpenChange={() => toggleSectionExpansion(section.id)}
+                    className="space-y-2"
+                  >
                     {/* Section Header with Square Badge */}
-                    <div className="flex items-center gap-3 p-2 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+                    <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+                      <CollapsibleTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0">
+                          {expandedSections.has(section.id) ? (
+                            <ChevronDown className="h-4 w-4" />
+                          ) : (
+                            <ChevronUp className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </CollapsibleTrigger>
                       <Checkbox
                         checked={selectedSections.has(section.id)}
                         onCheckedChange={() => toggleSection(section.id)}
@@ -575,67 +669,93 @@ const StudyModeDialog = ({ isOpen, onClose, sections, roadmapTitle, languageName
                         colorClass={getColorByIndex('section', sectionIndex)}
                         size="md"
                       />
-                      <span className="font-bold text-base">{section.title}</span>
-                      <Badge variant="outline" className="text-xs mr-auto">
+                      <span className="font-bold text-base flex-1">{section.title}</span>
+                      <Badge variant="outline" className="text-xs">
                         {section.topics.filter(t => selectedTopics.has(t.id)).length}/{section.topics.length}
                       </Badge>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCopySectionPrompt(section);
+                        }}
+                        title="نسخ برومبت القسم"
+                      >
+                        <Copy className="h-3.5 w-3.5" />
+                      </Button>
                     </div>
                     
                     {/* Topics List */}
-                    <div className="mr-6 space-y-2">
-                      {section.topics.map((topic, topicIndex) => (
-                        <div key={topic.id} className="space-y-2">
-                          {/* Topic with Circle Badge */}
-                          <div className="flex items-center gap-3 p-2 rounded-md hover:bg-muted/30 transition-colors border-r-2 border-primary/30 pr-3">
-                            <Checkbox
-                              checked={selectedTopics.has(topic.id)}
-                              onCheckedChange={() => toggleTopic(topic.id, section.id)}
-                            />
-                            <NumberBadge
-                              number={topicIndex + 1}
-                              shape="circle"
-                              colorClass={getColorByIndex('topic', topicIndex)}
-                              size="sm"
-                            />
-                            <span className="text-sm font-medium">{topic.title}</span>
-                            {topic.completed && (
-                              <Badge variant="secondary" className="text-xs bg-green-500/20 text-green-600">
-                                ✓ مكتمل
-                              </Badge>
-                            )}
+                    <CollapsibleContent>
+                      <div className="mr-6 space-y-2">
+                        {section.topics.map((topic, topicIndex) => (
+                          <div key={topic.id} className="space-y-2">
+                            {/* Topic with Circle Badge */}
+                            <div className="flex items-center gap-2 p-2 rounded-md hover:bg-muted/30 transition-colors border-r-2 border-primary/30 pr-3">
+                              <Checkbox
+                                checked={selectedTopics.has(topic.id)}
+                                onCheckedChange={() => toggleTopic(topic.id, section.id)}
+                              />
+                              <NumberBadge
+                                number={topicIndex + 1}
+                                shape="circle"
+                                colorClass={getColorByIndex('topic', topicIndex)}
+                                size="sm"
+                              />
+                              <span className="text-sm font-medium flex-1">{topic.title}</span>
+                              {topic.completed && (
+                                <Badge variant="secondary" className="text-xs bg-green-500/20 text-green-600">
+                                  ✓ مكتمل
+                                </Badge>
+                              )}
+                              {topic.subTopics && topic.subTopics.length > 0 && (
+                                <Badge variant="outline" className="text-xs bg-primary/10">
+                                  {topic.subTopics.length} فرعي
+                                </Badge>
+                              )}
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCopyTopicPrompt(section, topic);
+                                }}
+                                title="نسخ برومبت الموضوع"
+                              >
+                                <Copy className="h-3 w-3" />
+                              </Button>
+                            </div>
+                            
+                            {/* SubTopics with Hexagon Badge */}
                             {topic.subTopics && topic.subTopics.length > 0 && (
-                              <Badge variant="outline" className="text-xs bg-primary/10">
-                                {topic.subTopics.length} فرعي
-                              </Badge>
+                              <div className="mr-10 space-y-1 border-r-2 border-dashed border-muted-foreground/30 pr-3">
+                                {topic.subTopics.map((subTopic, subIndex) => (
+                                  <div 
+                                    key={subTopic.id} 
+                                    className="flex items-center gap-2 p-1.5 rounded hover:bg-muted/20 transition-colors"
+                                  >
+                                    <NumberBadge
+                                      number={subIndex + 1}
+                                      shape="hexagon"
+                                      colorClass={getColorByIndex('subTopic', subIndex)}
+                                      size="sm"
+                                    />
+                                    <span className="text-xs text-muted-foreground">{subTopic.title}</span>
+                                    {subTopic.completed && (
+                                      <Badge variant="secondary" className="text-[10px] bg-green-500/20 text-green-600">✓</Badge>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
                             )}
                           </div>
-                          
-                          {/* SubTopics with Hexagon Badge */}
-                          {topic.subTopics && topic.subTopics.length > 0 && selectedTopics.has(topic.id) && (
-                            <div className="mr-10 space-y-1 border-r-2 border-dashed border-muted-foreground/30 pr-3">
-                              {topic.subTopics.map((subTopic, subIndex) => (
-                                <div 
-                                  key={subTopic.id} 
-                                  className="flex items-center gap-2 p-1.5 rounded hover:bg-muted/20 transition-colors"
-                                >
-                                  <NumberBadge
-                                    number={subIndex + 1}
-                                    shape="hexagon"
-                                    colorClass={getColorByIndex('subTopic', subIndex)}
-                                    size="sm"
-                                  />
-                                  <span className="text-xs text-muted-foreground">{subTopic.title}</span>
-                                  {subTopic.completed && (
-                                    <Badge variant="secondary" className="text-[10px] bg-green-500/20 text-green-600">✓</Badge>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                        ))}
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
                 ))}
               </div>
             </ScrollArea>
