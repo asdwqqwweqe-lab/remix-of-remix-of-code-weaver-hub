@@ -30,6 +30,7 @@ import PresentationMode from '@/components/reports/PresentationMode';
 import ReportSearch from '@/components/reports/ReportSearch';
 import TextTranslator from '@/components/reports/TextTranslator';
 import ContentNavigation from '@/components/navigation/ContentNavigation';
+import ReadingMode from '@/components/common/ReadingMode';
 import { cn } from '@/lib/utils';
 import {
   AlertDialog,
@@ -285,17 +286,22 @@ const ReportDetails = () => {
           <BackIcon className="w-4 h-4 me-2" />
           {language === 'ar' ? 'العودة للتقارير' : 'Back to Reports'}
         </Button>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <ReportSearch content={report.content} />
-          <Button variant="outline" onClick={() => setIsPresentationOpen(true)}>
+          <ReadingMode title={report.title}>
+            <div className="report-content">
+              {renderMarkdown(report.content)}
+            </div>
+          </ReadingMode>
+          <Button variant="outline" size="sm" onClick={() => setIsPresentationOpen(true)}>
             <Presentation className="w-4 h-4 me-2" />
             {language === 'ar' ? 'عرض تقديمي' : 'Present'}
           </Button>
-          <Button variant="outline" onClick={() => navigate(`/reports/edit/${report.id}`)}>
+          <Button variant="outline" size="sm" onClick={() => navigate(`/reports/edit/${report.id}`)}>
             <Edit className="w-4 h-4 me-2" />
             {language === 'ar' ? 'تعديل' : 'Edit'}
           </Button>
-          <Button variant="destructive" onClick={() => setIsDeleteOpen(true)}>
+          <Button variant="destructive" size="sm" onClick={() => setIsDeleteOpen(true)}>
             <Trash2 className="w-4 h-4 me-2" />
             {language === 'ar' ? 'حذف' : 'Delete'}
           </Button>

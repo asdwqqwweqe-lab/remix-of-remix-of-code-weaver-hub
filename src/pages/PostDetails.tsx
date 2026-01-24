@@ -25,6 +25,7 @@ import {
   Link as LinkIcon,
   ExternalLink,
   FolderOpen,
+  BookOpen,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ar, enUS } from 'date-fns/locale';
@@ -36,6 +37,7 @@ import ScrollProgress from '@/components/common/ScrollProgress';
 import DisplaySettings, { DisplaySettingsValues } from '@/components/reports/DisplaySettings';
 import PostSearch from '@/components/post/PostSearch';
 import ContentNavigation from '@/components/navigation/ContentNavigation';
+import ReadingMode from '@/components/common/ReadingMode';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -115,6 +117,14 @@ const PostDetails = () => {
         </Button>
         <div className="flex gap-2">
           <PostSearch content={post.content} />
+          <ReadingMode title={post.title}>
+            <CodeHighlighter
+              content={post.content}
+              className="editor-content prose dark:prose-invert max-w-none [&_pre]:text-left [&_pre]:dir-ltr [&_code]:text-left [&_code]:dir-ltr"
+              dir={post.mainLanguage === 'ar' ? 'rtl' : 'ltr'}
+              showTableOfContents={false}
+            />
+          </ReadingMode>
           <Link to={`/posts/${post.id}/edit`}>
             <Button variant="outline" size="sm" className="gap-1">
               <Edit className="w-4 h-4" />
