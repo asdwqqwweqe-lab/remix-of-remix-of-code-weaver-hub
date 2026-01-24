@@ -20,19 +20,48 @@ import CustomCssManager from '@/components/settings/CustomCssManager';
 import DemoDataManager from '@/components/data/DemoDataManager';
 import FirebaseSettings from '@/components/settings/FirebaseSettings';
 import DataBackupManager from '@/components/settings/DataBackupManager';
+import BaseSettingsManager from '@/components/settings/BaseSettingsManager';
 import { AIProvider } from '@/types/blog';
 import { useAuth } from '@/contexts/AuthContext';
 
 // Free OpenRouter Models Only - https://openrouter.ai/models?pricing=free
 const OPENROUTER_MODELS = [
-  { value: 'google/gemini-2.5-flash-exp:free', label: 'Gemini 2.5 Flash (Free)', url: 'https://openrouter.ai/google/gemini-2.5-flash-preview-05-20' },
-  { value: 'google/gemini-2.0-flash-exp:free', label: 'Gemini 2.0 Flash (Free)', url: 'https://openrouter.ai/google/gemini-2.0-flash-exp:free' },
-  { value: 'xiaomi/mimo-v2-flash:free', label: 'Xiaomi MiMo V2 Flash (Free)', url: 'https://openrouter.ai/xiaomi/mimo-v2-flash:free' },
-  { value: 'deepseek/deepseek-chat-v3-0324:free', label: 'DeepSeek Chat V3 (Free)', url: 'https://openrouter.ai/deepseek/deepseek-chat-v3-0324:free' },
-  { value: 'qwen/qwen3-235b-a22b:free', label: 'Qwen3 235B (Free)', url: 'https://openrouter.ai/qwen/qwen3-235b-a22b:free' },
-  { value: 'meta-llama/llama-4-maverick:free', label: 'Llama 4 Maverick (Free)', url: 'https://openrouter.ai/meta-llama/llama-4-maverick:free' },
-  { value: 'microsoft/phi-4:free', label: 'Microsoft Phi-4 (Free)', url: 'https://openrouter.ai/microsoft/phi-4:free' },
-  { value: 'mistralai/mistral-small-3.1-24b-instruct:free', label: 'Mistral Small 3.1 (Free)', url: 'https://openrouter.ai/mistralai/mistral-small-3.1-24b-instruct:free' },
+  // Google Models
+  { value: 'google/gemini-2.0-flash-exp:free', label: 'Google: Gemini 2.0 Flash (Free)', url: 'https://openrouter.ai/google/gemini-2.0-flash-exp:free', category: 'Google' },
+  { value: 'google/gemma-3-27b-it:free', label: 'Google: Gemma 3 27B (Free)', url: 'https://openrouter.ai/google/gemma-3-27b-it:free', category: 'Google' },
+  
+  // DeepSeek Models
+  { value: 'deepseek/deepseek-r1-0528:free', label: 'DeepSeek: R1 0528 (Free)', url: 'https://openrouter.ai/deepseek/deepseek-r1-0528:free', category: 'DeepSeek' },
+  
+  // Meta Models
+  { value: 'meta-llama/llama-3.3-70b-instruct:free', label: 'Meta: Llama 3.3 70B (Free)', url: 'https://openrouter.ai/meta-llama/llama-3.3-70b-instruct:free', category: 'Meta' },
+  
+  // Qwen Models  
+  { value: 'qwen/qwen3-coder:free', label: 'Qwen: Qwen3 Coder 480B (Free)', url: 'https://openrouter.ai/qwen/qwen3-coder:free', category: 'Qwen' },
+  
+  // Mistral Models
+  { value: 'mistralai/devstral-2512:free', label: 'Mistral: Devstral 2 2512 (Free)', url: 'https://openrouter.ai/mistralai/devstral-2512:free', category: 'Mistral' },
+  
+  // NVIDIA Models
+  { value: 'nvidia/nemotron-3-nano-30b-a3b:free', label: 'NVIDIA: Nemotron 3 Nano (Free)', url: 'https://openrouter.ai/nvidia/nemotron-3-nano-30b-a3b:free', category: 'NVIDIA' },
+  
+  // OpenAI Models
+  { value: 'openai/gpt-oss-120b:free', label: 'OpenAI: GPT-OSS 120B (Free)', url: 'https://openrouter.ai/openai/gpt-oss-120b:free', category: 'OpenAI' },
+  { value: 'openai/gpt-oss-20b:free', label: 'OpenAI: GPT-OSS 20B (Free)', url: 'https://openrouter.ai/openai/gpt-oss-20b:free', category: 'OpenAI' },
+  
+  // TNG Models
+  { value: 'tngtech/deepseek-r1t2-chimera:free', label: 'TNG: DeepSeek R1T2 Chimera (Free)', url: 'https://openrouter.ai/tngtech/deepseek-r1t2-chimera:free', category: 'TNG' },
+  { value: 'tngtech/deepseek-r1t-chimera:free', label: 'TNG: DeepSeek R1T Chimera (Free)', url: 'https://openrouter.ai/tngtech/deepseek-r1t-chimera:free', category: 'TNG' },
+  { value: 'tngtech/tng-r1t-chimera:free', label: 'TNG: R1T Chimera (Free)', url: 'https://openrouter.ai/tngtech/tng-r1t-chimera:free', category: 'TNG' },
+  
+  // Z.AI Models
+  { value: 'z-ai/glm-4.5-air:free', label: 'Z.AI: GLM 4.5 Air (Free)', url: 'https://openrouter.ai/z-ai/glm-4.5-air:free', category: 'Z.AI' },
+  
+  // ByteDance Models
+  { value: 'bytedance-seed/seedream-4.5', label: 'ByteDance: Seedream 4.5', url: 'https://openrouter.ai/bytedance-seed/seedream-4.5', category: 'ByteDance' },
+  
+  // Venice Models
+  { value: 'cognitivecomputations/dolphin-mistral-24b-venice-edition:free', label: 'Venice: Uncensored (Free)', url: 'https://openrouter.ai/cognitivecomputations/dolphin-mistral-24b-venice-edition:free', category: 'Venice' },
 ];
 
 const AI_PROVIDERS = [
@@ -91,6 +120,10 @@ export default function Settings() {
   const [geminiTestResults, setGeminiTestResults] = useState<Record<string, { success: boolean; message: string; model?: string }>>({});
   const [showGeminiKeys, setShowGeminiKeys] = useState<Record<string, boolean>>({});
   const [isAddingGemini, setIsAddingGemini] = useState(false);
+
+  // Test all keys state
+  const [isTestingAllKeys, setIsTestingAllKeys] = useState(false);
+  const [isTestingAllGeminiKeys, setIsTestingAllGeminiKeys] = useState(false);
 
   // Lovable AI usage tracking
   const [dailyUsage, setDailyUsage] = useState(getStoredUsage());
@@ -189,6 +222,40 @@ export default function Settings() {
       },
     }));
     setGeminiTestingKeyId(null);
+  };
+
+  // Test all OpenRouter keys
+  const handleTestAllKeys = async () => {
+    if (settings.openRouterKeys.length === 0) return;
+    setIsTestingAllKeys(true);
+    
+    for (const keyData of settings.openRouterKeys) {
+      await handleTestKey(keyData.id, keyData.key);
+    }
+    
+    setIsTestingAllKeys(false);
+    const successCount = Object.values(testResults).filter(r => r.success).length;
+    toast({
+      title: 'اختبار المفاتيح',
+      description: `تم اختبار ${settings.openRouterKeys.length} مفتاح - ${successCount} يعمل`,
+    });
+  };
+
+  // Test all Gemini keys
+  const handleTestAllGeminiKeys = async () => {
+    if (!settings.geminiKeys?.length) return;
+    setIsTestingAllGeminiKeys(true);
+    
+    for (const keyData of settings.geminiKeys) {
+      await handleTestGeminiKey(keyData.id, keyData.key);
+    }
+    
+    setIsTestingAllGeminiKeys(false);
+    const successCount = Object.values(geminiTestResults).filter(r => r.success).length;
+    toast({
+      title: 'اختبار المفاتيح',
+      description: `تم اختبار ${settings.geminiKeys.length} مفتاح - ${successCount} يعمل`,
+    });
   };
 
   const toggleShowKey = (keyId: string) => {
@@ -327,25 +394,35 @@ export default function Settings() {
 
               {/* Model Links for API Key Creation */}
               {settings.defaultProvider === 'openrouter' && (
-                <div className="p-3 bg-muted/50 rounded-lg space-y-2">
+                <div className="p-3 bg-muted/50 rounded-lg space-y-3">
                   <Label className="text-sm flex items-center gap-2">
                     <ExternalLink className="w-4 h-4" />
-                    روابط النماذج (لإنشاء مفتاح API)
+                    الموديلات المجانية المتاحة (اضغط للوصول السريع)
                   </Label>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    {OPENROUTER_MODELS.map((model) => (
-                      <a
-                        key={model.value}
-                        href={model.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 text-sm p-2 rounded-md bg-background border hover:border-primary hover:text-primary transition-colors"
-                      >
-                        <ExternalLink className="w-3 h-3 shrink-0" />
-                        <span className="truncate">{model.label}</span>
-                      </a>
-                    ))}
-                  </div>
+                  {/* Group models by category */}
+                  {['Google', 'DeepSeek', 'Meta', 'Qwen', 'Mistral', 'NVIDIA', 'OpenAI', 'TNG', 'Z.AI', 'ByteDance', 'Venice'].map((category) => {
+                    const categoryModels = OPENROUTER_MODELS.filter(m => m.category === category);
+                    if (categoryModels.length === 0) return null;
+                    return (
+                      <div key={category} className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">{category}</Label>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-1.5">
+                          {categoryModels.map((model) => (
+                            <a
+                              key={model.value}
+                              href={model.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 text-xs p-2 rounded-md bg-background border hover:border-primary hover:text-primary transition-colors"
+                            >
+                              <ExternalLink className="w-3 h-3 shrink-0" />
+                              <span className="truncate">{model.label.replace(`${category}: `, '')}</span>
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -373,7 +450,22 @@ export default function Settings() {
 
             {/* Gemini Keys Tab */}
             <TabsContent value="gemini" className="space-y-4">
-              <div className="flex justify-end">
+              <div className="flex justify-between items-center">
+                {settings.geminiKeys?.length > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleTestAllGeminiKeys}
+                    disabled={isTestingAllGeminiKeys}
+                  >
+                    {isTestingAllGeminiKeys ? (
+                      <Loader2 className="h-4 w-4 ml-2 animate-spin" />
+                    ) : (
+                      <TestTube className="h-4 w-4 ml-2" />
+                    )}
+                    اختبار جميع المفاتيح
+                  </Button>
+                )}
                 <Dialog open={isGeminiDialogOpen} onOpenChange={setIsGeminiDialogOpen}>
                   <DialogTrigger asChild>
                     <Button>
@@ -514,7 +606,22 @@ export default function Settings() {
 
             {/* OpenRouter Keys Tab */}
             <TabsContent value="openrouter" className="space-y-4">
-              <div className="flex justify-end">
+              <div className="flex justify-between items-center">
+                {settings.openRouterKeys.length > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleTestAllKeys}
+                    disabled={isTestingAllKeys}
+                  >
+                    {isTestingAllKeys ? (
+                      <Loader2 className="h-4 w-4 ml-2 animate-spin" />
+                    ) : (
+                      <TestTube className="h-4 w-4 ml-2" />
+                    )}
+                    اختبار جميع المفاتيح
+                  </Button>
+                )}
                 <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                   <DialogTrigger asChild>
                     <Button>
@@ -655,6 +762,9 @@ export default function Settings() {
           </Tabs>
         </CardContent>
       </Card>
+
+      {/* Base Settings Manager */}
+      <BaseSettingsManager />
 
       {/* Firebase Settings */}
       <FirebaseSettings />
