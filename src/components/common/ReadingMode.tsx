@@ -63,22 +63,25 @@ const ReadingMode = ({ children, title, className }: ReadingModeProps) => {
         "fixed inset-0 z-50 overflow-auto transition-colors duration-300",
         isDarkMode 
           ? "bg-zinc-900 text-zinc-100" 
-          : "bg-amber-50 text-zinc-900",
+          : "bg-[#faf8f5] text-zinc-800",
         className
       )}
     >
       {/* Toolbar */}
       <div
         className={cn(
-          "sticky top-0 z-10 border-b transition-colors duration-300",
+          "sticky top-0 z-10 border-b transition-colors duration-300 shadow-sm",
           isDarkMode 
             ? "bg-zinc-800/95 border-zinc-700 backdrop-blur-sm" 
-            : "bg-white/95 border-amber-200 backdrop-blur-sm"
+            : "bg-white border-zinc-200 backdrop-blur-sm"
         )}
       >
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           {/* Title */}
-          <h2 className="font-semibold text-lg truncate max-w-[40%]">
+          <h2 className={cn(
+            "font-semibold text-lg truncate max-w-[40%]",
+            isDarkMode ? "text-zinc-100" : "text-zinc-800"
+          )}>
             {title || (language === 'ar' ? 'وضع القراءة' : 'Reading Mode')}
           </h2>
 
@@ -86,23 +89,40 @@ const ReadingMode = ({ children, title, className }: ReadingModeProps) => {
           <div className="flex items-center gap-2">
             {/* Font Size Controls */}
             <div className={cn(
-              "flex items-center gap-1 rounded-lg p-1",
-              isDarkMode ? "bg-zinc-700" : "bg-amber-100"
+              "flex items-center gap-1 rounded-lg p-1 border",
+              isDarkMode 
+                ? "bg-zinc-700 border-zinc-600" 
+                : "bg-zinc-100 border-zinc-200"
             )}>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8"
+                className={cn(
+                  "h-8 w-8",
+                  isDarkMode 
+                    ? "hover:bg-zinc-600 text-zinc-100" 
+                    : "hover:bg-zinc-200 text-zinc-700"
+                )}
                 onClick={decreaseFontSize}
                 disabled={fontSize <= 12}
               >
                 <Minus className="w-4 h-4" />
               </Button>
-              <span className="text-sm w-8 text-center">{fontSize}</span>
+              <span className={cn(
+                "text-sm w-8 text-center font-medium",
+                isDarkMode ? "text-zinc-100" : "text-zinc-700"
+              )}>
+                {fontSize}
+              </span>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8"
+                className={cn(
+                  "h-8 w-8",
+                  isDarkMode 
+                    ? "hover:bg-zinc-600 text-zinc-100" 
+                    : "hover:bg-zinc-200 text-zinc-700"
+                )}
                 onClick={increaseFontSize}
                 disabled={fontSize >= 32}
               >
@@ -116,8 +136,10 @@ const ReadingMode = ({ children, title, className }: ReadingModeProps) => {
               size="icon"
               onClick={() => setIsDarkMode(!isDarkMode)}
               className={cn(
-                "h-9 w-9 rounded-lg",
-                isDarkMode ? "bg-zinc-700 hover:bg-zinc-600" : "bg-amber-100 hover:bg-amber-200"
+                "h-9 w-9 rounded-lg border",
+                isDarkMode 
+                  ? "bg-zinc-700 border-zinc-600 hover:bg-zinc-600 text-yellow-400" 
+                  : "bg-zinc-100 border-zinc-200 hover:bg-zinc-200 text-zinc-700"
               )}
             >
               {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
@@ -129,10 +151,10 @@ const ReadingMode = ({ children, title, className }: ReadingModeProps) => {
               size="icon"
               onClick={() => setIsActive(false)}
               className={cn(
-                "h-9 w-9 rounded-lg",
+                "h-9 w-9 rounded-lg border",
                 isDarkMode 
-                  ? "bg-zinc-700 hover:bg-red-900/50 text-zinc-100" 
-                  : "bg-amber-100 hover:bg-red-100 text-zinc-900"
+                  ? "bg-zinc-700 border-zinc-600 hover:bg-red-900/50 text-zinc-100" 
+                  : "bg-zinc-100 border-zinc-200 hover:bg-red-100 hover:border-red-200 text-zinc-700 hover:text-red-600"
               )}
             >
               <X className="w-4 h-4" />
@@ -146,8 +168,11 @@ const ReadingMode = ({ children, title, className }: ReadingModeProps) => {
         <div
           className={cn(
             "reading-content prose max-w-none",
-            isDarkMode ? "prose-invert" : "",
-            "[&_pre]:text-left [&_pre]:dir-ltr [&_code]:text-left [&_code]:dir-ltr"
+            isDarkMode 
+              ? "prose-invert" 
+              : "prose-zinc prose-headings:text-zinc-800 prose-p:text-zinc-700 prose-strong:text-zinc-800 prose-a:text-primary",
+            "[&_pre]:text-left [&_pre]:dir-ltr [&_code]:text-left [&_code]:dir-ltr",
+            !isDarkMode && "[&_pre]:bg-zinc-100 [&_pre]:border [&_pre]:border-zinc-200 [&_code]:bg-zinc-100 [&_code]:text-zinc-800 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded"
           )}
           style={{
             fontSize: `${fontSize}px`,
@@ -161,10 +186,10 @@ const ReadingMode = ({ children, title, className }: ReadingModeProps) => {
       {/* Footer hint */}
       <div
         className={cn(
-          "fixed bottom-4 left-1/2 -translate-x-1/2 text-xs px-3 py-1.5 rounded-full transition-colors",
+          "fixed bottom-4 left-1/2 -translate-x-1/2 text-xs px-4 py-2 rounded-full transition-colors border",
           isDarkMode 
-            ? "bg-zinc-800 text-zinc-400" 
-            : "bg-white text-zinc-500 shadow-sm"
+            ? "bg-zinc-800 text-zinc-400 border-zinc-700" 
+            : "bg-white text-zinc-500 border-zinc-200 shadow-md"
         )}
       >
         {language === 'ar' ? 'اضغط Esc للخروج' : 'Press Esc to exit'}
