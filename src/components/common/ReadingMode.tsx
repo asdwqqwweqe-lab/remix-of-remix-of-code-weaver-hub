@@ -1,6 +1,6 @@
 import { useState, useEffect, ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
-import { BookOpen, X, Moon, Sun, Minus, Plus } from 'lucide-react';
+import { BookOpen, X, Moon, Sun, Minus, Plus, Columns } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -10,11 +10,33 @@ interface ReadingModeProps {
   className?: string;
 }
 
+type ContentWidth = 'narrow' | 'medium' | 'wide';
+
 const ReadingMode = ({ children, title, className }: ReadingModeProps) => {
   const { language } = useLanguage();
   const [isActive, setIsActive] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [fontSize, setFontSize] = useState(18);
+  const [contentWidth, setContentWidth] = useState<ContentWidth>('medium');
+
+  const widthClasses: Record<ContentWidth, string> = {
+    narrow: 'max-w-xl',
+    medium: 'max-w-3xl',
+    wide: 'max-w-5xl',
+  };
+
+  const widthLabels: Record<ContentWidth, { ar: string; en: string }> = {
+    narrow: { ar: 'ضيق', en: 'Narrow' },
+    medium: { ar: 'متوسط', en: 'Medium' },
+    wide: { ar: 'واسع', en: 'Wide' },
+  };
+
+  const cycleWidth = () => {
+    const widths: ContentWidth[] = ['narrow', 'medium', 'wide'];
+    const currentIndex = widths.indexOf(contentWidth);
+    const nextIndex = (currentIndex + 1) % widths.length;
+    setContentWidth(widths[nextIndex]);
+  };
 
   // Handle escape key to exit reading mode
   useEffect(() => {
@@ -130,6 +152,23 @@ const ReadingMode = ({ children, title, className }: ReadingModeProps) => {
               </Button>
             </div>
 
+            {/* Content Width Toggle */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={cycleWidth}
+              className={cn(
+                "h-9 px-3 rounded-lg border gap-1.5 text-xs font-medium",
+                isDarkMode 
+                  ? "bg-zinc-700 border-zinc-600 hover:bg-zinc-600 text-zinc-100" 
+                  : "bg-zinc-100 border-zinc-200 hover:bg-zinc-200 text-zinc-700"
+              )}
+              title={language === 'ar' ? 'عرض المحتوى' : 'Content Width'}
+            >
+              <Columns className="w-4 h-4" />
+              <span>{language === 'ar' ? widthLabels[contentWidth].ar : widthLabels[contentWidth].en}</span>
+            </Button>
+
             {/* Dark/Light Toggle */}
             <Button
               variant="ghost"
@@ -164,7 +203,7 @@ const ReadingMode = ({ children, title, className }: ReadingModeProps) => {
       </div>
 
       {/* Content */}
-      <div className="max-w-3xl mx-auto px-6 py-8">
+      <div className={cn(widthClasses[contentWidth], "mx-auto px-6 py-8 transition-all duration-300")}>
         <div
           className={cn(
             "reading-content prose max-w-none",
