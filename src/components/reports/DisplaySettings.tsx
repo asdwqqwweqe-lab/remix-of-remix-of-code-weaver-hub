@@ -52,7 +52,12 @@ const DisplaySettings = ({ onSettingsChange, className }: DisplaySettingsProps) 
   const [settings, setSettings] = useState<DisplaySettingsValues>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      return saved ? JSON.parse(saved) : DEFAULT_SETTINGS;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Merge with defaults to ensure all properties exist
+        return { ...DEFAULT_SETTINGS, ...parsed };
+      }
+      return DEFAULT_SETTINGS;
     } catch {
       return DEFAULT_SETTINGS;
     }
