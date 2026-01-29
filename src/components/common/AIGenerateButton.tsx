@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Sparkles, Loader2 } from 'lucide-react';
+import { Sparkles, Loader2, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { callAI, getAIProviderName } from '@/lib/ai-service';
+import { callAI, streamAI, getAIProviderName } from '@/lib/ai-service';
 import { useSettingsStore } from '@/store/settingsStore';
 import { toast } from 'sonner';
+import AIStreamingDialog from './AIStreamingDialog';
 
 interface AIGenerateButtonProps {
   context: string;
@@ -12,6 +13,7 @@ interface AIGenerateButtonProps {
   onGenerate: (result: string) => void;
   disabled?: boolean;
   className?: string;
+  useStreaming?: boolean;
 }
 
 // Audio notification functions
@@ -66,9 +68,17 @@ const playErrorSound = () => {
   }
 };
 
-const AIGenerateButton = ({ context, field, onGenerate, disabled, className }: AIGenerateButtonProps) => {
+const AIGenerateButton = ({ 
+  context, 
+  field, 
+  onGenerate, 
+  disabled, 
+  className,
+  useStreaming = false 
+}: AIGenerateButtonProps) => {
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
+  const [showStreamingDialog, setShowStreamingDialog] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   const { settings } = useSettingsStore();
   
@@ -114,6 +124,12 @@ const AIGenerateButton = ({ context, field, onGenerate, disabled, className }: A
       return;
     }
     
+    // Use streaming dialog for longer content
+    if (useStreaming && field !== 'category') {
+      setShowStreamingDialog(true);
+      return;
+    }
+    
     setIsLoading(true);
     setRetryCount(0);
     
@@ -152,34 +168,70 @@ const AIGenerateButton = ({ context, field, onGenerate, disabled, className }: A
       setRetryCount(0);
     }
   };
+
+  const handleStreamingAccept = (content: string) => {
+    onGenerate(content.trim());
+    
+    // Track usage
+    if (settings.defaultProvider === 'lovable') {
+      const stored = localStorage.getItem('lovable-ai-usage');
+      const today = new Date().toDateString();
+      let count = 0;
+      if (stored) {
+        const data = JSON.parse(stored);
+        if (data.date === today) count = data.count;
+      }
+      localStorage.setItem('lovable-ai-usage', JSON.stringify({ count: count + 1, date: today }));
+    }
+  };
   
   if (!isProviderAvailable()) {
     return null;
   }
   
+  const fieldLabels = {
+    description: 'الوصف',
+    summary: 'الملخص',
+    category: 'التصنيف',
+  };
+  
   return (
-    <Button
-      type="button"
-      variant="ghost"
-      size="icon"
-      className={`relative ${className}`}
-      onClick={handleGenerate}
-      disabled={disabled || isLoading || !context.trim()}
-      title={`توليد بـ ${getAIProviderName()}`}
-    >
-      {isLoading ? (
-        <div className="flex items-center gap-1">
-          <Loader2 className="w-4 h-4 animate-spin" />
-          {retryCount > 0 && (
-            <span className="absolute -top-1 -right-1 bg-yellow-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">
-              {retryCount}
-            </span>
-          )}
-        </div>
-      ) : (
-        <Sparkles className="w-4 h-4 text-primary" />
-      )}
-    </Button>
+    <>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        className={`relative ${className}`}
+        onClick={handleGenerate}
+        disabled={disabled || isLoading || !context.trim()}
+        title={`توليد ${fieldLabels[field]} بـ ${getAIProviderName()}${useStreaming ? ' (بث مباشر)' : ''}`}
+      >
+        {isLoading ? (
+          <div className="flex items-center gap-1">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            {retryCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-yellow-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">
+                {retryCount}
+              </span>
+            )}
+          </div>
+        ) : useStreaming ? (
+          <Zap className="w-4 h-4 text-primary" />
+        ) : (
+          <Sparkles className="w-4 h-4 text-primary" />
+        )}
+      </Button>
+
+      {/* Streaming Dialog */}
+      <AIStreamingDialog
+        open={showStreamingDialog}
+        onOpenChange={setShowStreamingDialog}
+        prompt={getPrompt()}
+        systemPrompt={getSystemPrompt()}
+        title={`توليد ${fieldLabels[field]}`}
+        onAccept={handleStreamingAccept}
+      />
+    </>
   );
 };
 
