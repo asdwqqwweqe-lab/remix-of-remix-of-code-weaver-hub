@@ -163,6 +163,18 @@ export function exportDataAsJson(): string {
 /**
  * Import data from JSON
  */
+/**
+ * Merge arrays by id, keeping existing items and adding new ones
+ */
+function mergeArraysById<T extends { id: string }>(existing: T[], incoming: T[]): T[] {
+  const existingIds = new Set(existing.map(item => item.id));
+  const newItems = incoming.filter(item => !existingIds.has(item.id));
+  return [...existing, ...newItems];
+}
+
+/**
+ * Import data from JSON - replace mode
+ */
 export function importDataFromJson(jsonString: string): { success: boolean; message: string } {
   try {
     const importData = JSON.parse(jsonString);
@@ -171,7 +183,7 @@ export function importDataFromJson(jsonString: string): { success: boolean; mess
       return { success: false, message: 'تنسيق الملف غير صحيح' };
     }
 
-    const { blog, reports, roadmap, settings } = importData.data;
+    const { blog, reports, roadmap } = importData.data;
 
     if (blog) {
       localStorage.setItem('blog-storage', JSON.stringify(blog));
@@ -182,9 +194,126 @@ export function importDataFromJson(jsonString: string): { success: boolean; mess
     if (roadmap) {
       localStorage.setItem('roadmap-storage', JSON.stringify(roadmap));
     }
-    // Don't import settings to preserve current Firebase config and API keys
 
     return { success: true, message: 'تم استيراد البيانات بنجاح - أعد تحميل الصفحة' };
+  } catch (error) {
+    return { 
+      success: false, 
+      message: error instanceof Error ? error.message : 'خطأ في قراءة الملف' 
+    };
+  }
+}
+
+/**
+ * Import data from JSON - merge mode (add new items only)
+ */
+export function mergeDataFromJson(jsonString: string): { success: boolean; message: string; stats?: { added: number; skipped: number } } {
+  try {
+    const importData = JSON.parse(jsonString);
+    
+    if (!importData.version || !importData.data) {
+      return { success: false, message: 'تنسيق الملف غير صحيح' };
+    }
+
+    const { blog, reports, roadmap } = importData.data;
+    let totalAdded = 0;
+    let totalSkipped = 0;
+
+    // Merge blog data
+    if (blog?.state) {
+      const existingBlog = JSON.parse(localStorage.getItem('blog-storage') || '{"state":{}}');
+      const state = existingBlog.state || {};
+      
+      // Merge posts
+      if (blog.state.posts && Array.isArray(blog.state.posts)) {
+        const existingPosts = state.posts || [];
+        const beforeCount = existingPosts.length;
+        state.posts = mergeArraysById(existingPosts, blog.state.posts);
+        totalAdded += state.posts.length - beforeCount;
+        totalSkipped += blog.state.posts.length - (state.posts.length - beforeCount);
+      }
+      
+      // Merge categories
+      if (blog.state.categories && Array.isArray(blog.state.categories)) {
+        const existing = state.categories || [];
+        const beforeCount = existing.length;
+        state.categories = mergeArraysById(existing, blog.state.categories);
+        totalAdded += state.categories.length - beforeCount;
+      }
+      
+      // Merge tags
+      if (blog.state.tags && Array.isArray(blog.state.tags)) {
+        const existing = state.tags || [];
+        const beforeCount = existing.length;
+        state.tags = mergeArraysById(existing, blog.state.tags);
+        totalAdded += state.tags.length - beforeCount;
+      }
+      
+      // Merge snippets
+      if (blog.state.snippets && Array.isArray(blog.state.snippets)) {
+        const existing = state.snippets || [];
+        const beforeCount = existing.length;
+        state.snippets = mergeArraysById(existing, blog.state.snippets);
+        totalAdded += state.snippets.length - beforeCount;
+      }
+      
+      // Merge collections
+      if (blog.state.collections && Array.isArray(blog.state.collections)) {
+        const existing = state.collections || [];
+        const beforeCount = existing.length;
+        state.collections = mergeArraysById(existing, blog.state.collections);
+        totalAdded += state.collections.length - beforeCount;
+      }
+      
+      // Merge languages
+      if (blog.state.programmingLanguages && Array.isArray(blog.state.programmingLanguages)) {
+        const existing = state.programmingLanguages || [];
+        const beforeCount = existing.length;
+        state.programmingLanguages = mergeArraysById(existing, blog.state.programmingLanguages);
+        totalAdded += state.programmingLanguages.length - beforeCount;
+      }
+
+      localStorage.setItem('blog-storage', JSON.stringify({ ...existingBlog, state }));
+    }
+
+    // Merge reports
+    if (reports?.state?.reports && Array.isArray(reports.state.reports)) {
+      const existingReports = JSON.parse(localStorage.getItem('reports-storage') || '{"state":{"reports":[]}}');
+      const existing = existingReports.state?.reports || [];
+      const beforeCount = existing.length;
+      existingReports.state = existingReports.state || {};
+      existingReports.state.reports = mergeArraysById(existing, reports.state.reports);
+      totalAdded += existingReports.state.reports.length - beforeCount;
+      localStorage.setItem('reports-storage', JSON.stringify(existingReports));
+    }
+
+    // Merge roadmaps
+    if (roadmap?.state) {
+      const existingRoadmap = JSON.parse(localStorage.getItem('roadmap-storage') || '{"state":{}}');
+      const state = existingRoadmap.state || {};
+      
+      if (roadmap.state.roadmaps && Array.isArray(roadmap.state.roadmaps)) {
+        const existing = state.roadmaps || [];
+        const beforeCount = existing.length;
+        state.roadmaps = mergeArraysById(existing, roadmap.state.roadmaps);
+        totalAdded += state.roadmaps.length - beforeCount;
+      }
+      
+      if (roadmap.state.sections && Array.isArray(roadmap.state.sections)) {
+        const existing = state.sections || [];
+        const beforeCount = existing.length;
+        state.sections = mergeArraysById(existing, roadmap.state.sections);
+        totalAdded += state.sections.length - beforeCount;
+      }
+
+      localStorage.setItem('roadmap-storage', JSON.stringify({ ...existingRoadmap, state }));
+    }
+
+    return { 
+      success: true, 
+      message: `تمت إضافة ${totalAdded} عنصر جديد`,
+      stats: { added: totalAdded, skipped: totalSkipped }
+    };
   } catch (error) {
     return { 
       success: false, 
