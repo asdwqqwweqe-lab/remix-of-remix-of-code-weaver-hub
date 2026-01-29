@@ -1,6 +1,6 @@
 import { useSettingsStore } from '@/store/settingsStore';
 import { callOpenRouter, ChatMessage } from './openrouter';
-import { callGemini } from './gemini';
+import { callGemini, streamGemini } from './gemini';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface AIServiceResult {
@@ -102,7 +102,7 @@ async function callLovableAI(
 }
 
 /**
- * Stream AI response (for providers that support it)
+ * Stream AI response (supports Gemini streaming natively)
  */
 export async function streamAI(
   prompt: string,
@@ -113,7 +113,18 @@ export async function streamAI(
   const store = useSettingsStore.getState();
   const provider = store.settings.defaultProvider;
 
-  // For now, all streaming goes through Lovable AI edge functions
+  // Use native Gemini streaming when Gemini is selected
+  if (provider === 'gemini') {
+    try {
+      await streamGemini(prompt, systemPrompt, onDelta, onDone);
+      return;
+    } catch (error) {
+      console.error('Gemini streaming error:', error);
+      throw error;
+    }
+  }
+
+  // For Lovable AI and OpenRouter, use edge function streaming
   const response = await fetch(
     `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-stream`,
     {
