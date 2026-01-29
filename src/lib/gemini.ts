@@ -19,6 +19,8 @@ export interface GeminiResponse {
 }
 
 const GEMINI_MODELS = [
+  'gemini-1.5-flash',
+  'gemini-1.5-flash-8b',
   'gemini-2.0-flash',
   'gemini-2.0-flash-lite',
 ];
@@ -141,6 +143,10 @@ export async function testGeminiKey(key: string, model?: string): Promise<{ succ
 }
 
 export const GEMINI_MODELS_LIST = [
+  { value: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash (مجاني - موصى به)' },
+  { value: 'gemini-1.5-flash-8b', label: 'Gemini 1.5 Flash 8B (مجاني - سريع)' },
   { value: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash' },
   { value: 'gemini-2.0-flash-lite', label: 'Gemini 2.0 Flash Lite' },
 ];
+
+export const GEMINI_API_KEYS_URL = 'https://aistudio.google.com/app/api-keys';

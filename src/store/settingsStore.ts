@@ -52,7 +52,7 @@ export const useSettingsStore = create<SettingsStore>()(
       settings: {
         openRouterKeys: [],
         geminiKeys: [],
-        defaultModel: 'gemini-2.0-flash',
+        defaultModel: 'gemini-1.5-flash',
         defaultProvider: 'lovable',
         theme: 'system',
         customCss: [],

@@ -15,7 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { useSettingsStore } from '@/store/settingsStore';
 import { testOpenRouterKey } from '@/lib/openrouter';
-import { testGeminiKey, GEMINI_MODELS_LIST } from '@/lib/gemini';
+import { testGeminiKey, GEMINI_MODELS_LIST, GEMINI_API_KEYS_URL } from '@/lib/gemini';
 import CustomCssManager from '@/components/settings/CustomCssManager';
 import DemoDataManager from '@/components/data/DemoDataManager';
 import FirebaseSettings from '@/components/settings/FirebaseSettings';
@@ -509,6 +509,30 @@ export default function Settings() {
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
+              </div>
+
+              {/* Gemini API Key Link */}
+              <div className="p-4 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-lg">
+                <div className="flex items-center justify-between flex-wrap gap-3">
+                  <div>
+                    <h4 className="font-medium text-sm flex items-center gap-2">
+                      <Key className="h-4 w-4 text-blue-500" />
+                      احصل على مفتاح Gemini API مجاناً
+                    </h4>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      الموديلات المجانية: Gemini 1.5 Flash و Gemini 1.5 Flash 8B
+                    </p>
+                  </div>
+                  <a
+                    href={GEMINI_API_KEYS_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    الحصول على مفتاح
+                  </a>
+                </div>
               </div>
 
               {settings.geminiKeys?.length === 0 ? (
