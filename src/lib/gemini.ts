@@ -1,152 +1,186 @@
+import { GoogleGenAI } from '@google/genai';
 import { useSettingsStore } from '@/store/settingsStore';
 
-export interface GeminiMessage {
-  role: 'user' | 'model';
-  parts: { text: string }[];
-}
-
-export interface GeminiResponse {
-  candidates?: {
-    content: {
-      parts: { text: string }[];
-      role: string;
-    };
-  }[];
-  error?: {
-    message: string;
-    code: number;
-  };
-}
-
-const GEMINI_MODELS = [
-  'gemini-1.5-flash',
-  'gemini-1.5-flash-8b',
-  'gemini-2.0-flash',
-  'gemini-2.0-flash-lite',
+// Updated free models list based on Google AI documentation (2025)
+// Note: gemini-1.5-* models are deprecated since Apr 29, 2025
+const GEMINI_FREE_MODELS = [
+  'gemini-2.5-flash',         // Stable - recommended for most use cases
+  'gemini-2.5-flash-lite',    // Stable GA - fastest, cost-efficient
+  'gemini-2.0-flash',         // Stable - fallback
+  'gemini-2.0-flash-lite',    // Stable - lightweight
+  'gemini-3-flash-preview',   // Preview - latest experimental
 ];
 
+export interface GeminiResponse {
+  success: boolean;
+  content?: string;
+  error?: string;
+  model?: string;
+}
+
+/**
+ * Check if error is related to quota exhaustion (limit: 0)
+ */
+function isQuotaExhausted(message?: string): boolean {
+  if (!message) return false;
+  return (
+    message.includes('Quota exceeded') ||
+    message.includes('RESOURCE_EXHAUSTED') ||
+    message.includes('limit: 0') ||
+    message.includes('generate_content_free_tier')
+  );
+}
+
+/**
+ * Get unique models array, prioritizing the selected model first
+ */
+function getModelsToTry(selectedModel: string): string[] {
+  const models = [selectedModel, ...GEMINI_FREE_MODELS];
+  return Array.from(new Set(models));
+}
+
+/**
+ * Call Gemini API using the official @google/genai SDK
+ */
 export async function callGemini(
   prompt: string,
   systemPrompt?: string,
   model?: string
-): Promise<{ success: boolean; content?: string; error?: string }> {
+): Promise<GeminiResponse> {
   const store = useSettingsStore.getState();
   const keys = store.settings.geminiKeys.filter((k) => k.failCount < 3 && k.isActive);
-  
+
   if (keys.length === 0) {
-    return { success: false, error: 'لا توجد مفاتيح Gemini API متاحة. يرجى إضافة مفتاح في الإعدادات.' };
+    return { 
+      success: false, 
+      error: 'لا توجد مفاتيح Gemini API متاحة. يرجى إضافة مفتاح في الإعدادات.' 
+    };
   }
-  
-  const modelToUse = model || 'gemini-2.0-flash';
-  
-  // Build contents array
-  const contents: GeminiMessage[] = [];
-  
-  if (systemPrompt) {
-    contents.push({ role: 'user', parts: [{ text: systemPrompt }] });
-    contents.push({ role: 'model', parts: [{ text: 'مفهوم. سأتبع هذه التعليمات.' }] });
-  }
-  
-  contents.push({ role: 'user', parts: [{ text: prompt }] });
-  
+
+  // Use selected model or fall back to the recommended free model
+  const selectedModel = model || store.settings.defaultModel || 'gemini-2.5-flash';
+  const modelsToTry = getModelsToTry(selectedModel);
+
+  // Build the full prompt with system prompt if provided
+  const fullPrompt = systemPrompt 
+    ? `${systemPrompt}\n\n---\n\n${prompt}`
+    : prompt;
+
   // Try each key until one works
   for (const keyData of keys) {
+    // Try each model until one works
+    for (const modelName of modelsToTry) {
+      try {
+        const ai = new GoogleGenAI({ apiKey: keyData.key });
+
+        const response = await ai.models.generateContent({
+          model: modelName,
+          contents: fullPrompt,
+        });
+
+        const content = response.text;
+
+        if (!content) {
+          console.warn(`Gemini model ${modelName}: Empty response, trying next model...`);
+          continue;
+        }
+
+        // Success! Reset fail count and update last used
+        store.resetGeminiKeyFailCount(keyData.id);
+        store.updateGeminiKey(keyData.id, { lastUsed: new Date() });
+
+        return {
+          success: true,
+          content: content.trim(),
+          model: modelName,
+        };
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.warn(`Gemini Key ${keyData.name} with model ${modelName} error:`, errorMessage);
+
+        // If quota exhausted for this model, try next model (don't burn the key)
+        if (isQuotaExhausted(errorMessage) && modelName !== 'gemini-2.5-flash-lite') {
+          console.log(`Quota exhausted for ${modelName}, trying fallback model...`);
+          continue;
+        }
+
+        // If model not found (404), try next model
+        if (errorMessage.includes('404') || errorMessage.includes('not found')) {
+          console.log(`Model ${modelName} not found, trying next model...`);
+          continue;
+        }
+
+        // For other errors, mark key as failed and try next key
+        store.markGeminiKeyFailed(keyData.id);
+        break;
+      }
+    }
+  }
+
+  return { 
+    success: false, 
+    error: 'فشلت جميع المفاتيح. يرجى التحقق من المفاتيح أو استخدام Lovable AI كبديل.' 
+  };
+}
+
+/**
+ * Test a Gemini API key with a simple request
+ */
+export async function testGeminiKey(
+  key: string, 
+  model?: string
+): Promise<{ success: boolean; error?: string; model?: string }> {
+  const modelsToTest = model ? [model] : GEMINI_FREE_MODELS;
+
+  for (const modelName of modelsToTest) {
     try {
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${modelToUse}:generateContent?key=${keyData.key}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ contents }),
-        }
-      );
-      
-      // Handle rate limit with automatic retry
-      if (response.status === 429) {
-        console.warn(`Gemini Key ${keyData.name}: Rate limited (429), trying next key...`);
-        store.markGeminiKeyFailed(keyData.id);
-        continue;
+      const ai = new GoogleGenAI({ apiKey: key });
+
+      const response = await ai.models.generateContent({
+        model: modelName,
+        contents: 'Hi',
+      });
+
+      if (response.text) {
+        return { success: true, model: modelName };
       }
-      
-      const data: GeminiResponse = await response.json();
-      
-      if (data.error) {
-        console.error(`Gemini Key ${keyData.name} failed:`, data.error.message);
-        store.markGeminiKeyFailed(keyData.id);
-        continue;
-      }
-      
-      const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
-      
-      if (!content) {
-        console.error(`Gemini Key ${keyData.name}: No content in response`);
-        store.markGeminiKeyFailed(keyData.id);
-        continue;
-      }
-      
-      // Reset fail count on success
-      store.resetGeminiKeyFailCount(keyData.id);
-      store.updateGeminiKey(keyData.id, { lastUsed: new Date() });
-      
-      return {
-        success: true,
-        content: content.trim(),
-      };
     } catch (error) {
-      console.error(`Gemini Key ${keyData.name} error:`, error);
-      store.markGeminiKeyFailed(keyData.id);
-      continue;
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      
+      // If model not found or quota issue, try next model
+      if (
+        errorMessage.includes('404') || 
+        errorMessage.includes('not found') ||
+        isQuotaExhausted(errorMessage)
+      ) {
+        continue;
+      }
+
+      // Return the error for other cases
+      return { success: false, error: errorMessage };
     }
   }
-  
-  return { success: false, error: 'فشلت جميع المفاتيح. يرجى التحقق من المفاتيح أو إضافة مفاتيح جديدة.' };
+
+  return { 
+    success: false, 
+    error: 'فشل اختبار المفتاح مع جميع النماذج المتاحة' 
+  };
 }
 
-export async function testGeminiKey(key: string, model?: string): Promise<{ success: boolean; error?: string; model?: string }> {
-  const modelToUse = model || 'gemini-2.0-flash';
-  
-  try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${modelToUse}:generateContent?key=${key}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          contents: [{ role: 'user', parts: [{ text: 'Hi' }] }],
-        }),
-      }
-    );
-    
-    const data = await response.json();
-    
-    if (data.error) {
-      // Try other models if the first one fails
-      if (model === undefined) {
-        for (const altModel of GEMINI_MODELS.slice(1)) {
-          const altResult = await testGeminiKey(key, altModel);
-          if (altResult.success) {
-            return altResult;
-          }
-        }
-      }
-      return { success: false, error: data.error.message };
-    }
-    
-    return { success: true, model: modelToUse };
-  } catch (error) {
-    return { success: false, error: error instanceof Error ? error.message : 'خطأ غير معروف' };
-  }
-}
-
+/**
+ * Available Gemini models for the UI dropdown
+ * Ordered by recommendation: latest stable free models first
+ */
 export const GEMINI_MODELS_LIST = [
-  { value: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash (مجاني - موصى به)' },
-  { value: 'gemini-1.5-flash-8b', label: 'Gemini 1.5 Flash 8B (مجاني - سريع)' },
-  { value: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash' },
-  { value: 'gemini-2.0-flash-lite', label: 'Gemini 2.0 Flash Lite' },
+  { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash (مجاني - موصى به)' },
+  { value: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash Lite (مجاني - سريع جداً)' },
+  { value: 'gemini-3-flash-preview', label: 'Gemini 3 Flash Preview (تجريبي - أحدث)' },
+  { value: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash (مجاني)' },
+  { value: 'gemini-2.0-flash-lite', label: 'Gemini 2.0 Flash Lite (مجاني - خفيف)' },
 ];
 
-export const GEMINI_API_KEYS_URL = 'https://aistudio.google.com/app/api-keys';
+/**
+ * URLs for getting API keys and managing projects
+ */
+export const GEMINI_API_KEYS_URL = 'https://aistudio.google.com/app/apikey';
+export const GEMINI_PROJECTS_URL = 'https://aistudio.google.com/app/projects';
