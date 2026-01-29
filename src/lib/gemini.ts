@@ -184,3 +184,80 @@ export const GEMINI_MODELS_LIST = [
  */
 export const GEMINI_API_KEYS_URL = 'https://aistudio.google.com/app/apikey';
 export const GEMINI_PROJECTS_URL = 'https://aistudio.google.com/app/projects';
+
+/**
+ * Stream content from Gemini using generateContentStream
+ * This provides real-time streaming responses for better UX
+ */
+export async function streamGemini(
+  prompt: string,
+  systemPrompt: string,
+  onDelta: (chunk: string) => void,
+  onDone: () => void,
+  model?: string
+): Promise<void> {
+  const store = useSettingsStore.getState();
+  const keys = store.settings.geminiKeys.filter((k) => k.failCount < 3 && k.isActive);
+
+  if (keys.length === 0) {
+    throw new Error('لا توجد مفاتيح Gemini API متاحة. يرجى إضافة مفتاح في الإعدادات.');
+  }
+
+  const selectedModel = model || store.settings.defaultModel || 'gemini-2.5-flash';
+  const modelsToTry = getModelsToTry(selectedModel);
+  
+  const fullPrompt = systemPrompt 
+    ? `${systemPrompt}\n\n---\n\n${prompt}`
+    : prompt;
+
+  let lastError: Error | null = null;
+
+  for (const keyData of keys) {
+    for (const modelName of modelsToTry) {
+      try {
+        const ai = new GoogleGenAI({ apiKey: keyData.key });
+
+        const response = await ai.models.generateContentStream({
+          model: modelName,
+          contents: fullPrompt,
+        });
+
+        // Stream the response chunks
+        for await (const chunk of response) {
+          const text = chunk.text;
+          if (text) {
+            onDelta(text);
+          }
+        }
+
+        // Success! Update key stats
+        store.resetGeminiKeyFailCount(keyData.id);
+        store.updateGeminiKey(keyData.id, { lastUsed: new Date() });
+        
+        onDone();
+        return;
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+        const errorMessage = lastError.message;
+        
+        console.warn(`Gemini stream Key ${keyData.name} with model ${modelName} error:`, errorMessage);
+
+        // If quota exhausted, try next model
+        if (isQuotaExhausted(errorMessage) && modelName !== 'gemini-2.5-flash-lite') {
+          continue;
+        }
+
+        // If model not found, try next model
+        if (errorMessage.includes('404') || errorMessage.includes('not found')) {
+          continue;
+        }
+
+        // For other errors, mark key as failed and try next key
+        store.markGeminiKeyFailed(keyData.id);
+        break;
+      }
+    }
+  }
+
+  throw lastError || new Error('فشل البث من Gemini. يرجى التحقق من المفاتيح.');
+}
