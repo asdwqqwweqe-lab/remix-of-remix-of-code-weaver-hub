@@ -503,3 +503,23 @@
   padding: 1rem;
   border-radius: 0.5rem;
 }
+
+/* Indeterminate progress animation for streaming */
+@keyframes progress-indeterminate {
+  0% {
+    transform: translateX(-100%);
+    width: 50%;
+  }
+  50% {
+    transform: translateX(50%);
+    width: 30%;
+  }
+  100% {
+    transform: translateX(200%);
+    width: 50%;
+  }
+}
+
+.animate-progress-indeterminate {
+  animation: progress-indeterminate 1.5s ease-in-out infinite;
+}
