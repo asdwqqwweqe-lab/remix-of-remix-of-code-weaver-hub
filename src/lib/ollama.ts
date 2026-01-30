@@ -1,17 +1,17 @@
-import { useSettingsStore } from '@/store/settingsStore';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface OllamaChatMessage {
   role: 'user' | 'assistant' | 'system';
   content: string;
 }
 
-export interface OllamaResponse {
-  model: string;
-  message?: {
-    role: string;
-    content: string;
-  };
-  error?: string;
+export interface OllamaKey {
+  id: string;
+  name: string;
+  is_active: boolean;
+  fail_count: number;
+  last_used: string | null;
+  created_at: string;
 }
 
 // Free Ollama Cloud Models
@@ -22,72 +22,130 @@ export const OLLAMA_MODELS = [
   { value: 'qwen3-coder:480b-cloud', label: 'Qwen3 Coder 480B (Cloud)', category: 'Qwen' },
 ];
 
-export const OLLAMA_HOST = 'https://ollama.com';
 export const OLLAMA_DOCS_URL = 'https://ollama.com/cloud';
 
+/**
+ * Get user's Ollama keys from database
+ */
+export async function getOllamaKeys(): Promise<{ keys: OllamaKey[]; error?: string }> {
+  const { data, error } = await supabase.functions.invoke('ollama-proxy', {
+    body: { action: 'list-keys' },
+  });
+
+  if (error) {
+    return { keys: [], error: error.message };
+  }
+
+  return { keys: data?.keys || [] };
+}
+
+/**
+ * Add a new Ollama key
+ */
+export async function addOllamaKey(
+  name: string,
+  key: string
+): Promise<{ success: boolean; key?: OllamaKey; model?: string; error?: string }> {
+  const { data, error } = await supabase.functions.invoke('ollama-proxy', {
+    body: { action: 'add-key', keyName: name, keyValue: key },
+  });
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
+  if (data?.error) {
+    return { success: false, error: data.error };
+  }
+
+  return { success: true, key: data?.key, model: data?.model };
+}
+
+/**
+ * Delete an Ollama key
+ */
+export async function deleteOllamaKey(keyId: string): Promise<{ success: boolean; error?: string }> {
+  const { data, error } = await supabase.functions.invoke('ollama-proxy', {
+    body: { action: 'delete-key', keyId },
+  });
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
+  if (data?.error) {
+    return { success: false, error: data.error };
+  }
+
+  return { success: true };
+}
+
+/**
+ * Update an Ollama key
+ */
+export async function updateOllamaKey(
+  keyId: string,
+  updates: { name?: string; isActive?: boolean }
+): Promise<{ success: boolean; error?: string }> {
+  const { data, error } = await supabase.functions.invoke('ollama-proxy', {
+    body: { action: 'update-key', keyId, keyName: updates.name, isActive: updates.isActive },
+  });
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
+  if (data?.error) {
+    return { success: false, error: data.error };
+  }
+
+  return { success: true };
+}
+
+/**
+ * Test an Ollama key without saving
+ */
+export async function testOllamaKey(key: string): Promise<{ success: boolean; error?: string; model?: string }> {
+  const { data, error } = await supabase.functions.invoke('ollama-proxy', {
+    body: { action: 'test', keyValue: key },
+  });
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
+  return data || { success: false, error: 'خطأ غير معروف' };
+}
+
+/**
+ * Call Ollama API via proxy
+ */
 export async function callOllama(
   messages: OllamaChatMessage[],
   model?: string
 ): Promise<{ success: boolean; content?: string; error?: string }> {
-  const store = useSettingsStore.getState();
-  const keys = store.settings.ollamaKeys?.filter((k) => k.failCount < 4) || [];
-  
-  if (keys.length === 0) {
-    return { success: false, error: 'لا توجد مفاتيح Ollama متاحة. يرجى إضافة مفتاح في الإعدادات.' };
+  const { data, error } = await supabase.functions.invoke('ollama-proxy', {
+    body: { 
+      action: 'chat', 
+      messages, 
+      model: model || OLLAMA_MODELS[0].value,
+      stream: false,
+    },
+  });
+
+  if (error) {
+    return { success: false, error: error.message };
   }
-  
-  const modelToUse = model || OLLAMA_MODELS[0].value;
-  
-  // Try each key until one works
-  for (const keyData of keys) {
-    try {
-      const response = await fetch(`${OLLAMA_HOST}/api/chat`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${keyData.key}`,
-        },
-        body: JSON.stringify({
-          model: modelToUse,
-          messages,
-          stream: false,
-        }),
-      });
-      
-      if (!response.ok) {
-        console.error(`Ollama key ${keyData.name} failed with status:`, response.status);
-        store.markOllamaKeyFailed(keyData.id);
-        continue;
-      }
-      
-      const data: OllamaResponse = await response.json();
-      
-      if (data.error) {
-        console.error(`Ollama key ${keyData.name} error:`, data.error);
-        store.markOllamaKeyFailed(keyData.id);
-        continue;
-      }
-      
-      // Reset fail count on success
-      store.resetOllamaKeyFailCount(keyData.id);
-      store.updateOllamaKey(keyData.id, { lastUsed: new Date() });
-      
-      return {
-        success: true,
-        content: data.message?.content || '',
-      };
-    } catch (error) {
-      console.error(`Ollama key ${keyData.name} error:`, error);
-      store.markOllamaKeyFailed(keyData.id);
-      continue;
-    }
+
+  if (data?.error) {
+    return { success: false, error: data.error };
   }
-  
-  return { success: false, error: 'فشلت جميع مفاتيح Ollama. يرجى التحقق من المفاتيح أو إضافة مفاتيح جديدة.' };
+
+  return { success: true, content: data?.content || '' };
 }
 
 /**
- * Stream Ollama response with automatic key rotation
+ * Stream Ollama response via proxy
  */
 export async function streamOllama(
   messages: OllamaChatMessage[],
@@ -95,139 +153,89 @@ export async function streamOllama(
   onDone: () => void,
   model?: string
 ): Promise<void> {
-  const store = useSettingsStore.getState();
-  const keys = store.settings.ollamaKeys?.filter((k) => k.failCount < 4) || [];
-  
-  if (keys.length === 0) {
-    throw new Error('لا توجد مفاتيح Ollama متاحة. يرجى إضافة مفتاح في الإعدادات.');
-  }
-  
-  const modelToUse = model || OLLAMA_MODELS[0].value;
-  let lastError: Error | null = null;
-  
-  // Try each key until one works
-  for (const keyData of keys) {
-    try {
-      const response = await fetch(`${OLLAMA_HOST}/api/chat`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${keyData.key}`,
-        },
-        body: JSON.stringify({
-          model: modelToUse,
-          messages,
-          stream: true,
-        }),
-      });
-      
-      if (!response.ok) {
-        console.error(`Ollama key ${keyData.name} failed with status:`, response.status);
-        store.markOllamaKeyFailed(keyData.id);
-        lastError = new Error(`HTTP ${response.status}`);
-        continue;
-      }
-      
-      if (!response.body) {
-        throw new Error('No response body');
-      }
-      
-      // Reset fail count on successful connection
-      store.resetOllamaKeyFailCount(keyData.id);
-      store.updateOllamaKey(keyData.id, { lastUsed: new Date() });
-      
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
-      
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        
-        buffer += decoder.decode(value, { stream: true });
-        
-        // Process complete JSON lines
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || '';
-        
-        for (const line of lines) {
-          if (!line.trim()) continue;
-          
-          try {
-            const parsed = JSON.parse(line);
-            
-            if (parsed.error) {
-              throw new Error(parsed.error);
-            }
-            
-            if (parsed.message?.content) {
-              onDelta(parsed.message.content);
-            }
-            
-            if (parsed.done) {
-              onDone();
-              return;
-            }
-          } catch (parseError) {
-            // Continue if parse fails, might be incomplete JSON
-            console.warn('Failed to parse Ollama chunk:', line);
-          }
-        }
-      }
-      
-      // Process any remaining buffer
-      if (buffer.trim()) {
-        try {
-          const parsed = JSON.parse(buffer);
-          if (parsed.message?.content) {
-            onDelta(parsed.message.content);
-          }
-        } catch {
-          // Ignore final parse errors
-        }
-      }
-      
-      onDone();
-      return;
-    } catch (error) {
-      console.error(`Ollama key ${keyData.name} streaming error:`, error);
-      store.markOllamaKeyFailed(keyData.id);
-      lastError = error instanceof Error ? error : new Error('Unknown error');
-      continue;
-    }
-  }
-  
-  throw lastError || new Error('فشلت جميع مفاتيح Ollama');
-}
+  const { data: sessionData } = await supabase.auth.getSession();
+  const token = sessionData?.session?.access_token;
 
-export async function testOllamaKey(key: string): Promise<{ success: boolean; error?: string; model?: string }> {
-  try {
-    const response = await fetch(`${OLLAMA_HOST}/api/chat`, {
+  if (!token) {
+    throw new Error('يجب تسجيل الدخول أولاً');
+  }
+
+  const response = await fetch(
+    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ollama-proxy`,
+    {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${key}`,
+        'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify({
-        model: OLLAMA_MODELS[0].value,
-        messages: [{ role: 'user', content: 'Hi' }],
-        stream: false,
+        action: 'chat',
+        messages,
+        model: model || OLLAMA_MODELS[0].value,
+        stream: true,
       }),
-    });
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      return { success: false, error: `HTTP ${response.status}: ${errorText}` };
     }
-    
-    const data: OllamaResponse = await response.json();
-    
-    if (data.error) {
-      return { success: false, error: data.error };
-    }
-    
-    return { success: true, model: data.model || OLLAMA_MODELS[0].value };
-  } catch (error) {
-    return { success: false, error: error instanceof Error ? error.message : 'خطأ غير معروف' };
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || `HTTP ${response.status}`);
   }
+
+  if (!response.body) {
+    throw new Error('No response body');
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+
+    // Process complete JSON lines
+    const lines = buffer.split('\n');
+    buffer = lines.pop() || '';
+
+    for (const line of lines) {
+      if (!line.trim()) continue;
+
+      try {
+        const parsed = JSON.parse(line);
+
+        if (parsed.error) {
+          throw new Error(parsed.error);
+        }
+
+        if (parsed.message?.content) {
+          onDelta(parsed.message.content);
+        }
+
+        if (parsed.done) {
+          onDone();
+          return;
+        }
+      } catch (parseError) {
+        // Continue if parse fails
+        console.warn('Failed to parse Ollama chunk:', line);
+      }
+    }
+  }
+
+  // Process any remaining buffer
+  if (buffer.trim()) {
+    try {
+      const parsed = JSON.parse(buffer);
+      if (parsed.message?.content) {
+        onDelta(parsed.message.content);
+      }
+    } catch {
+      // Ignore final parse errors
+    }
+  }
+
+  onDone();
 }
