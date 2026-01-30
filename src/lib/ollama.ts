@@ -30,7 +30,7 @@ export async function callOllama(
   model?: string
 ): Promise<{ success: boolean; content?: string; error?: string }> {
   const store = useSettingsStore.getState();
-  const keys = store.settings.ollamaKeys?.filter((k) => k.failCount < 3) || [];
+  const keys = store.settings.ollamaKeys?.filter((k) => k.failCount < 4) || [];
   
   if (keys.length === 0) {
     return { success: false, error: 'لا توجد مفاتيح Ollama متاحة. يرجى إضافة مفتاح في الإعدادات.' };
@@ -96,7 +96,7 @@ export async function streamOllama(
   model?: string
 ): Promise<void> {
   const store = useSettingsStore.getState();
-  const keys = store.settings.ollamaKeys?.filter((k) => k.failCount < 3) || [];
+  const keys = store.settings.ollamaKeys?.filter((k) => k.failCount < 4) || [];
   
   if (keys.length === 0) {
     throw new Error('لا توجد مفاتيح Ollama متاحة. يرجى إضافة مفتاح في الإعدادات.');
