@@ -1,6 +1,7 @@
 import { useSettingsStore } from '@/store/settingsStore';
 import { callOpenRouter, ChatMessage } from './openrouter';
 import { callGemini, streamGemini } from './gemini';
+import { callOllama, streamOllama, OllamaChatMessage } from './ollama';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface AIServiceResult {
@@ -27,12 +28,20 @@ export async function callAI(
       return callGemini(prompt, systemPrompt);
     
     case 'openrouter':
-      const messages: ChatMessage[] = [];
+      const orMessages: ChatMessage[] = [];
       if (systemPrompt) {
-        messages.push({ role: 'system', content: systemPrompt });
+        orMessages.push({ role: 'system', content: systemPrompt });
       }
-      messages.push({ role: 'user', content: prompt });
-      return callOpenRouter(messages);
+      orMessages.push({ role: 'user', content: prompt });
+      return callOpenRouter(orMessages);
+    
+    case 'ollama':
+      const ollamaMessages: OllamaChatMessage[] = [];
+      if (systemPrompt) {
+        ollamaMessages.push({ role: 'system', content: systemPrompt });
+      }
+      ollamaMessages.push({ role: 'user', content: prompt });
+      return callOllama(ollamaMessages);
     
     default:
       return callLovableAI(prompt, systemPrompt);
@@ -120,6 +129,22 @@ export async function streamAI(
       return;
     } catch (error) {
       console.error('Gemini streaming error:', error);
+      throw error;
+    }
+  }
+
+  // Use native Ollama streaming when Ollama is selected
+  if (provider === 'ollama') {
+    try {
+      const messages: OllamaChatMessage[] = [];
+      if (systemPrompt) {
+        messages.push({ role: 'system', content: systemPrompt });
+      }
+      messages.push({ role: 'user', content: prompt });
+      await streamOllama(messages, onDelta, onDone);
+      return;
+    } catch (error) {
+      console.error('Ollama streaming error:', error);
       throw error;
     }
   }
