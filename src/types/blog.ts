@@ -243,6 +243,7 @@ export interface AppSettings {
   geminiKeys: GeminiKey[];
   ollamaKeys: OllamaKey[];
   defaultModel: string;
+  defaultOllamaModel?: string;
   defaultProvider: AIProvider;
   theme: 'light' | 'dark' | 'system';
   customCss: CustomCss[];
