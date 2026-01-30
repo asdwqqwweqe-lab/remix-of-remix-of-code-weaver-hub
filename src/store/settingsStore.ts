@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { OpenRouterKey, GeminiKey, AppSettings, CustomCss, AIProvider, FirebaseConfig } from '@/types/blog';
+import { OpenRouterKey, GeminiKey, OllamaKey, AppSettings, CustomCss, AIProvider, FirebaseConfig } from '@/types/blog';
 
 const generateId = () => Math.random().toString(36).substr(2, 9);
 
@@ -25,6 +25,15 @@ interface SettingsStore {
   markGeminiKeyFailed: (id: string) => void;
   resetGeminiKeyFailCount: (id: string) => void;
   getActiveGeminiKey: () => GeminiKey | null;
+  
+  // Ollama actions
+  addOllamaKey: (key: string, name: string) => void;
+  removeOllamaKey: (id: string) => void;
+  updateOllamaKey: (id: string, updates: Partial<OllamaKey>) => void;
+  toggleOllamaKeyActive: (id: string) => void;
+  markOllamaKeyFailed: (id: string) => void;
+  resetOllamaKeyFailCount: (id: string) => void;
+  getActiveOllamaKey: () => OllamaKey | null;
   
   // General settings
   setDefaultModel: (model: string) => void;
@@ -52,6 +61,7 @@ export const useSettingsStore = create<SettingsStore>()(
       settings: {
         openRouterKeys: [],
         geminiKeys: [],
+        ollamaKeys: [],
         defaultModel: 'gemini-2.5-flash',
         defaultProvider: 'lovable',
         theme: 'system',
@@ -148,6 +158,47 @@ export const useSettingsStore = create<SettingsStore>()(
       getActiveGeminiKey: () => {
         const { settings } = get();
         return settings.geminiKeys.find((k) => k.isActive && k.failCount < 3) || null;
+      },
+      
+      // Ollama actions
+      addOllamaKey: (key, name) => set((state) => ({
+        settings: {
+          ...state.settings,
+          ollamaKeys: [...(state.settings.ollamaKeys || []), { id: generateId(), key, name, isActive: (state.settings.ollamaKeys?.length || 0) === 0, failCount: 0 }],
+        },
+      })),
+      
+      removeOllamaKey: (id) => set((state) => ({
+        settings: { ...state.settings, ollamaKeys: (state.settings.ollamaKeys || []).filter((k) => k.id !== id) },
+      })),
+      
+      updateOllamaKey: (id, updates) => set((state) => ({
+        settings: { ...state.settings, ollamaKeys: (state.settings.ollamaKeys || []).map((k) => k.id === id ? { ...k, ...updates } : k) },
+      })),
+      
+      toggleOllamaKeyActive: (id) => set((state) => ({
+        settings: { ...state.settings, ollamaKeys: (state.settings.ollamaKeys || []).map((k) => k.id === id ? { ...k, isActive: !k.isActive } : k) },
+      })),
+      
+      markOllamaKeyFailed: (id) => set((state) => {
+        const keys = (state.settings.ollamaKeys || []).map((k) => k.id === id ? { ...k, failCount: k.failCount + 1 } : k);
+        const failedKey = keys.find((k) => k.id === id);
+        if (failedKey && failedKey.failCount >= 3) {
+          const nextKey = keys.find((k) => k.id !== id && k.isActive && k.failCount < 3);
+          if (nextKey) {
+            return { settings: { ...state.settings, ollamaKeys: keys.map((k) => ({ ...k, isActive: k.id === nextKey.id })) } };
+          }
+        }
+        return { settings: { ...state.settings, ollamaKeys: keys } };
+      }),
+      
+      resetOllamaKeyFailCount: (id) => set((state) => ({
+        settings: { ...state.settings, ollamaKeys: (state.settings.ollamaKeys || []).map((k) => k.id === id ? { ...k, failCount: 0 } : k) },
+      })),
+      
+      getActiveOllamaKey: () => {
+        const { settings } = get();
+        return (settings.ollamaKeys || []).find((k) => k.isActive && k.failCount < 3) || null;
       },
       
       // General settings

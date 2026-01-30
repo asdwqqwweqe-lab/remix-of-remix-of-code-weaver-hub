@@ -207,6 +207,15 @@ export interface GeminiKey {
   failCount: number;
 }
 
+export interface OllamaKey {
+  id: string;
+  key: string;
+  name: string;
+  isActive: boolean;
+  lastUsed?: Date;
+  failCount: number;
+}
+
 export interface CustomCss {
   id: string;
   name: string;
@@ -216,7 +225,7 @@ export interface CustomCss {
   createdAt: Date;
 }
 
-export type AIProvider = 'lovable' | 'openrouter' | 'gemini';
+export type AIProvider = 'lovable' | 'openrouter' | 'gemini' | 'ollama';
 
 export interface FirebaseConfig {
   apiKey: string;
@@ -232,6 +241,7 @@ export interface FirebaseConfig {
 export interface AppSettings {
   openRouterKeys: OpenRouterKey[];
   geminiKeys: GeminiKey[];
+  ollamaKeys: OllamaKey[];
   defaultModel: string;
   defaultProvider: AIProvider;
   theme: 'light' | 'dark' | 'system';

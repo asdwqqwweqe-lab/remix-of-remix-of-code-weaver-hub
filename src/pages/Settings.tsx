@@ -16,6 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useSettingsStore } from '@/store/settingsStore';
 import { testOpenRouterKey } from '@/lib/openrouter';
 import { testGeminiKey, GEMINI_MODELS_LIST, GEMINI_API_KEYS_URL, GEMINI_PROJECTS_URL } from '@/lib/gemini';
+import { testOllamaKey, OLLAMA_DOCS_URL } from '@/lib/ollama';
 import CustomCssManager from '@/components/settings/CustomCssManager';
 import DemoDataManager from '@/components/data/DemoDataManager';
 import FirebaseSettings from '@/components/settings/FirebaseSettings';
@@ -68,6 +69,15 @@ const AI_PROVIDERS = [
   { value: 'lovable', label: 'Lovable AI (افتراضي)', description: 'لا يحتاج مفتاح API - موصى به' },
   { value: 'gemini', label: 'Google Gemini', description: 'يحتاج مفتاح API من Google' },
   { value: 'openrouter', label: 'OpenRouter', description: 'يحتاج مفتاح API من OpenRouter' },
+  { value: 'ollama', label: 'Ollama Cloud', description: 'يحتاج مفتاح API من Ollama - نماذج مجانية' },
+];
+
+// Ollama Cloud Models
+const OLLAMA_MODELS = [
+  { value: 'gemini-3-flash-preview:cloud', label: 'Gemini 3 Flash Preview (Cloud)', category: 'Google' },
+  { value: 'kimi-k2.5:cloud', label: 'Kimi K2.5 (Cloud)', category: 'Moonshot' },
+  { value: 'deepseek-v3.1:671b-cloud', label: 'DeepSeek V3.1 671B (Cloud)', category: 'DeepSeek' },
+  { value: 'qwen3-coder:480b-cloud', label: 'Qwen3 Coder 480B (Cloud)', category: 'Qwen' },
 ];
 
 // Daily usage tracking
@@ -99,6 +109,9 @@ export default function Settings() {
     addGeminiKey,
     removeGeminiKey,
     toggleGeminiKeyActive,
+    addOllamaKey,
+    removeOllamaKey,
+    toggleOllamaKeyActive,
     setDefaultModel,
     setDefaultProvider
   } = useSettingsStore();
@@ -121,9 +134,19 @@ export default function Settings() {
   const [showGeminiKeys, setShowGeminiKeys] = useState<Record<string, boolean>>({});
   const [isAddingGemini, setIsAddingGemini] = useState(false);
 
+  // Ollama state
+  const [isOllamaDialogOpen, setIsOllamaDialogOpen] = useState(false);
+  const [newOllamaKeyName, setNewOllamaKeyName] = useState('');
+  const [newOllamaKeyValue, setNewOllamaKeyValue] = useState('');
+  const [ollamaTestingKeyId, setOllamaTestingKeyId] = useState<string | null>(null);
+  const [ollamaTestResults, setOllamaTestResults] = useState<Record<string, { success: boolean; message: string; model?: string }>>({});
+  const [showOllamaKeys, setShowOllamaKeys] = useState<Record<string, boolean>>({});
+  const [isAddingOllama, setIsAddingOllama] = useState(false);
+
   // Test all keys state
   const [isTestingAllKeys, setIsTestingAllKeys] = useState(false);
   const [isTestingAllGeminiKeys, setIsTestingAllGeminiKeys] = useState(false);
+  const [isTestingAllOllamaKeys, setIsTestingAllOllamaKeys] = useState(false);
 
   // Lovable AI usage tracking
   const [dailyUsage, setDailyUsage] = useState(getStoredUsage());
@@ -258,6 +281,75 @@ export default function Settings() {
     });
   };
 
+  // Ollama key handlers
+  const handleAddOllamaKey = async () => {
+    if (!newOllamaKeyName.trim() || !newOllamaKeyValue.trim()) {
+      toast({
+        title: 'خطأ',
+        description: 'يرجى إدخال اسم المفتاح وقيمته',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsAddingOllama(true);
+
+    const result = await testOllamaKey(newOllamaKeyValue.trim());
+
+    if (result.success) {
+      addOllamaKey(newOllamaKeyValue.trim(), newOllamaKeyName.trim());
+      setNewOllamaKeyName('');
+      setNewOllamaKeyValue('');
+      setIsOllamaDialogOpen(false);
+      toast({
+        title: 'تم الإضافة',
+        description: `تم إضافة المفتاح بنجاح - يعمل مع ${result.model}`,
+      });
+    } else {
+      toast({
+        title: 'خطأ في المفتاح',
+        description: result.error || 'فشل اختبار المفتاح',
+        variant: 'destructive',
+      });
+    }
+
+    setIsAddingOllama(false);
+  };
+
+  const handleTestOllamaKey = async (keyId: string, keyValue: string) => {
+    setOllamaTestingKeyId(keyId);
+    const result = await testOllamaKey(keyValue);
+    setOllamaTestResults((prev) => ({
+      ...prev,
+      [keyId]: {
+        success: result.success,
+        message: result.success ? `المفتاح يعمل - ${result.model}` : (result.error || 'فشل الاختبار'),
+        model: result.model,
+      },
+    }));
+    setOllamaTestingKeyId(null);
+  };
+
+  const handleTestAllOllamaKeys = async () => {
+    if (!settings.ollamaKeys?.length) return;
+    setIsTestingAllOllamaKeys(true);
+    
+    for (const keyData of settings.ollamaKeys) {
+      await handleTestOllamaKey(keyData.id, keyData.key);
+    }
+    
+    setIsTestingAllOllamaKeys(false);
+    const successCount = Object.values(ollamaTestResults).filter(r => r.success).length;
+    toast({
+      title: 'اختبار المفاتيح',
+      description: `تم اختبار ${settings.ollamaKeys.length} مفتاح - ${successCount} يعمل`,
+    });
+  };
+
+  const toggleShowOllamaKey = (keyId: string) => {
+    setShowOllamaKeys((prev) => ({ ...prev, [keyId]: !prev[keyId] }));
+  };
+
   const toggleShowKey = (keyId: string) => {
     setShowKeys((prev) => ({ ...prev, [keyId]: !prev[keyId] }));
   };
@@ -277,6 +369,8 @@ export default function Settings() {
         return GEMINI_MODELS_LIST;
       case 'openrouter':
         return OPENROUTER_MODELS;
+      case 'ollama':
+        return OLLAMA_MODELS;
       default:
         return GEMINI_MODELS_LIST;
     }
@@ -425,6 +519,29 @@ export default function Settings() {
                   })}
                 </div>
               )}
+
+              {/* Ollama Models Info */}
+              {settings.defaultProvider === 'ollama' && (
+                <div className="p-3 bg-muted/50 rounded-lg space-y-2">
+                  <Label className="text-sm flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-primary" />
+                    النماذج المجانية المتاحة في Ollama Cloud
+                  </Label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {OLLAMA_MODELS.map((model) => (
+                      <div
+                        key={model.value}
+                        className="flex items-center gap-2 text-xs p-2 rounded-md bg-background border"
+                      >
+                        <Badge variant="outline" className="text-xs">
+                          {model.category}
+                        </Badge>
+                        <span className="font-mono text-muted-foreground">{model.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </CardContent>
@@ -443,9 +560,10 @@ export default function Settings() {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="gemini" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-4">
+            <TabsList className="grid w-full grid-cols-3 mb-4">
               <TabsTrigger value="gemini">Gemini API</TabsTrigger>
               <TabsTrigger value="openrouter">OpenRouter API</TabsTrigger>
+              <TabsTrigger value="ollama">Ollama Cloud</TabsTrigger>
             </TabsList>
 
             {/* Gemini Keys Tab */}
@@ -779,6 +897,206 @@ export default function Settings() {
                           variant="destructive"
                           size="sm"
                           onClick={() => removeOpenRouterKey(keyData.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+
+            {/* Ollama Keys Tab */}
+            <TabsContent value="ollama" className="space-y-4">
+              <div className="flex justify-between items-center">
+                {(settings.ollamaKeys?.length || 0) > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleTestAllOllamaKeys}
+                    disabled={isTestingAllOllamaKeys}
+                  >
+                    {isTestingAllOllamaKeys ? (
+                      <Loader2 className="h-4 w-4 ml-2 animate-spin" />
+                    ) : (
+                      <TestTube className="h-4 w-4 ml-2" />
+                    )}
+                    اختبار جميع المفاتيح
+                  </Button>
+                )}
+                <Dialog open={isOllamaDialogOpen} onOpenChange={setIsOllamaDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Plus className="h-4 w-4 ml-2" />
+                      إضافة مفتاح Ollama
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>إضافة مفتاح Ollama Cloud جديد</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="ollamaKeyName">اسم المفتاح</Label>
+                        <Input
+                          id="ollamaKeyName"
+                          placeholder="مثال: المفتاح الأول"
+                          value={newOllamaKeyName}
+                          onChange={(e) => setNewOllamaKeyName(e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="ollamaKeyValue">قيمة المفتاح</Label>
+                        <Input
+                          id="ollamaKeyValue"
+                          type="password"
+                          placeholder="xxxxxxxxxxxxxxxx.xxxxxx..."
+                          value={newOllamaKeyValue}
+                          onChange={(e) => setNewOllamaKeyValue(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setIsOllamaDialogOpen(false)}>
+                        إلغاء
+                      </Button>
+                      <Button onClick={handleAddOllamaKey} disabled={isAddingOllama}>
+                        {isAddingOllama && <Loader2 className="h-4 w-4 ml-2 animate-spin" />}
+                        إضافة واختبار
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              {/* Ollama Cloud Quick Links */}
+              <div className="p-4 border rounded-lg bg-muted/30">
+                <div className="flex items-center justify-between flex-wrap gap-3">
+                  <div>
+                    <h4 className="font-medium text-sm flex items-center gap-2">
+                      <Key className="h-4 w-4 text-primary" />
+                      Ollama Cloud - نماذج مجانية
+                    </h4>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      النماذج المتاحة: Gemini 3 Flash, Kimi K2.5, DeepSeek V3.1, Qwen3 Coder
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button asChild size="sm">
+                      <a href={OLLAMA_DOCS_URL} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="h-4 w-4 ml-2" />
+                        Ollama Cloud
+                      </a>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Ollama Models List */}
+              <div className="p-3 bg-muted/50 rounded-lg space-y-2">
+                <Label className="text-sm flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-primary" />
+                  النماذج المجانية المتاحة
+                </Label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {OLLAMA_MODELS.map((model) => (
+                    <div
+                      key={model.value}
+                      className="flex items-center gap-2 text-xs p-2 rounded-md bg-background border"
+                    >
+                      <Badge variant="outline" className="text-xs">
+                        {model.category}
+                      </Badge>
+                      <span className="font-mono text-muted-foreground">{model.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {(settings.ollamaKeys?.length || 0) === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  لم يتم إضافة أي مفاتيح Ollama بعد. أضف مفتاحاً للبدء.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {settings.ollamaKeys?.map((keyData, index) => (
+                    <div
+                      key={keyData.id}
+                      className="flex items-center justify-between p-4 border rounded-lg bg-card"
+                    >
+                      <div className="flex items-center gap-4 flex-1">
+                        <div className="flex items-center gap-2">
+                          <Switch
+                            checked={keyData.isActive}
+                            onCheckedChange={() => toggleOllamaKeyActive(keyData.id)}
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{keyData.name}</span>
+                            {keyData.isActive && (
+                              <Badge variant="default" className="text-xs">
+                                نشط
+                              </Badge>
+                            )}
+                            {keyData.failCount > 0 && (
+                              <Badge variant="destructive" className="text-xs">
+                                فشل {keyData.failCount} مرات
+                              </Badge>
+                            )}
+                            {index === 0 && (
+                              <Badge variant="secondary" className="text-xs">
+                                الافتراضي
+                              </Badge>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 mt-1">
+                            <code className="text-xs text-muted-foreground font-mono">
+                              {showOllamaKeys[keyData.id] ? keyData.key : maskKey(keyData.key)}
+                            </code>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 w-6 p-0"
+                              onClick={() => toggleShowOllamaKey(keyData.id)}
+                            >
+                              {showOllamaKeys[keyData.id] ? (
+                                <EyeOff className="h-3 w-3" />
+                              ) : (
+                                <Eye className="h-3 w-3" />
+                              )}
+                            </Button>
+                          </div>
+                          {ollamaTestResults[keyData.id] && (
+                            <div className={`flex items-center gap-1 mt-1 text-xs ${ollamaTestResults[keyData.id].success ? 'text-green-500' : 'text-destructive'}`}>
+                              {ollamaTestResults[keyData.id].success ? (
+                                <Check className="h-3 w-3" />
+                              ) : (
+                                <X className="h-3 w-3" />
+                              )}
+                              {ollamaTestResults[keyData.id].message}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleTestOllamaKey(keyData.id, keyData.key)}
+                          disabled={ollamaTestingKeyId === keyData.id}
+                        >
+                          {ollamaTestingKeyId === keyData.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <TestTube className="h-4 w-4" />
+                          )}
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => removeOllamaKey(keyData.id)}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
