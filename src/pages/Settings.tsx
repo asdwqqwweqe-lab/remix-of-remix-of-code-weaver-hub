@@ -430,11 +430,43 @@ export default function Settings() {
     }
   };
 
+  const { user, isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    toast({
+      title: 'تم تسجيل الخروج',
+      description: 'تم تسجيل الخروج بنجاح',
+    });
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <SettingsIcon className="h-8 w-8 text-primary" />
-        <h1 className="text-3xl font-bold">الإعدادات</h1>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <SettingsIcon className="h-8 w-8 text-primary" />
+          <h1 className="text-3xl font-bold">الإعدادات</h1>
+        </div>
+        
+        {/* User Account Section */}
+        <div className="flex items-center gap-3">
+          {isAuthenticated ? (
+            <>
+              <span className="text-sm text-muted-foreground">
+                {user?.email}
+              </span>
+              <Button variant="outline" size="sm" onClick={handleLogout}>
+                <LogOut className="h-4 w-4 ml-2" />
+                تسجيل الخروج
+              </Button>
+            </>
+          ) : (
+            <Button variant="default" size="sm" onClick={() => navigate('/login')}>
+              تسجيل الدخول
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* AI Provider Selection */}
@@ -964,7 +996,7 @@ export default function Settings() {
             {/* Ollama Keys Tab */}
             <TabsContent value="ollama" className="space-y-4">
               <div className="flex justify-between items-center">
-                {(settings.ollamaKeys?.length || 0) > 0 && (
+                {ollamaKeys.length > 0 && (
                   <Button
                     variant="outline"
                     size="sm"
@@ -1068,7 +1100,16 @@ export default function Settings() {
                 </div>
               </div>
 
-              {isLoadingOllamaKeys ? (
+              {!isAuthenticated ? (
+                <div className="text-center py-8 space-y-4">
+                  <p className="text-muted-foreground">
+                    يجب تسجيل الدخول لإدارة مفاتيح Ollama بأمان
+                  </p>
+                  <Button onClick={() => navigate('/login')}>
+                    تسجيل الدخول
+                  </Button>
+                </div>
+              ) : isLoadingOllamaKeys ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
                   جاري تحميل المفاتيح...
