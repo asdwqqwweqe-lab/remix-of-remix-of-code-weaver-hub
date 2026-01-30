@@ -20,6 +20,14 @@ export const OLLAMA_MODELS = [
   { value: 'kimi-k2.5:cloud', label: 'Kimi K2.5 (Cloud)', category: 'Moonshot' },
   { value: 'deepseek-v3.1:671b-cloud', label: 'DeepSeek V3.1 671B (Cloud)', category: 'DeepSeek' },
   { value: 'qwen3-coder:480b-cloud', label: 'Qwen3 Coder 480B (Cloud)', category: 'Qwen' },
+  { value: 'llama4-scout:cloud', label: 'Llama 4 Scout (Cloud)', category: 'Meta' },
+  { value: 'llama3.3:70b-cloud', label: 'Llama 3.3 70B (Cloud)', category: 'Meta' },
+  { value: 'mistral-small:cloud', label: 'Mistral Small (Cloud)', category: 'Mistral' },
+  { value: 'devstral:cloud', label: 'Devstral (Cloud)', category: 'Mistral' },
+  { value: 'codestral:cloud', label: 'Codestral (Cloud)', category: 'Mistral' },
+  { value: 'qwq:cloud', label: 'QwQ (Cloud)', category: 'Qwen' },
+  { value: 'phi-4:cloud', label: 'Phi-4 (Cloud)', category: 'Microsoft' },
+  { value: 'command-r:cloud', label: 'Command R (Cloud)', category: 'Cohere' },
 ];
 
 export const OLLAMA_DOCS_URL = 'https://ollama.com/cloud';
