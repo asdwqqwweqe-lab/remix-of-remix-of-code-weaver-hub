@@ -37,6 +37,7 @@ interface SettingsStore {
   
   // General settings
   setDefaultModel: (model: string) => void;
+  setDefaultOllamaModel: (model: string) => void;
   setDefaultProvider: (provider: AIProvider) => void;
   setTheme: (theme: 'light' | 'dark' | 'system') => void;
   
@@ -63,6 +64,7 @@ export const useSettingsStore = create<SettingsStore>()(
         geminiKeys: [],
         ollamaKeys: [],
         defaultModel: 'gemini-2.5-flash',
+        defaultOllamaModel: 'gemini-3-flash-preview:cloud',
         defaultProvider: 'lovable',
         theme: 'system',
         customCss: [],
@@ -203,6 +205,7 @@ export const useSettingsStore = create<SettingsStore>()(
       
       // General settings
       setDefaultModel: (model) => set((state) => ({ settings: { ...state.settings, defaultModel: model } })),
+      setDefaultOllamaModel: (model) => set((state) => ({ settings: { ...state.settings, defaultOllamaModel: model } })),
       setDefaultProvider: (provider) => set((state) => ({ settings: { ...state.settings, defaultProvider: provider } })),
       setTheme: (theme) => set((state) => ({ settings: { ...state.settings, theme } })),
       

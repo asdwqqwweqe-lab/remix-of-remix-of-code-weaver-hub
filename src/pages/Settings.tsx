@@ -129,6 +129,7 @@ export default function Settings() {
     removeOllamaKey,
     toggleOllamaKeyActive,
     setDefaultModel,
+    setDefaultOllamaModel,
     setDefaultProvider
   } = useSettingsStore();
 
@@ -614,25 +615,81 @@ export default function Settings() {
                 </div>
               )}
 
-              {/* Ollama Models Info */}
+              {/* Ollama Default Model Selection */}
               {settings.defaultProvider === 'ollama' && (
-                <div className="p-3 bg-muted/50 rounded-lg space-y-2">
-                  <Label className="text-sm flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-primary" />
-                    النماذج المجانية المتاحة في Ollama Cloud
-                  </Label>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    {OLLAMA_MODELS.map((model) => (
-                      <div
-                        key={model.value}
-                        className="flex items-center gap-2 text-xs p-2 rounded-md bg-background border"
-                      >
-                        <Badge variant="outline" className="text-xs">
-                          {model.category}
-                        </Badge>
-                        <span className="font-mono text-muted-foreground">{model.label}</span>
-                      </div>
-                    ))}
+                <div className="p-3 bg-muted/50 rounded-lg space-y-4">
+                  <div className="space-y-2">
+                    <Label className="text-sm flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-primary" />
+                      النموذج الافتراضي لـ Ollama Cloud
+                    </Label>
+                    <Select
+                      value={settings.defaultOllamaModel || 'gemini-3-flash-preview:cloud'}
+                      onValueChange={(value) => {
+                        setDefaultOllamaModel(value);
+                        toast({
+                          title: 'تم التحديث',
+                          description: `تم تعيين النموذج الافتراضي: ${OLLAMA_MODELS.find(m => m.value === value)?.label || value}`,
+                        });
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="اختر النموذج الافتراضي" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(
+                          OLLAMA_MODELS.reduce((acc, model) => {
+                            if (!acc[model.category]) acc[model.category] = [];
+                            acc[model.category].push(model);
+                            return acc;
+                          }, {} as Record<string, typeof OLLAMA_MODELS>)
+                        ).map(([category, models]) => (
+                          <div key={category}>
+                            <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+                              {category}
+                            </div>
+                            {models.map((model) => (
+                              <SelectItem key={model.value} value={model.value}>
+                                {model.label}
+                              </SelectItem>
+                            ))}
+                          </div>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label className="text-xs text-muted-foreground">
+                      جميع النماذج المتاحة ({OLLAMA_MODELS.length} نموذج)
+                    </Label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      {OLLAMA_MODELS.map((model) => (
+                        <div
+                          key={model.value}
+                          className={`flex items-center gap-2 text-xs p-2 rounded-md bg-background border cursor-pointer transition-colors ${
+                            settings.defaultOllamaModel === model.value 
+                              ? 'border-primary bg-primary/5' 
+                              : 'hover:border-primary/50'
+                          }`}
+                          onClick={() => {
+                            setDefaultOllamaModel(model.value);
+                            toast({
+                              title: 'تم التحديث',
+                              description: `تم تعيين النموذج الافتراضي: ${model.label}`,
+                            });
+                          }}
+                        >
+                          <Badge variant={settings.defaultOllamaModel === model.value ? "default" : "outline"} className="text-xs">
+                            {model.category}
+                          </Badge>
+                          <span className="font-mono text-muted-foreground">{model.label}</span>
+                          {settings.defaultOllamaModel === model.value && (
+                            <Check className="w-3 h-3 text-primary mr-auto" />
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}
