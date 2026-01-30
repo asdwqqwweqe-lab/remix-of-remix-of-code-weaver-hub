@@ -26,33 +26,43 @@ Deno.serve(async (req) => {
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     
     // Get auth token from request
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
+    if (!authHeader?.startsWith('Bearer ')) {
       return new Response(
         JSON.stringify({ error: 'يجب تسجيل الدخول أولاً' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Create Supabase client with user's token
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    // Create Supabase client with user's auth header for getClaims
+    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
     
-    // Verify the user's token
+    // Verify the user's token using getClaims
     const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    const { data: claimsData, error: authError } = await supabaseAuth.auth.getClaims(token);
     
-    if (authError || !user) {
+    if (authError || !claimsData?.claims?.sub) {
+      console.error('Auth error:', authError);
       return new Response(
         JSON.stringify({ error: 'جلسة غير صالحة' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
+    const userId = claimsData.claims.sub as string;
+
+    // Parse request body
     const body: OllamaRequest = await req.json();
     const { action } = body;
+
+    // Create service role client for database operations
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Handle different actions
     switch (action) {
@@ -60,7 +70,7 @@ Deno.serve(async (req) => {
         const { data: keys, error } = await supabase
           .from('ollama_keys')
           .select('id, name, is_active, fail_count, last_used, created_at')
-          .eq('user_id', user.id)
+          .eq('user_id', userId)
           .order('created_at', { ascending: false });
 
         if (error) {
@@ -97,7 +107,7 @@ Deno.serve(async (req) => {
         const { data: newKey, error } = await supabase
           .from('ollama_keys')
           .insert({
-            user_id: user.id,
+            user_id: userId,
             name: keyName,
             encrypted_key: keyValue, // In production, encrypt this
             is_active: true,
@@ -132,7 +142,7 @@ Deno.serve(async (req) => {
           .from('ollama_keys')
           .delete()
           .eq('id', keyId)
-          .eq('user_id', user.id);
+          .eq('user_id', userId);
 
         if (error) {
           return new Response(
@@ -164,7 +174,7 @@ Deno.serve(async (req) => {
           .from('ollama_keys')
           .update(updates)
           .eq('id', keyId)
-          .eq('user_id', user.id);
+          .eq('user_id', userId);
 
         if (error) {
           return new Response(
@@ -208,7 +218,7 @@ Deno.serve(async (req) => {
         const { data: keys, error: keysError } = await supabase
           .from('ollama_keys')
           .select('id, encrypted_key, fail_count')
-          .eq('user_id', user.id)
+          .eq('user_id', userId)
           .eq('is_active', true)
           .lt('fail_count', 4)
           .order('fail_count', { ascending: true });
