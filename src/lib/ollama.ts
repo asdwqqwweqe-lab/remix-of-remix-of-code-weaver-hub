@@ -86,6 +86,120 @@ export async function callOllama(
   return { success: false, error: 'فشلت جميع مفاتيح Ollama. يرجى التحقق من المفاتيح أو إضافة مفاتيح جديدة.' };
 }
 
+/**
+ * Stream Ollama response with automatic key rotation
+ */
+export async function streamOllama(
+  messages: OllamaChatMessage[],
+  onDelta: (chunk: string) => void,
+  onDone: () => void,
+  model?: string
+): Promise<void> {
+  const store = useSettingsStore.getState();
+  const keys = store.settings.ollamaKeys?.filter((k) => k.failCount < 3) || [];
+  
+  if (keys.length === 0) {
+    throw new Error('لا توجد مفاتيح Ollama متاحة. يرجى إضافة مفتاح في الإعدادات.');
+  }
+  
+  const modelToUse = model || OLLAMA_MODELS[0].value;
+  let lastError: Error | null = null;
+  
+  // Try each key until one works
+  for (const keyData of keys) {
+    try {
+      const response = await fetch(`${OLLAMA_HOST}/api/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${keyData.key}`,
+        },
+        body: JSON.stringify({
+          model: modelToUse,
+          messages,
+          stream: true,
+        }),
+      });
+      
+      if (!response.ok) {
+        console.error(`Ollama key ${keyData.name} failed with status:`, response.status);
+        store.markOllamaKeyFailed(keyData.id);
+        lastError = new Error(`HTTP ${response.status}`);
+        continue;
+      }
+      
+      if (!response.body) {
+        throw new Error('No response body');
+      }
+      
+      // Reset fail count on successful connection
+      store.resetOllamaKeyFailCount(keyData.id);
+      store.updateOllamaKey(keyData.id, { lastUsed: new Date() });
+      
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        buffer += decoder.decode(value, { stream: true });
+        
+        // Process complete JSON lines
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+        
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          
+          try {
+            const parsed = JSON.parse(line);
+            
+            if (parsed.error) {
+              throw new Error(parsed.error);
+            }
+            
+            if (parsed.message?.content) {
+              onDelta(parsed.message.content);
+            }
+            
+            if (parsed.done) {
+              onDone();
+              return;
+            }
+          } catch (parseError) {
+            // Continue if parse fails, might be incomplete JSON
+            console.warn('Failed to parse Ollama chunk:', line);
+          }
+        }
+      }
+      
+      // Process any remaining buffer
+      if (buffer.trim()) {
+        try {
+          const parsed = JSON.parse(buffer);
+          if (parsed.message?.content) {
+            onDelta(parsed.message.content);
+          }
+        } catch {
+          // Ignore final parse errors
+        }
+      }
+      
+      onDone();
+      return;
+    } catch (error) {
+      console.error(`Ollama key ${keyData.name} streaming error:`, error);
+      store.markOllamaKeyFailed(keyData.id);
+      lastError = error instanceof Error ? error : new Error('Unknown error');
+      continue;
+    }
+  }
+  
+  throw lastError || new Error('فشلت جميع مفاتيح Ollama');
+}
+
 export async function testOllamaKey(key: string): Promise<{ success: boolean; error?: string; model?: string }> {
   try {
     const response = await fetch(`${OLLAMA_HOST}/api/chat`, {
