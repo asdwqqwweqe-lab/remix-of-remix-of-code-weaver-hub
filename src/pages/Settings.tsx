@@ -439,15 +439,16 @@ export default function Settings() {
     }
   };
 
-  const { user, isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogout = async () => {
-    await logout();
+  const handleLogout = () => {
+    logout();
     toast({
       title: 'تم تسجيل الخروج',
       description: 'تم تسجيل الخروج بنجاح',
     });
+    navigate('/login');
   };
 
   return (
@@ -461,15 +462,10 @@ export default function Settings() {
         {/* User Account Section */}
         <div className="flex items-center gap-3">
           {isAuthenticated ? (
-            <>
-              <span className="text-sm text-muted-foreground">
-                {user?.email}
-              </span>
-              <Button variant="outline" size="sm" onClick={handleLogout}>
-                <LogOut className="h-4 w-4 ml-2" />
-                تسجيل الخروج
-              </Button>
-            </>
+            <Button variant="outline" size="sm" onClick={handleLogout}>
+              <LogOut className="h-4 w-4 ml-2" />
+              تسجيل الخروج
+            </Button>
           ) : (
             <Button variant="default" size="sm" onClick={() => navigate('/login')}>
               تسجيل الدخول

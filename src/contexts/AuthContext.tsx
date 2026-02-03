@@ -1,56 +1,68 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { User, Session } from '@supabase/supabase-js';
+
+const CORRECT_PIN = '4419';
+const AUTH_KEY = 'blog_auth';
+const FIRST_LOGIN_KEY = 'blog_first_login';
 
 interface AuthContextType {
-  user: User | null;
-  session: Session | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  logout: () => Promise<void>;
+  login: (pin: string) => boolean;
+  logout: () => void;
+  firstLoginDate: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [firstLoginDate, setFirstLoginDate] = useState<string | null>(null);
 
   useEffect(() => {
-    // Set up auth state listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email);
-        setSession(session);
-        setUser(session?.user ?? null);
-        setIsLoading(false);
-      }
-    );
-
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setIsLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    const authStatus = localStorage.getItem(AUTH_KEY);
+    const firstLogin = localStorage.getItem(FIRST_LOGIN_KEY);
+    
+    setIsAuthenticated(authStatus === 'true');
+    if (firstLogin) {
+      const parsed = JSON.parse(firstLogin);
+      setFirstLoginDate(parsed.date);
+    }
+    setIsLoading(false);
   }, []);
 
-  const logout = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setSession(null);
+  const login = (pin: string): boolean => {
+    if (pin === CORRECT_PIN) {
+      setIsAuthenticated(true);
+      localStorage.setItem(AUTH_KEY, 'true');
+      
+      // Save first login date if not already saved
+      if (!localStorage.getItem(FIRST_LOGIN_KEY)) {
+        const firstLoginData = {
+          timestamp: new Date().toISOString(),
+          date: new Date().toLocaleString('ar-EG'),
+        };
+        localStorage.setItem(FIRST_LOGIN_KEY, JSON.stringify(firstLoginData));
+        setFirstLoginDate(firstLoginData.date);
+      }
+      
+      return true;
+    }
+    return false;
+  };
+
+  const logout = () => {
+    setIsAuthenticated(false);
+    localStorage.removeItem(AUTH_KEY);
   };
 
   return (
     <AuthContext.Provider value={{ 
-      user, 
-      session, 
-      isAuthenticated: !!user, 
-      isLoading,
-      logout 
+      isAuthenticated, 
+      isLoading, 
+      login, 
+      logout,
+      firstLoginDate
     }}>
       {children}
     </AuthContext.Provider>
