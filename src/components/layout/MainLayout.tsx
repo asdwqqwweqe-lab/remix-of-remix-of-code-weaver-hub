@@ -33,6 +33,7 @@ import {
   Settings,
   FileText as ReportIcon,
   Keyboard,
+  LayoutTemplate,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -70,6 +71,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
     { path: '/languages', icon: Code, label: t('nav.programmingLanguages') },
     { path: '/roadmap', icon: Map, label: language === 'ar' ? 'خريطة الطريق' : 'Roadmap' },
     { path: '/reports', icon: ReportIcon, label: language === 'ar' ? 'التقارير' : 'Reports' },
+    { path: '/page-builder', icon: LayoutTemplate, label: language === 'ar' ? 'منشئ الصفحات' : 'Page Builder' },
     { path: '/snippets', icon: Layers, label: t('nav.snippets') },
     { path: '/collections', icon: BookOpen, label: t('nav.collections') },
     { path: '/gallery', icon: Image, label: language === 'ar' ? 'المعرض' : 'Gallery' },
