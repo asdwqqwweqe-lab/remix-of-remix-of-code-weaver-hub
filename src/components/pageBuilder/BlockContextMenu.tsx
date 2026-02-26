@@ -9,6 +9,7 @@ import {
   Copy, Trash2, ArrowUp, ArrowDown, ChevronsUp, ChevronsDown, Plus,
   Type, CreditCard, Table, Square, Minus, Image, Play,
   MousePointer, ChevronDown, Columns, Code, Quote, AlertCircle, List, MoveVertical,
+  Sparkles, GalleryHorizontal, BarChart3, TrendingUp, Globe, Clock, DollarSign, MessageCircle,
 } from 'lucide-react';
 
 const ICON_MAP: Record<BlockType, any> = {
@@ -16,6 +17,9 @@ const ICON_MAP: Record<BlockType, any> = {
   divider: Minus, image: Image, video: Play, button: MousePointer,
   accordion: ChevronDown, tabs: Columns, code: Code, quote: Quote,
   alert: AlertCircle, list: List, spacer: MoveVertical,
+  hero: Sparkles, gallery: GalleryHorizontal, progress: BarChart3,
+  stats: TrendingUp, embed: Globe, timeline: Clock, pricing: DollarSign,
+  testimonial: MessageCircle,
 };
 
 interface BlockContextMenuProps {

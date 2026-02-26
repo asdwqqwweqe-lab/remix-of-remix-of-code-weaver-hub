@@ -1,4 +1,4 @@
-export type BlockType = 'text' | 'icon-card' | 'table' | 'card' | 'divider' | 'image' | 'video' | 'button' | 'accordion' | 'tabs' | 'code' | 'quote' | 'alert' | 'list' | 'spacer';
+export type BlockType = 'text' | 'icon-card' | 'table' | 'card' | 'divider' | 'image' | 'video' | 'button' | 'accordion' | 'tabs' | 'code' | 'quote' | 'alert' | 'list' | 'spacer' | 'hero' | 'gallery' | 'progress' | 'stats' | 'embed' | 'timeline' | 'pricing' | 'testimonial';
 export type PageDirection = 'rtl' | 'ltr';
 
 export interface BaseBlock {
@@ -112,7 +112,95 @@ export interface SpacerBlock extends BaseBlock {
   size: 'sm' | 'md' | 'lg' | 'xl';
 }
 
-export type Block = TextBlock | IconCardBlock | TableBlock | CardBlock | DividerBlock | ImageBlock | VideoBlock | ButtonBlock | AccordionBlock | TabsBlock | CodeBlock | QuoteBlock | AlertBlock | ListBlock | SpacerBlock;
+export interface HeroBlock extends BaseBlock {
+  type: 'hero';
+  title: string;
+  subtitle: string;
+  buttonText?: string;
+  buttonUrl?: string;
+  backgroundImage?: string;
+  variant: 'default' | 'gradient' | 'image';
+}
+
+export interface GalleryItem {
+  id: string;
+  src: string;
+  alt: string;
+  caption?: string;
+}
+
+export interface GalleryBlock extends BaseBlock {
+  type: 'gallery';
+  items: GalleryItem[];
+  columns: 2 | 3 | 4;
+}
+
+export interface ProgressBlock extends BaseBlock {
+  type: 'progress';
+  label: string;
+  value: number;
+  max: number;
+  variant: 'default' | 'primary' | 'success' | 'warning';
+}
+
+export interface StatItem {
+  id: string;
+  value: string;
+  label: string;
+  icon?: string;
+}
+
+export interface StatsBlock extends BaseBlock {
+  type: 'stats';
+  items: StatItem[];
+}
+
+export interface EmbedBlock extends BaseBlock {
+  type: 'embed';
+  url: string;
+  height: number;
+  title?: string;
+}
+
+export interface TimelineItem {
+  id: string;
+  title: string;
+  description: string;
+  date?: string;
+}
+
+export interface TimelineBlock extends BaseBlock {
+  type: 'timeline';
+  items: TimelineItem[];
+}
+
+export interface PricingFeature {
+  id: string;
+  text: string;
+  included: boolean;
+}
+
+export interface PricingBlock extends BaseBlock {
+  type: 'pricing';
+  title: string;
+  price: string;
+  period?: string;
+  features: PricingFeature[];
+  buttonText?: string;
+  buttonUrl?: string;
+  highlighted: boolean;
+}
+
+export interface TestimonialBlock extends BaseBlock {
+  type: 'testimonial';
+  text: string;
+  author: string;
+  role?: string;
+  avatar?: string;
+  rating?: number;
+}
+
+export type Block = TextBlock | IconCardBlock | TableBlock | CardBlock | DividerBlock | ImageBlock | VideoBlock | ButtonBlock | AccordionBlock | TabsBlock | CodeBlock | QuoteBlock | AlertBlock | ListBlock | SpacerBlock | HeroBlock | GalleryBlock | ProgressBlock | StatsBlock | EmbedBlock | TimelineBlock | PricingBlock | TestimonialBlock;
 
 export interface Page {
   id: string;
@@ -141,4 +229,12 @@ export const BLOCK_TYPE_LABELS: Record<BlockType, { ar: string; en: string; icon
   'alert': { ar: 'تنبيه', en: 'Alert', icon: 'AlertCircle' },
   'list': { ar: 'قائمة', en: 'List', icon: 'List' },
   'spacer': { ar: 'مسافة', en: 'Spacer', icon: 'MoveVertical' },
+  'hero': { ar: 'بطل', en: 'Hero', icon: 'Sparkles' },
+  'gallery': { ar: 'معرض صور', en: 'Gallery', icon: 'GalleryHorizontal' },
+  'progress': { ar: 'شريط تقدم', en: 'Progress', icon: 'BarChart3' },
+  'stats': { ar: 'إحصائيات', en: 'Stats', icon: 'TrendingUp' },
+  'embed': { ar: 'تضمين', en: 'Embed', icon: 'Globe' },
+  'timeline': { ar: 'خط زمني', en: 'Timeline', icon: 'Clock' },
+  'pricing': { ar: 'تسعير', en: 'Pricing', icon: 'DollarSign' },
+  'testimonial': { ar: 'شهادة', en: 'Testimonial', icon: 'MessageCircle' },
 };
