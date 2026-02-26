@@ -39,6 +39,7 @@ import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import PageBuilder from "./pages/PageBuilder";
 import PagePreview from "./pages/PagePreview";
+import PublicPagePreview from "./pages/PublicPagePreview";
 
 const queryClient = new QueryClient();
 
@@ -58,6 +59,9 @@ const App = () => (
                     <Routes>
                       {/* Public Route - Login */}
                       <Route path="/login" element={<Login />} />
+
+                      {/* Public Page Preview - no auth required */}
+                      <Route path="/p/:slug" element={<PublicPagePreview />} />
 
                       {/* Preview Route - outside MainLayout */}
                       <Route path="/preview/:slug" element={
