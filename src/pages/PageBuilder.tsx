@@ -72,6 +72,14 @@ function getDefaultBlockData(type: BlockType): Omit<Block, 'id' | 'order'> {
     alert: { type: 'alert', message: '', alertType: 'info' },
     list: { type: 'list', items: [''], ordered: false },
     spacer: { type: 'spacer', size: 'md' },
+    hero: { type: 'hero', title: '', subtitle: '', variant: 'default' },
+    gallery: { type: 'gallery', items: [{ id: uuidv4(), src: '', alt: '' }], columns: 3 },
+    progress: { type: 'progress', label: '', value: 50, max: 100, variant: 'primary' },
+    stats: { type: 'stats', items: [{ id: uuidv4(), value: '0', label: '', icon: 'Hash' }] },
+    embed: { type: 'embed', url: '', height: 400 },
+    timeline: { type: 'timeline', items: [{ id: uuidv4(), title: '', description: '' }] },
+    pricing: { type: 'pricing', title: '', price: '', features: [{ id: uuidv4(), text: '', included: true }], highlighted: false },
+    testimonial: { type: 'testimonial', text: '', author: '', rating: 5 },
   };
   return defaults[type];
 }

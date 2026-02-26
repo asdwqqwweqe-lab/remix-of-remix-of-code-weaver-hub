@@ -1,14 +1,15 @@
-import { Block, TextBlock, IconCardBlock, TableBlock, CardBlock, DividerBlock, ImageBlock, VideoBlock, ButtonBlock, AccordionBlock, TabsBlock, CodeBlock as CodeBlockType, QuoteBlock, AlertBlock, ListBlock, SpacerBlock } from '@/types/pageBuilder';
+import { Block, TextBlock, IconCardBlock, TableBlock, CardBlock, DividerBlock, ImageBlock, VideoBlock, ButtonBlock, AccordionBlock, TabsBlock, CodeBlock as CodeBlockType, QuoteBlock, AlertBlock, ListBlock, SpacerBlock, HeroBlock, GalleryBlock, ProgressBlock, StatsBlock, EmbedBlock, TimelineBlock, PricingBlock, TestimonialBlock } from '@/types/pageBuilder';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import hljs from 'highlight.js';
 import { useEffect, useRef } from 'react';
 import * as Icons from 'lucide-react';
-import { AlertCircle, CheckCircle, AlertTriangle, Info, ExternalLink, Quote as QuoteIcon, Copy } from 'lucide-react';
+import { AlertCircle, CheckCircle, AlertTriangle, Info, ExternalLink, Quote as QuoteIcon, Copy, Star, Check, X } from 'lucide-react';
 
 interface BlockRendererProps {
   block: Block;
@@ -223,6 +224,173 @@ const RenderSpacer = ({ block }: { block: SpacerBlock }) => {
   return <div className={sizes[block.size]} />;
 };
 
+// ===== NEW BLOCKS =====
+
+const RenderHero = ({ block }: { block: HeroBlock }) => {
+  const bgClasses = {
+    default: 'bg-muted/30',
+    gradient: 'bg-gradient-to-br from-primary/20 via-primary/5 to-accent/20',
+    image: '',
+  };
+  return (
+    <div
+      className={cn('relative rounded-2xl overflow-hidden py-16 px-8 text-center', bgClasses[block.variant])}
+      style={block.variant === 'image' && block.backgroundImage ? { backgroundImage: `url(${block.backgroundImage})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}
+    >
+      {block.variant === 'image' && <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" />}
+      <div className="relative z-10 max-w-2xl mx-auto space-y-4">
+        <h1 className="text-3xl md:text-5xl font-bold">{block.title}</h1>
+        {block.subtitle && <p className="text-lg md:text-xl text-muted-foreground">{block.subtitle}</p>}
+        {block.buttonText && (
+          <div className="pt-4">
+            <a href={block.buttonUrl || '#'} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 h-12 px-8 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors">
+              {block.buttonText}
+              <ExternalLink className="w-4 h-4" />
+            </a>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const RenderGallery = ({ block }: { block: GalleryBlock }) => {
+  const colClasses = { 2: 'grid-cols-2', 3: 'grid-cols-2 md:grid-cols-3', 4: 'grid-cols-2 md:grid-cols-4' };
+  return (
+    <div className={cn('grid gap-3', colClasses[block.columns])}>
+      {block.items.map((item) => (
+        <figure key={item.id} className="group relative overflow-hidden rounded-lg border border-border">
+          <img src={item.src} alt={item.alt} className="w-full aspect-square object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+          {item.caption && (
+            <figcaption className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-background/90 to-transparent p-3 text-xs text-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+              {item.caption}
+            </figcaption>
+          )}
+        </figure>
+      ))}
+    </div>
+  );
+};
+
+const RenderProgress = ({ block }: { block: ProgressBlock }) => {
+  const colorClasses = {
+    default: '[&>div]:bg-foreground',
+    primary: '[&>div]:bg-primary',
+    success: '[&>div]:bg-green-500',
+    warning: '[&>div]:bg-yellow-500',
+  };
+  const percentage = Math.min(100, Math.round((block.value / block.max) * 100));
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between text-sm">
+        <span className="font-medium">{block.label}</span>
+        <span className="text-muted-foreground">{percentage}%</span>
+      </div>
+      <Progress value={percentage} className={cn('h-3', colorClasses[block.variant])} />
+    </div>
+  );
+};
+
+const RenderStats = ({ block }: { block: StatsBlock }) => (
+  <div className={cn('grid gap-4', block.items.length <= 2 ? 'grid-cols-2' : block.items.length === 3 ? 'grid-cols-3' : 'grid-cols-2 md:grid-cols-4')}>
+    {block.items.map((item) => {
+      const IconComp = item.icon ? (Icons as any)[item.icon] || Icons.Hash : Icons.Hash;
+      return (
+        <Card key={item.id} className="card-hover border-border/50">
+          <CardContent className="p-5 flex flex-col items-center text-center gap-2">
+            <IconComp className="w-6 h-6 text-primary/60" />
+            <span className="text-2xl md:text-3xl font-bold">{item.value}</span>
+            <span className="text-sm text-muted-foreground">{item.label}</span>
+          </CardContent>
+        </Card>
+      );
+    })}
+  </div>
+);
+
+const RenderEmbed = ({ block }: { block: EmbedBlock }) => (
+  <div className="space-y-2">
+    {block.title && <h4 className="font-medium">{block.title}</h4>}
+    <div className="rounded-lg overflow-hidden border border-border" style={{ height: block.height || 400 }}>
+      <iframe src={block.url} className="w-full h-full" title={block.title || 'Embedded content'} sandbox="allow-scripts allow-same-origin allow-popups" />
+    </div>
+  </div>
+);
+
+const RenderTimeline = ({ block }: { block: TimelineBlock }) => (
+  <div className="relative ps-8 space-y-6">
+    <div className="absolute start-3 top-2 bottom-2 w-px bg-border" />
+    {block.items.map((item) => (
+      <div key={item.id} className="relative">
+        <div className="absolute start-[-1.625rem] top-1.5 w-3 h-3 rounded-full bg-primary border-2 border-background" />
+        <div className="space-y-1">
+          {item.date && <span className="text-xs text-muted-foreground font-mono">{item.date}</span>}
+          <h4 className="font-semibold">{item.title}</h4>
+          <p className="text-sm text-muted-foreground">{item.description}</p>
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
+const RenderPricing = ({ block }: { block: PricingBlock }) => (
+  <Card className={cn('card-hover max-w-sm mx-auto', block.highlighted ? 'border-primary shadow-lg shadow-primary/10 ring-1 ring-primary/20' : 'border-border/50')}>
+    {block.highlighted && (
+      <div className="bg-primary text-primary-foreground text-xs text-center py-1.5 font-medium">
+        ⭐ مميز
+      </div>
+    )}
+    <CardContent className="p-6 space-y-4 text-center">
+      <h3 className="text-xl font-bold">{block.title}</h3>
+      <div>
+        <span className="text-4xl font-bold">{block.price}</span>
+        {block.period && <span className="text-muted-foreground text-sm">/{block.period}</span>}
+      </div>
+      <ul className="space-y-2 text-sm text-start">
+        {block.features.map((f) => (
+          <li key={f.id} className="flex items-center gap-2">
+            {f.included ? <Check className="w-4 h-4 text-green-500 shrink-0" /> : <X className="w-4 h-4 text-muted-foreground/40 shrink-0" />}
+            <span className={cn(!f.included && 'text-muted-foreground line-through')}>{f.text}</span>
+          </li>
+        ))}
+      </ul>
+      {block.buttonText && (
+        <a href={block.buttonUrl || '#'} target="_blank" rel="noopener noreferrer" className={cn('inline-flex items-center justify-center w-full h-10 rounded-lg font-medium transition-colors', block.highlighted ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-secondary text-secondary-foreground hover:bg-secondary/80')}>
+          {block.buttonText}
+        </a>
+      )}
+    </CardContent>
+  </Card>
+);
+
+const RenderTestimonial = ({ block }: { block: TestimonialBlock }) => (
+  <Card className="card-hover border-border/50 bg-card/50 backdrop-blur-sm">
+    <CardContent className="p-6 space-y-4">
+      {block.rating && block.rating > 0 && (
+        <div className="flex gap-0.5">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Star key={i} className={cn('w-4 h-4', i < block.rating! ? 'text-yellow-500 fill-yellow-500' : 'text-muted-foreground/30')} />
+          ))}
+        </div>
+      )}
+      <p className="text-foreground/80 italic leading-relaxed">"{block.text}"</p>
+      <div className="flex items-center gap-3">
+        {block.avatar ? (
+          <img src={block.avatar} alt={block.author} className="w-10 h-10 rounded-full object-cover" />
+        ) : (
+          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
+            {block.author.charAt(0)}
+          </div>
+        )}
+        <div>
+          <p className="font-semibold text-sm">{block.author}</p>
+          {block.role && <p className="text-xs text-muted-foreground">{block.role}</p>}
+        </div>
+      </div>
+    </CardContent>
+  </Card>
+);
+
 export default function BlockRenderer({ block, isPreview }: BlockRendererProps) {
   const renderers: Record<string, (b: any) => JSX.Element> = {
     text: (b) => <RenderText block={b} />,
@@ -240,6 +408,14 @@ export default function BlockRenderer({ block, isPreview }: BlockRendererProps) 
     alert: (b) => <RenderAlert block={b} />,
     list: (b) => <RenderList block={b} />,
     spacer: (b) => <RenderSpacer block={b} />,
+    hero: (b) => <RenderHero block={b} />,
+    gallery: (b) => <RenderGallery block={b} />,
+    progress: (b) => <RenderProgress block={b} />,
+    stats: (b) => <RenderStats block={b} />,
+    embed: (b) => <RenderEmbed block={b} />,
+    timeline: (b) => <RenderTimeline block={b} />,
+    pricing: (b) => <RenderPricing block={b} />,
+    testimonial: (b) => <RenderTestimonial block={b} />,
   };
 
   const render = renderers[block.type];
