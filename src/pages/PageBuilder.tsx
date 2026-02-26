@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { usePageBuilderStore } from '@/store/pageBuilderStore';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Block, BlockType } from '@/types/pageBuilder';
@@ -7,13 +7,15 @@ import BlockRenderer from '@/components/pageBuilder/BlockRenderer';
 import BlockEditor from '@/components/pageBuilder/BlockEditor';
 import BlockToolbar from '@/components/pageBuilder/BlockToolbar';
 import BlockContextMenu from '@/components/pageBuilder/BlockContextMenu';
+import { useUndoRedo } from '@/hooks/useUndoRedo';
 import { v4 as uuidv4 } from 'uuid';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import { Eye, GripVertical, Pencil, LayoutTemplate } from 'lucide-react';
+import { Eye, GripVertical, Pencil, LayoutTemplate, Undo2, Redo2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { generateSlug } from '@/lib/slug-utils';
 import {
@@ -80,6 +82,46 @@ export default function PageBuilder() {
   const activePage = pages.find((p) => p.id === activePageId);
   const [editingBlock, setEditingBlock] = useState<Block | null>(null);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }), useSensor(KeyboardSensor));
+  const prevBlocksRef = useRef<string>('');
+
+  // Undo/Redo - restore blocks for the active page
+  const handleRestore = useCallback((blocks: Block[]) => {
+    if (!activePageId) return;
+    updatePage(activePageId, { blocks });
+  }, [activePageId, updatePage]);
+
+  const { undo, redo, canUndo, canRedo, pushState, historyLength, futureLength } = useUndoRedo(
+    activePageId,
+    activePage?.blocks || [],
+    handleRestore
+  );
+
+  // Track block changes and push to undo stack
+  useEffect(() => {
+    if (!activePage) return;
+    const serialized = JSON.stringify(activePage.blocks);
+    if (prevBlocksRef.current && prevBlocksRef.current !== serialized) {
+      // Push the PREVIOUS state before this change
+      pushState(JSON.parse(prevBlocksRef.current));
+    }
+    prevBlocksRef.current = serialized;
+  }, [activePage?.blocks, pushState]);
+
+  // Keyboard shortcuts: Ctrl+Z / Ctrl+Shift+Z
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        undo();
+      }
+      if ((e.ctrlKey || e.metaKey) && ((e.key === 'z' && e.shiftKey) || e.key === 'y')) {
+        e.preventDefault();
+        redo();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [undo, redo]);
 
   const handleAddBlock = useCallback((type: BlockType, atIndex?: number) => {
     if (!activePageId) return;
@@ -118,6 +160,27 @@ export default function PageBuilder() {
               />
               <span className="text-xs text-muted-foreground font-mono">/{activePage.slug}</span>
               <div className="flex-1" />
+
+              {/* Undo/Redo buttons */}
+              <div className="flex items-center gap-1 border border-border rounded-lg px-1">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={undo} disabled={!canUndo}>
+                      <Undo2 className="w-4 h-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{isRTL ? `تراجع (${historyLength})` : `Undo (${historyLength})`} — Ctrl+Z</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={redo} disabled={!canRedo}>
+                      <Redo2 className="w-4 h-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{isRTL ? `إعادة (${futureLength})` : `Redo (${futureLength})`} — Ctrl+Shift+Z</TooltipContent>
+                </Tooltip>
+              </div>
+
               <Select value={activePage.direction} onValueChange={(v: 'rtl' | 'ltr') => updatePage(activePage.id, { direction: v })}>
                 <SelectTrigger className="w-24 h-8">
                   <SelectValue />
