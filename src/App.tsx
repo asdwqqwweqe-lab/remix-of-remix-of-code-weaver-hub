@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { HelmetProvider } from "react-helmet-async";
 import "@/lib/i18n";
 import MainLayout from "@/components/layout/MainLayout";
 import GlobalContextMenu from "@/components/GlobalContextMenu";
@@ -36,71 +37,81 @@ import ReportEditor from "./pages/ReportEditor";
 import Settings from "./pages/Settings";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
+import PageBuilder from "./pages/PageBuilder";
+import PagePreview from "./pages/PagePreview";
 
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider>
-      <LanguageProvider>
-        <AuthProvider>
-          <TooltipProvider>
-            <CustomCssInjector />
-            <FirebaseAutoSyncProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-                <GlobalContextMenu>
-                  <Routes>
-                    {/* Public Route - Login */}
-                    <Route path="/login" element={<Login />} />
+  <HelmetProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <LanguageProvider>
+          <AuthProvider>
+            <TooltipProvider>
+              <CustomCssInjector />
+              <FirebaseAutoSyncProvider>
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
+                  <GlobalContextMenu>
+                    <Routes>
+                      {/* Public Route - Login */}
+                      <Route path="/login" element={<Login />} />
 
-                    {/* Protected Routes */}
-                    <Route
-                      path="/*"
-                      element={
-                        <ProtectedRoute>
-                          <MainLayout>
-                            <Routes>
-                              <Route path="/" element={<Index />} />
-                              <Route path="/dashboard" element={<Dashboard />} />
-                              <Route path="/posts" element={<Posts />} />
-                              <Route path="/posts/new" element={<PostEditor />} />
-                              <Route path="/posts/:id" element={<PostDetails />} />
-                              <Route path="/posts/:id/edit" element={<PostEditor />} />
-                              <Route path="/categories" element={<Categories />} />
-                              <Route path="/categories/:slug" element={<CategoryDetails />} />
-                              <Route path="/tags" element={<Tags />} />
-                              <Route path="/tags/:slug" element={<TagDetails />} />
-                              <Route path="/languages" element={<Languages />} />
-                              <Route path="/languages/:slug" element={<LanguageDetails />} />
-                              <Route path="/snippets" element={<Snippets />} />
-                              <Route path="/collections" element={<Collections />} />
-                              <Route path="/collections/:slug" element={<CollectionDetails />} />
-                              <Route path="/favorites" element={<Favorites />} />
-                              <Route path="/statistics" element={<Statistics />} />
-                              <Route path="/gallery" element={<Gallery />} />
-                              <Route path="/roadmap" element={<Roadmap />} />
-                              <Route path="/reports" element={<Reports />} />
-                              <Route path="/reports/new" element={<ReportEditor />} />
-                              <Route path="/reports/:id" element={<ReportDetails />} />
-                              <Route path="/reports/edit/:id" element={<ReportEditor />} />
-                              <Route path="/settings" element={<Settings />} />
-                              <Route path="*" element={<NotFound />} />
-                            </Routes>
-                          </MainLayout>
-                        </ProtectedRoute>
-                      }
-                    />
-                  </Routes>
-                </GlobalContextMenu>
-              </BrowserRouter>
-            </FirebaseAutoSyncProvider>
-          </TooltipProvider>
-        </AuthProvider>
-      </LanguageProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
+                      {/* Preview Route - outside MainLayout */}
+                      <Route path="/preview/:slug" element={
+                        <ProtectedRoute><PagePreview /></ProtectedRoute>
+                      } />
+
+                      {/* Protected Routes */}
+                      <Route
+                        path="/*"
+                        element={
+                          <ProtectedRoute>
+                            <MainLayout>
+                              <Routes>
+                                <Route path="/" element={<Index />} />
+                                <Route path="/dashboard" element={<Dashboard />} />
+                                <Route path="/posts" element={<Posts />} />
+                                <Route path="/posts/new" element={<PostEditor />} />
+                                <Route path="/posts/:id" element={<PostDetails />} />
+                                <Route path="/posts/:id/edit" element={<PostEditor />} />
+                                <Route path="/categories" element={<Categories />} />
+                                <Route path="/categories/:slug" element={<CategoryDetails />} />
+                                <Route path="/tags" element={<Tags />} />
+                                <Route path="/tags/:slug" element={<TagDetails />} />
+                                <Route path="/languages" element={<Languages />} />
+                                <Route path="/languages/:slug" element={<LanguageDetails />} />
+                                <Route path="/snippets" element={<Snippets />} />
+                                <Route path="/collections" element={<Collections />} />
+                                <Route path="/collections/:slug" element={<CollectionDetails />} />
+                                <Route path="/favorites" element={<Favorites />} />
+                                <Route path="/statistics" element={<Statistics />} />
+                                <Route path="/gallery" element={<Gallery />} />
+                                <Route path="/roadmap" element={<Roadmap />} />
+                                <Route path="/reports" element={<Reports />} />
+                                <Route path="/reports/new" element={<ReportEditor />} />
+                                <Route path="/reports/:id" element={<ReportDetails />} />
+                                <Route path="/reports/edit/:id" element={<ReportEditor />} />
+                                <Route path="/page-builder" element={<PageBuilder />} />
+                                <Route path="/settings" element={<Settings />} />
+                                <Route path="*" element={<NotFound />} />
+                              </Routes>
+                            </MainLayout>
+                          </ProtectedRoute>
+                        }
+                      />
+                    </Routes>
+                  </GlobalContextMenu>
+                </BrowserRouter>
+              </FirebaseAutoSyncProvider>
+            </TooltipProvider>
+          </AuthProvider>
+        </LanguageProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  </HelmetProvider>
 );
 
 export default App;
