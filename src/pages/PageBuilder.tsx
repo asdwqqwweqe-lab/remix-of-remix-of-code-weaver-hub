@@ -15,7 +15,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import { Eye, GripVertical, Pencil, LayoutTemplate, Undo2, Redo2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { Eye, GripVertical, Pencil, LayoutTemplate, Undo2, Redo2, Share2, Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { generateSlug } from '@/lib/slug-utils';
 import {
@@ -190,6 +191,24 @@ export default function PageBuilder() {
                   <SelectItem value="ltr">LTR</SelectItem>
                 </SelectContent>
               </Select>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5"
+                    onClick={() => {
+                      const url = `${window.location.origin}/p/${activePage.slug}`;
+                      navigator.clipboard.writeText(url);
+                      toast.success(isRTL ? 'تم نسخ الرابط!' : 'Link copied!');
+                    }}
+                  >
+                    <Share2 className="w-4 h-4" />
+                    {isRTL ? 'رابط خاص' : 'Share Link'}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{isRTL ? 'نسخ رابط المشاركة العام' : 'Copy public share link'}</TooltipContent>
+              </Tooltip>
               <Link to={`/preview/${activePage.slug}`}>
                 <Button variant="outline" size="sm" className="gap-1.5">
                   <Eye className="w-4 h-4" />
