@@ -195,6 +195,7 @@ export async function syncToFirebase(): Promise<{ success: boolean; message: str
     const blogData = localStorage.getItem('blog-storage');
     const reportsData = localStorage.getItem('reports-storage');
     const roadmapData = localStorage.getItem('roadmap-storage');
+    const pageBuilderData = localStorage.getItem('page-builder-storage');
 
     const timestamp = new Date().toISOString();
 
@@ -206,6 +207,9 @@ export async function syncToFirebase(): Promise<{ success: boolean; message: str
     }
     if (roadmapData) {
       await set(ref(db, 'roadmap'), { data: JSON.parse(roadmapData), lastSync: timestamp });
+    }
+    if (pageBuilderData) {
+      await set(ref(db, 'pageBuilder'), { data: JSON.parse(pageBuilderData), lastSync: timestamp });
     }
 
     return { success: true, message: 'تم المزامنة بنجاح' };
@@ -230,6 +234,7 @@ export async function syncFromFirebase(): Promise<{ success: boolean; message: s
     const blogSnapshot = await get(ref(db, 'blog/data'));
     const reportsSnapshot = await get(ref(db, 'reports/data'));
     const roadmapSnapshot = await get(ref(db, 'roadmap/data'));
+    const pageBuilderSnapshot = await get(ref(db, 'pageBuilder/data'));
 
     if (blogSnapshot.exists()) {
       localStorage.setItem('blog-storage', JSON.stringify(blogSnapshot.val()));
@@ -239,6 +244,9 @@ export async function syncFromFirebase(): Promise<{ success: boolean; message: s
     }
     if (roadmapSnapshot.exists()) {
       localStorage.setItem('roadmap-storage', JSON.stringify(roadmapSnapshot.val()));
+    }
+    if (pageBuilderSnapshot.exists()) {
+      localStorage.setItem('page-builder-storage', JSON.stringify(pageBuilderSnapshot.val()));
     }
 
     return { success: true, message: 'تم استعادة البيانات بنجاح - أعد تحميل الصفحة' };
