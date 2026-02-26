@@ -30,31 +30,28 @@ export default function BlockToolbar({ onAdd }: BlockToolbarProps) {
 
   return (
     <div className="sticky bottom-0 z-20 glass border-t border-border p-3">
-      <ScrollArea className="w-full">
-        <div className="flex gap-2 pb-1">
-          {(Object.keys(BLOCK_TYPE_LABELS) as BlockType[]).map((type) => {
-            const Icon = ICON_MAP[type];
-            const label = BLOCK_TYPE_LABELS[type][lang];
-            return (
-              <Tooltip key={type}>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="shrink-0 gap-1.5 h-9"
-                    onClick={() => onAdd(type)}
-                  >
-                    <Icon className="w-4 h-4" />
-                    <span className="hidden sm:inline text-xs">{label}</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{label}</TooltipContent>
-              </Tooltip>
-            );
-          })}
-        </div>
-        <ScrollBar orientation="horizontal" />
-      </ScrollArea>
+      <div className="flex flex-wrap gap-1.5 justify-center">
+        {(Object.keys(BLOCK_TYPE_LABELS) as BlockType[]).map((type) => {
+          const Icon = ICON_MAP[type];
+          const label = BLOCK_TYPE_LABELS[type][lang];
+          return (
+            <Tooltip key={type}>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 h-8 text-xs"
+                  onClick={() => onAdd(type)}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  <span className="hidden md:inline">{label}</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{label}</TooltipContent>
+            </Tooltip>
+          );
+        })}
+      </div>
     </div>
   );
 }
