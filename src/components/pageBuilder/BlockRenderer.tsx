@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 import hljs from 'highlight.js';
 import { useEffect, useRef } from 'react';
 import * as Icons from 'lucide-react';
-import { AlertCircle, CheckCircle, AlertTriangle, Info, ExternalLink, Quote as QuoteIcon, Copy, Star, Check, X } from 'lucide-react';
+import { AlertCircle, CheckCircle, AlertTriangle, Info, ExternalLink, Quote as QuoteIcon, Copy, Star, Check, X, File, Folder, ChevronRight, Square, CheckSquare, ExternalLink as LinkIcon } from 'lucide-react';
 
 interface BlockRendererProps {
   block: Block;
