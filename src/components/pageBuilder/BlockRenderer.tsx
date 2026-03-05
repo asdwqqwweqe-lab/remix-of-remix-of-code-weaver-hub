@@ -1,4 +1,4 @@
-import { Block, TextBlock, IconCardBlock, TableBlock, CardBlock, DividerBlock, ImageBlock, VideoBlock, ButtonBlock, AccordionBlock, TabsBlock, CodeBlock as CodeBlockType, QuoteBlock, AlertBlock, ListBlock, SpacerBlock, HeroBlock, GalleryBlock, ProgressBlock, StatsBlock, EmbedBlock, TimelineBlock, PricingBlock, TestimonialBlock } from '@/types/pageBuilder';
+import { Block, TextBlock, IconCardBlock, TableBlock, CardBlock, DividerBlock, ImageBlock, VideoBlock, ButtonBlock, AccordionBlock, TabsBlock, CodeBlock as CodeBlockType, QuoteBlock, AlertBlock, ListBlock, SpacerBlock, HeroBlock, GalleryBlock, ProgressBlock, StatsBlock, EmbedBlock, TimelineBlock, PricingBlock, TestimonialBlock, TerminalBlock, ApiBlock, FileTreeBlock, DiffBlock, ChecklistBlock, CitationBlock, MathBlock, KanbanBlock } from '@/types/pageBuilder';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 import hljs from 'highlight.js';
 import { useEffect, useRef } from 'react';
 import * as Icons from 'lucide-react';
-import { AlertCircle, CheckCircle, AlertTriangle, Info, ExternalLink, Quote as QuoteIcon, Copy, Star, Check, X } from 'lucide-react';
+import { AlertCircle, CheckCircle, AlertTriangle, Info, ExternalLink, Quote as QuoteIcon, Copy, Star, Check, X, File, Folder, ChevronRight, Square, CheckSquare, ExternalLink as LinkIcon } from 'lucide-react';
 
 interface BlockRendererProps {
   block: Block;
@@ -391,6 +391,191 @@ const RenderTestimonial = ({ block }: { block: TestimonialBlock }) => (
   </Card>
 );
 
+// ===== DEVELOPER & RESEARCH BLOCKS =====
+
+const RenderTerminal = ({ block }: { block: TerminalBlock }) => (
+  <div className="rounded-lg border border-border overflow-hidden bg-[#1e1e2e] text-[#cdd6f4]">
+    {block.title && (
+      <div className="flex items-center gap-2 px-4 py-2 bg-[#181825] border-b border-[#313244]">
+        <div className="flex gap-1.5">
+          <div className="w-3 h-3 rounded-full bg-[#f38ba8]" />
+          <div className="w-3 h-3 rounded-full bg-[#a6e3a1]" />
+          <div className="w-3 h-3 rounded-full bg-[#f9e2af]" />
+        </div>
+        <span className="text-xs font-mono text-[#a6adc8]">{block.title}</span>
+      </div>
+    )}
+    <div className="p-4 font-mono text-sm space-y-1">
+      {block.commands.map((cmd, i) => (
+        <div key={i} className="leading-relaxed">
+          {cmd.startsWith(block.prompt) ? (
+            <>
+              <span className="text-[#a6e3a1]">{block.prompt} </span>
+              <span>{cmd.slice(block.prompt.length + 1)}</span>
+            </>
+          ) : (
+            <span className="text-[#a6adc8]">{cmd}</span>
+          )}
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const RenderApi = ({ block }: { block: ApiBlock }) => {
+  const methodColors: Record<string, string> = {
+    GET: 'bg-green-500/20 text-green-400 border-green-500/30',
+    POST: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+    PUT: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+    DELETE: 'bg-red-500/20 text-red-400 border-red-500/30',
+    PATCH: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+  };
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2">
+        <h3 className="font-bold text-lg">{block.title}</h3>
+        <span className="text-xs font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded">{block.baseUrl}</span>
+      </div>
+      {block.methods.map((m) => (
+        <div key={m.id} className="rounded-lg border border-border overflow-hidden">
+          <div className="flex items-center gap-3 px-4 py-2.5 bg-muted/30">
+            <span className={cn('text-xs font-bold font-mono px-2 py-0.5 rounded border', methodColors[m.method] || '')}>{m.method}</span>
+            <code className="text-sm font-mono">{m.endpoint}</code>
+          </div>
+          {m.description && <p className="px-4 py-2 text-sm text-muted-foreground border-t border-border/50">{m.description}</p>}
+          {m.params && (
+            <div className="px-4 py-2 border-t border-border/50">
+              <span className="text-xs font-semibold text-muted-foreground">Params:</span>
+              <pre className="text-xs font-mono mt-1 text-muted-foreground">{m.params}</pre>
+            </div>
+          )}
+          {m.response && (
+            <div className="px-4 py-2 border-t border-border/50">
+              <span className="text-xs font-semibold text-muted-foreground">Response:</span>
+              <pre className="text-xs font-mono mt-1 text-muted-foreground">{m.response}</pre>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const RenderFileTree = ({ block }: { block: FileTreeBlock }) => (
+  <div className="rounded-lg border border-border overflow-hidden">
+    {block.title && (
+      <div className="px-4 py-2 bg-muted/50 border-b border-border text-sm font-semibold">{block.title}</div>
+    )}
+    <div className="p-3 font-mono text-sm space-y-0.5">
+      {block.items.map((item) => (
+        <div key={item.id} className="flex items-center gap-1.5 py-0.5 hover:bg-muted/30 rounded px-1" style={{ paddingInlineStart: `${item.indent * 1.25 + 0.25}rem` }}>
+          {item.type === 'folder' ? (
+            <>
+              <ChevronRight className="w-3 h-3 text-muted-foreground" />
+              <Folder className="w-4 h-4 text-yellow-500" />
+            </>
+          ) : (
+            <File className="w-4 h-4 text-muted-foreground ms-[0.875rem]" />
+          )}
+          <span className={item.type === 'folder' ? 'font-semibold' : 'text-muted-foreground'}>{item.name}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const RenderDiff = ({ block }: { block: DiffBlock }) => (
+  <div className="rounded-lg border border-border overflow-hidden">
+    {(block.title || block.filename) && (
+      <div className="px-4 py-2 bg-muted/50 border-b border-border flex items-center gap-2">
+        {block.filename && <span className="text-xs font-mono text-muted-foreground">{block.filename}</span>}
+        {block.title && <span className="text-xs text-muted-foreground">{block.title}</span>}
+      </div>
+    )}
+    <div className="font-mono text-sm">
+      {block.lines.map((line, i) => {
+        const bg = line.type === 'added' ? 'bg-green-500/10 text-green-400' : line.type === 'removed' ? 'bg-red-500/10 text-red-400' : '';
+        const prefix = line.type === 'added' ? '+' : line.type === 'removed' ? '-' : ' ';
+        return (
+          <div key={line.id} className={cn('flex px-4 py-0.5', bg)}>
+            <span className="w-8 text-end text-muted-foreground/50 select-none me-3">{i + 1}</span>
+            <span className="w-4 select-none">{prefix}</span>
+            <span>{line.content}</span>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+);
+
+const RenderChecklist = ({ block }: { block: ChecklistBlock }) => (
+  <div className="space-y-2">
+    {block.title && <h3 className="font-semibold text-lg">{block.title}</h3>}
+    <div className="space-y-1.5">
+      {block.items.map((item) => (
+        <div key={item.id} className="flex items-center gap-2.5">
+          {item.checked ? (
+            <CheckSquare className="w-4.5 h-4.5 text-primary shrink-0" />
+          ) : (
+            <Square className="w-4.5 h-4.5 text-muted-foreground shrink-0" />
+          )}
+          <span className={cn('text-sm', item.checked && 'line-through text-muted-foreground')}>{item.text}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const RenderCitation = ({ block }: { block: CitationBlock }) => (
+  <div className="rounded-lg border border-border p-4 bg-muted/20 space-y-1.5">
+    <div className="flex items-start gap-3">
+      <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+        <Icons.BookOpen className="w-4 h-4 text-primary" />
+      </div>
+      <div className="space-y-1 min-w-0">
+        <p className="font-semibold text-sm">{block.title}</p>
+        <p className="text-sm text-muted-foreground">{block.authors} ({block.year})</p>
+        <p className="text-sm italic text-muted-foreground">{block.source}</p>
+        <div className="flex items-center gap-3 pt-1">
+          {block.doi && <span className="text-xs font-mono text-primary">DOI: {block.doi}</span>}
+          {block.url && (
+            <a href={block.url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline flex items-center gap-1">
+              <LinkIcon className="w-3 h-3" /> Link
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const RenderMath = ({ block }: { block: MathBlock }) => (
+  <div className={cn('py-4', block.displayMode && 'text-center')}>
+    <div className={cn('inline-block font-mono text-lg bg-muted/30 rounded-lg border border-border', block.displayMode ? 'px-8 py-4' : 'px-3 py-1')}>
+      {block.expression}
+    </div>
+    {block.label && <p className="text-xs text-muted-foreground mt-2 text-center">({block.label})</p>}
+  </div>
+);
+
+const RenderKanban = ({ block }: { block: KanbanBlock }) => (
+  <div className="space-y-3">
+    {block.title && <h3 className="font-semibold text-lg">{block.title}</h3>}
+    <div className={cn('grid gap-3', block.columns.length <= 3 ? `grid-cols-${block.columns.length}` : 'grid-cols-2 md:grid-cols-4')}>
+      {block.columns.map((col) => (
+        <div key={col.id} className="rounded-lg border border-border bg-muted/20 overflow-hidden">
+          <div className="px-3 py-2 bg-muted/50 border-b border-border font-semibold text-sm">{col.title}</div>
+          <div className="p-2 space-y-1.5">
+            {col.items.filter(Boolean).map((item, i) => (
+              <div key={i} className="bg-background rounded-md border border-border px-3 py-2 text-sm shadow-sm">{item}</div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
 export default function BlockRenderer({ block, isPreview }: BlockRendererProps) {
   const renderers: Record<string, (b: any) => JSX.Element> = {
     text: (b) => <RenderText block={b} />,
@@ -416,6 +601,14 @@ export default function BlockRenderer({ block, isPreview }: BlockRendererProps) 
     timeline: (b) => <RenderTimeline block={b} />,
     pricing: (b) => <RenderPricing block={b} />,
     testimonial: (b) => <RenderTestimonial block={b} />,
+    terminal: (b) => <RenderTerminal block={b} />,
+    api: (b) => <RenderApi block={b} />,
+    'file-tree': (b) => <RenderFileTree block={b} />,
+    diff: (b) => <RenderDiff block={b} />,
+    checklist: (b) => <RenderChecklist block={b} />,
+    citation: (b) => <RenderCitation block={b} />,
+    math: (b) => <RenderMath block={b} />,
+    kanban: (b) => <RenderKanban block={b} />,
   };
 
   const render = renderers[block.type];

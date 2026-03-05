@@ -1,4 +1,4 @@
-export type BlockType = 'text' | 'icon-card' | 'table' | 'card' | 'divider' | 'image' | 'video' | 'button' | 'accordion' | 'tabs' | 'code' | 'quote' | 'alert' | 'list' | 'spacer' | 'hero' | 'gallery' | 'progress' | 'stats' | 'embed' | 'timeline' | 'pricing' | 'testimonial';
+export type BlockType = 'text' | 'icon-card' | 'table' | 'card' | 'divider' | 'image' | 'video' | 'button' | 'accordion' | 'tabs' | 'code' | 'quote' | 'alert' | 'list' | 'spacer' | 'hero' | 'gallery' | 'progress' | 'stats' | 'embed' | 'timeline' | 'pricing' | 'testimonial' | 'terminal' | 'api' | 'file-tree' | 'diff' | 'checklist' | 'citation' | 'math' | 'kanban';
 export type PageDirection = 'rtl' | 'ltr';
 
 export interface BaseBlock {
@@ -200,7 +200,97 @@ export interface TestimonialBlock extends BaseBlock {
   rating?: number;
 }
 
-export type Block = TextBlock | IconCardBlock | TableBlock | CardBlock | DividerBlock | ImageBlock | VideoBlock | ButtonBlock | AccordionBlock | TabsBlock | CodeBlock | QuoteBlock | AlertBlock | ListBlock | SpacerBlock | HeroBlock | GalleryBlock | ProgressBlock | StatsBlock | EmbedBlock | TimelineBlock | PricingBlock | TestimonialBlock;
+export interface TerminalBlock extends BaseBlock {
+  type: 'terminal';
+  commands: string[];
+  title?: string;
+  prompt: string;
+}
+
+export interface ApiMethod {
+  id: string;
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+  endpoint: string;
+  description: string;
+  params?: string;
+  response?: string;
+}
+
+export interface ApiBlock extends BaseBlock {
+  type: 'api';
+  title: string;
+  baseUrl: string;
+  methods: ApiMethod[];
+}
+
+export interface FileTreeItem {
+  id: string;
+  name: string;
+  type: 'file' | 'folder';
+  indent: number;
+}
+
+export interface FileTreeBlock extends BaseBlock {
+  type: 'file-tree';
+  title?: string;
+  items: FileTreeItem[];
+}
+
+export interface DiffLine {
+  id: string;
+  type: 'added' | 'removed' | 'unchanged';
+  content: string;
+}
+
+export interface DiffBlock extends BaseBlock {
+  type: 'diff';
+  title?: string;
+  filename?: string;
+  lines: DiffLine[];
+}
+
+export interface ChecklistItem {
+  id: string;
+  text: string;
+  checked: boolean;
+}
+
+export interface ChecklistBlock extends BaseBlock {
+  type: 'checklist';
+  title?: string;
+  items: ChecklistItem[];
+}
+
+export interface CitationBlock extends BaseBlock {
+  type: 'citation';
+  authors: string;
+  title: string;
+  source: string;
+  year: string;
+  url?: string;
+  doi?: string;
+}
+
+export interface MathBlock extends BaseBlock {
+  type: 'math';
+  expression: string;
+  label?: string;
+  displayMode: boolean;
+}
+
+export interface KanbanColumn {
+  id: string;
+  title: string;
+  items: string[];
+}
+
+export interface KanbanBlock extends BaseBlock {
+  type: 'kanban';
+  title?: string;
+  columns: KanbanColumn[];
+}
+
+export type Block = TextBlock | IconCardBlock | TableBlock | CardBlock | DividerBlock | ImageBlock | VideoBlock | ButtonBlock | AccordionBlock | TabsBlock | CodeBlock | QuoteBlock | AlertBlock | ListBlock | SpacerBlock | HeroBlock | GalleryBlock | ProgressBlock | StatsBlock | EmbedBlock | TimelineBlock | PricingBlock | TestimonialBlock | TerminalBlock | ApiBlock | FileTreeBlock | DiffBlock | ChecklistBlock | CitationBlock | MathBlock | KanbanBlock;
 
 export interface Page {
   id: string;
@@ -237,4 +327,12 @@ export const BLOCK_TYPE_LABELS: Record<BlockType, { ar: string; en: string; icon
   'timeline': { ar: 'خط زمني', en: 'Timeline', icon: 'Clock' },
   'pricing': { ar: 'تسعير', en: 'Pricing', icon: 'DollarSign' },
   'testimonial': { ar: 'شهادة', en: 'Testimonial', icon: 'MessageCircle' },
+  'terminal': { ar: 'طرفية', en: 'Terminal', icon: 'Terminal' },
+  'api': { ar: 'مرجع API', en: 'API Ref', icon: 'Webhook' },
+  'file-tree': { ar: 'شجرة ملفات', en: 'File Tree', icon: 'FolderTree' },
+  'diff': { ar: 'مقارنة كود', en: 'Code Diff', icon: 'GitCompareArrows' },
+  'checklist': { ar: 'قائمة مهام', en: 'Checklist', icon: 'ListChecks' },
+  'citation': { ar: 'مرجع بحثي', en: 'Citation', icon: 'BookOpen' },
+  'math': { ar: 'معادلة', en: 'Formula', icon: 'Sigma' },
+  'kanban': { ar: 'لوحة كانبان', en: 'Kanban', icon: 'Kanban' },
 };

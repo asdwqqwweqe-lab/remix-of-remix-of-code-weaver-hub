@@ -80,6 +80,14 @@ function getDefaultBlockData(type: BlockType): Omit<Block, 'id' | 'order'> {
     timeline: { type: 'timeline', items: [{ id: uuidv4(), title: '', description: '' }] },
     pricing: { type: 'pricing', title: '', price: '', features: [{ id: uuidv4(), text: '', included: true }], highlighted: false },
     testimonial: { type: 'testimonial', text: '', author: '', rating: 5 },
+    terminal: { type: 'terminal', commands: ['$ '], title: 'Terminal', prompt: '$' },
+    api: { type: 'api', title: 'API Reference', baseUrl: 'https://api.example.com', methods: [{ id: uuidv4(), method: 'GET', endpoint: '/endpoint', description: '', params: '', response: '' }] },
+    'file-tree': { type: 'file-tree', title: 'Project Structure', items: [{ id: uuidv4(), name: 'src', type: 'folder', indent: 0 }, { id: uuidv4(), name: 'index.ts', type: 'file', indent: 1 }] },
+    diff: { type: 'diff', title: '', filename: '', lines: [{ id: uuidv4(), type: 'unchanged', content: '' }] },
+    checklist: { type: 'checklist', title: '', items: [{ id: uuidv4(), text: '', checked: false }] },
+    citation: { type: 'citation', authors: '', title: '', source: '', year: '', url: '', doi: '' },
+    math: { type: 'math', expression: 'E = mc²', label: '', displayMode: true },
+    kanban: { type: 'kanban', title: '', columns: [{ id: uuidv4(), title: 'To Do', items: [''] }, { id: uuidv4(), title: 'In Progress', items: [''] }, { id: uuidv4(), title: 'Done', items: [''] }] },
   };
   return defaults[type];
 }

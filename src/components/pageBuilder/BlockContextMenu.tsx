@@ -10,6 +10,7 @@ import {
   Type, CreditCard, Table, Square, Minus, Image, Play,
   MousePointer, ChevronDown, Columns, Code, Quote, AlertCircle, List, MoveVertical,
   Sparkles, GalleryHorizontal, BarChart3, TrendingUp, Globe, Clock, DollarSign, MessageCircle,
+  Terminal, Webhook, FolderTree, GitCompareArrows, ListChecks, BookOpen, Sigma, Kanban,
 } from 'lucide-react';
 
 const ICON_MAP: Record<BlockType, any> = {
@@ -20,6 +21,8 @@ const ICON_MAP: Record<BlockType, any> = {
   hero: Sparkles, gallery: GalleryHorizontal, progress: BarChart3,
   stats: TrendingUp, embed: Globe, timeline: Clock, pricing: DollarSign,
   testimonial: MessageCircle,
+  terminal: Terminal, api: Webhook, 'file-tree': FolderTree, diff: GitCompareArrows,
+  checklist: ListChecks, citation: BookOpen, math: Sigma, kanban: Kanban,
 };
 
 interface BlockContextMenuProps {
