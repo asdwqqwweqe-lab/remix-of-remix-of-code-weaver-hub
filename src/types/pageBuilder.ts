@@ -327,4 +327,12 @@ export const BLOCK_TYPE_LABELS: Record<BlockType, { ar: string; en: string; icon
   'timeline': { ar: 'خط زمني', en: 'Timeline', icon: 'Clock' },
   'pricing': { ar: 'تسعير', en: 'Pricing', icon: 'DollarSign' },
   'testimonial': { ar: 'شهادة', en: 'Testimonial', icon: 'MessageCircle' },
+  'terminal': { ar: 'طرفية', en: 'Terminal', icon: 'Terminal' },
+  'api': { ar: 'مرجع API', en: 'API Ref', icon: 'Webhook' },
+  'file-tree': { ar: 'شجرة ملفات', en: 'File Tree', icon: 'FolderTree' },
+  'diff': { ar: 'مقارنة كود', en: 'Code Diff', icon: 'GitCompareArrows' },
+  'checklist': { ar: 'قائمة مهام', en: 'Checklist', icon: 'ListChecks' },
+  'citation': { ar: 'مرجع بحثي', en: 'Citation', icon: 'BookOpen' },
+  'math': { ar: 'معادلة', en: 'Formula', icon: 'Sigma' },
+  'kanban': { ar: 'لوحة كانبان', en: 'Kanban', icon: 'Kanban' },
 };
