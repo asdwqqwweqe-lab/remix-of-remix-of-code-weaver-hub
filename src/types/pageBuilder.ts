@@ -1,4 +1,4 @@
-export type BlockType = 'text' | 'icon-card' | 'table' | 'card' | 'divider' | 'image' | 'video' | 'button' | 'accordion' | 'tabs' | 'code' | 'quote' | 'alert' | 'list' | 'spacer' | 'hero' | 'gallery' | 'progress' | 'stats' | 'embed' | 'timeline' | 'pricing' | 'testimonial';
+export type BlockType = 'text' | 'icon-card' | 'table' | 'card' | 'divider' | 'image' | 'video' | 'button' | 'accordion' | 'tabs' | 'code' | 'quote' | 'alert' | 'list' | 'spacer' | 'hero' | 'gallery' | 'progress' | 'stats' | 'embed' | 'timeline' | 'pricing' | 'testimonial' | 'terminal' | 'api' | 'file-tree' | 'diff' | 'checklist' | 'citation' | 'math' | 'kanban';
 export type PageDirection = 'rtl' | 'ltr';
 
 export interface BaseBlock {
