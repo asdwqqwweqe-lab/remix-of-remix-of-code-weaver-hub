@@ -1,4 +1,4 @@
-import { Block, TextBlock, IconCardBlock, TableBlock, CardBlock, DividerBlock, ImageBlock, VideoBlock, ButtonBlock, AccordionBlock, TabsBlock, CodeBlock as CodeBlockType, QuoteBlock, AlertBlock, ListBlock, SpacerBlock, HeroBlock, GalleryBlock, ProgressBlock, StatsBlock, EmbedBlock, TimelineBlock, PricingBlock, TestimonialBlock } from '@/types/pageBuilder';
+import { Block, TextBlock, IconCardBlock, TableBlock, CardBlock, DividerBlock, ImageBlock, VideoBlock, ButtonBlock, AccordionBlock, TabsBlock, CodeBlock as CodeBlockType, QuoteBlock, AlertBlock, ListBlock, SpacerBlock, HeroBlock, GalleryBlock, ProgressBlock, StatsBlock, EmbedBlock, TimelineBlock, PricingBlock, TestimonialBlock, TerminalBlock, ApiBlock, FileTreeBlock, DiffBlock, ChecklistBlock, CitationBlock, MathBlock, KanbanBlock } from '@/types/pageBuilder';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
