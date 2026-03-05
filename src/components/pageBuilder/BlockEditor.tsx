@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { Block, BlockType, AccordionItem, TabItem, GalleryItem, StatItem, TimelineItem, PricingFeature } from '@/types/pageBuilder';
+import { Block, BlockType, AccordionItem, TabItem, GalleryItem, StatItem, TimelineItem, PricingFeature, ApiMethod, FileTreeItem, DiffLine, ChecklistItem, KanbanColumn } from '@/types/pageBuilder';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
