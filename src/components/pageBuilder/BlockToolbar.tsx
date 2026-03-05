@@ -8,7 +8,8 @@ import {
   MousePointer, ChevronDown, Columns, Code, Quote, AlertCircle,
   List, MoveVertical, Sparkles, GalleryHorizontal, BarChart3,
   TrendingUp, Globe, Clock, DollarSign, MessageCircle,
-  LayoutGrid, Zap, Film,
+  LayoutGrid, Zap, Film, Terminal, Webhook, FolderTree,
+  GitCompareArrows, ListChecks, BookOpen, Sigma, Kanban, FlaskConical,
 } from 'lucide-react';
 
 const ICON_MAP: Record<BlockType, any> = {
@@ -19,9 +20,11 @@ const ICON_MAP: Record<BlockType, any> = {
   hero: Sparkles, gallery: GalleryHorizontal, progress: BarChart3,
   stats: TrendingUp, embed: Globe, timeline: Clock, pricing: DollarSign,
   testimonial: MessageCircle,
+  terminal: Terminal, api: Webhook, 'file-tree': FolderTree, diff: GitCompareArrows,
+  checklist: ListChecks, citation: BookOpen, math: Sigma, kanban: Kanban,
 };
 
-type Category = 'basic' | 'advanced' | 'media';
+type Category = 'basic' | 'advanced' | 'media' | 'dev' | 'research';
 
 const CATEGORIES: Record<Category, { ar: string; en: string; icon: any; types: BlockType[] }> = {
   basic: {
@@ -34,13 +37,25 @@ const CATEGORIES: Record<Category, { ar: string; en: string; icon: any; types: B
     ar: 'متقدم',
     en: 'Advanced',
     icon: Zap,
-    types: ['hero', 'accordion', 'tabs', 'table', 'code', 'stats', 'progress', 'timeline', 'pricing', 'testimonial'],
+    types: ['hero', 'accordion', 'tabs', 'table', 'stats', 'progress', 'timeline', 'pricing', 'testimonial'],
   },
   media: {
     ar: 'وسائط',
     en: 'Media',
     icon: Film,
     types: ['image', 'video', 'gallery', 'embed'],
+  },
+  dev: {
+    ar: 'مطورين',
+    en: 'Developer',
+    icon: Terminal,
+    types: ['code', 'terminal', 'api', 'file-tree', 'diff', 'checklist', 'kanban'],
+  },
+  research: {
+    ar: 'باحثين',
+    en: 'Research',
+    icon: FlaskConical,
+    types: ['citation', 'math'],
   },
 };
 
