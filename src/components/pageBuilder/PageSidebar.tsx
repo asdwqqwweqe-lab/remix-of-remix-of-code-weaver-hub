@@ -116,7 +116,7 @@ export default function PageSidebar() {
           <DialogHeader>
             <DialogTitle>{isRTL ? 'إنشاء صفحة جديدة' : 'Create New Page'}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+            <div className="space-y-4">
             <div className="space-y-2">
               <Label>{isRTL ? 'عنوان الصفحة' : 'Page Title'}</Label>
               <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={isRTL ? 'أدخل عنوان الصفحة' : 'Enter page title'} />
@@ -127,14 +127,24 @@ export default function PageSidebar() {
               <Select value={templateId} onValueChange={setTemplateId}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {PAGE_TEMPLATES.map((t) => (
-                    <SelectItem key={t.id} value={t.id}>
-                      <div>
-                        <span>{t.name[lang]}</span>
-                        <span className="text-xs text-muted-foreground ms-2">({t.description[lang]})</span>
+                  {(['general', 'dev', 'research'] as const).map((cat) => {
+                    const catLabels = { general: { ar: '📄 عام', en: '📄 General' }, dev: { ar: '💻 مطورين', en: '💻 Developer' }, research: { ar: '🔬 باحثين', en: '🔬 Research' } };
+                    const catTemplates = PAGE_TEMPLATES.filter(t => t.category === cat);
+                    if (catTemplates.length === 0) return null;
+                    return (
+                      <div key={cat}>
+                        <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{catLabels[cat][lang]}</div>
+                        {catTemplates.map((t) => (
+                          <SelectItem key={t.id} value={t.id}>
+                            <div className="flex items-center gap-2">
+                              <span>{t.name[lang]}</span>
+                              <span className="text-xs text-muted-foreground">— {t.description[lang]}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
                       </div>
-                    </SelectItem>
-                  ))}
+                    );
+                  })}
                 </SelectContent>
               </Select>
             </div>
