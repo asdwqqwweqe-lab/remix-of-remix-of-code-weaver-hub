@@ -7,6 +7,7 @@ import BlockRenderer from '@/components/pageBuilder/BlockRenderer';
 import BlockEditor from '@/components/pageBuilder/BlockEditor';
 import BlockToolbar from '@/components/pageBuilder/BlockToolbar';
 import BlockContextMenu from '@/components/pageBuilder/BlockContextMenu';
+import CloudBackupDialog from '@/components/pageBuilder/CloudBackupDialog';
 import { useUndoRedo } from '@/hooks/useUndoRedo';
 import { v4 as uuidv4 } from 'uuid';
 import { Button } from '@/components/ui/button';
@@ -16,7 +17,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { Eye, GripVertical, Pencil, LayoutTemplate, Undo2, Redo2, Share2, Check } from 'lucide-react';
+import { Eye, GripVertical, Pencil, LayoutTemplate, Undo2, Redo2, Share2, Check, Cloud } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { generateSlug } from '@/lib/slug-utils';
 import {
@@ -98,6 +99,7 @@ export default function PageBuilder() {
   const { pages, activePageId, updatePage, addBlock, updateBlock, deleteBlock, duplicateBlock, moveBlock, reorderBlocks } = usePageBuilderStore();
   const activePage = pages.find((p) => p.id === activePageId);
   const [editingBlock, setEditingBlock] = useState<Block | null>(null);
+  const [showCloudBackup, setShowCloudBackup] = useState(false);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }), useSensor(KeyboardSensor));
   const prevBlocksRef = useRef<string>('');
 
@@ -224,7 +226,11 @@ export default function PageBuilder() {
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>{isRTL ? 'نسخ رابط المشاركة العام' : 'Copy public share link'}</TooltipContent>
-              </Tooltip>
+               </Tooltip>
+              <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setShowCloudBackup(true)}>
+                <Cloud className="w-4 h-4" />
+                {isRTL ? 'سحابة' : 'Cloud'}
+              </Button>
               <Link to={`/preview/${activePage.slug}`}>
                 <Button variant="outline" size="sm" className="gap-1.5">
                   <Eye className="w-4 h-4" />
@@ -283,6 +289,7 @@ export default function PageBuilder() {
           }
         }}
       />
+      <CloudBackupDialog open={showCloudBackup} onOpenChange={setShowCloudBackup} />
     </div>
   );
 }
