@@ -73,7 +73,28 @@ export default function TodoPanel() {
   };
 
   const toggleTodo = (id: string) => {
-    setTodos(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
+    setTodos(prev => {
+      const updated = prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t);
+      const toggled = updated.find(t => t.id === id);
+      if (toggled?.completed) {
+        addNotification({
+          type: 'achievement',
+          title: '✅ مهمة مكتملة',
+          message: `أكملت: "${toggled.text}"`,
+        });
+
+        // Check all-done milestone
+        const allActive = updated.filter(t => !t.completed);
+        if (allActive.length === 0 && updated.length > 0) {
+          addNotification({
+            type: 'achievement',
+            title: '🎉 جميع المهام مكتملة!',
+            message: `أحسنت! أنهيت جميع المهام (${updated.length} مهمة)`,
+          });
+        }
+      }
+      return updated;
+    });
   };
 
   const deleteTodo = (id: string) => {
