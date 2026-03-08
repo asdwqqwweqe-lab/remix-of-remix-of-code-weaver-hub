@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useNotificationStore } from '@/components/notifications/NotificationBell';
 import { useBlogStore } from '@/store/blogStore';
 import { useRoadmapStore } from '@/store/roadmapStore';
 import { Button } from '@/components/ui/button';
