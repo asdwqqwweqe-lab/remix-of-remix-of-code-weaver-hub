@@ -213,6 +213,7 @@ function SortableTodoItem({
   labels,
   onToggle,
   onDelete,
+  onEdit,
 }: {
   todo: TodoItem;
   language: string;
@@ -221,7 +222,11 @@ function SortableTodoItem({
   labels: TodoLabel[];
   onToggle: () => void;
   onDelete: () => void;
+  onEdit: (newText: string) => void;
 }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editText, setEditText] = useState(todo.text);
+
   const {
     attributes,
     listeners,
@@ -240,6 +245,16 @@ function SortableTodoItem({
   const linkedRoadmap = roadmaps.find(r => r.id === todo.linkedRoadmapId);
   const isOverdue = todo.dueDate && !todo.completed && new Date(todo.dueDate) < new Date(new Date().toDateString());
   const todoLabels = labels.filter(l => todo.labels?.includes(l.id));
+
+  const commitEdit = () => {
+    const trimmed = editText.trim();
+    if (trimmed && trimmed !== todo.text) {
+      onEdit(trimmed);
+    } else {
+      setEditText(todo.text);
+    }
+    setIsEditing(false);
+  };
 
   return (
     <div
@@ -261,9 +276,27 @@ function SortableTodoItem({
       </button>
       <Checkbox checked={todo.completed} onCheckedChange={onToggle} />
       <div className="flex-1 min-w-0">
-        <p className={cn('font-medium text-sm', todo.completed && 'line-through text-muted-foreground')}>
-          {todo.text}
-        </p>
+        {isEditing ? (
+          <Input
+            autoFocus
+            value={editText}
+            onChange={e => setEditText(e.target.value)}
+            onBlur={commitEdit}
+            onKeyDown={e => {
+              if (e.key === 'Enter') commitEdit();
+              if (e.key === 'Escape') { setEditText(todo.text); setIsEditing(false); }
+            }}
+            className="h-7 text-sm"
+          />
+        ) : (
+          <p
+            className={cn('font-medium text-sm cursor-pointer', todo.completed && 'line-through text-muted-foreground')}
+            onDoubleClick={() => { if (!todo.completed) { setIsEditing(true); setEditText(todo.text); } }}
+            title={language === 'ar' ? 'انقر مرتين للتعديل' : 'Double-click to edit'}
+          >
+            {todo.text}
+          </p>
+        )}
         <div className="flex flex-wrap items-center gap-1.5 mt-1">
           <span className={cn('text-xs font-medium',
             todo.priority === 'high' ? 'text-destructive' :
@@ -396,6 +429,10 @@ export default function TodoPanel() {
 
   const deleteTodo = useCallback((id: string) => {
     setTodos(prev => prev.filter(t => t.id !== id));
+  }, []);
+
+  const editTodo = useCallback((id: string, newText: string) => {
+    setTodos(prev => prev.map(t => t.id === id ? { ...t, text: newText } : t));
   }, []);
 
   const handleDragEnd = useCallback((event: DragEndEvent) => {
@@ -595,6 +632,7 @@ export default function TodoPanel() {
                     roadmaps={roadmapsList}
                     labels={labels}
                     onToggle={() => toggleTodo(todo.id)}
+                    onEdit={(newText) => editTodo(todo.id, newText)}
                     onDelete={() => deleteTodo(todo.id)}
                   />
                 ))
