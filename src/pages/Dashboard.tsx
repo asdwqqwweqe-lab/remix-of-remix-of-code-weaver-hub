@@ -21,6 +21,12 @@ import {
   ArrowRight,
   Star
 } from 'lucide-react';
+import {
+  PostsByCategoryChart,
+  PostStatusChart,
+  ViewsDistributionChart,
+  RoadmapProgressChart,
+} from '@/components/dashboard/DashboardCharts';
 
 export default function Dashboard() {
   const { language } = useLanguage();
