@@ -187,6 +187,14 @@ export default function Dashboard() {
         </Card>
       </div>
 
+      {/* Interactive Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <PostsByCategoryChart />
+        <PostStatusChart />
+        <ViewsDistributionChart />
+        <RoadmapProgressChart />
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Roadmap Progress */}
         <Card>
