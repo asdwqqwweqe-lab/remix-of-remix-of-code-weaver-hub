@@ -32,6 +32,7 @@ interface GlobalSearchProps {
 
 type ContentType = 'all' | 'posts' | 'reports' | 'roadmaps' | 'snippets';
 type SortOrder = 'newest' | 'oldest' | 'alphabetical';
+type DateRange = 'all' | 'today' | 'week' | 'month' | 'year';
 
 interface SearchResult {
   id: string;
