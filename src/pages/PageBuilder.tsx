@@ -226,7 +226,11 @@ export default function PageBuilder() {
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>{isRTL ? 'نسخ رابط المشاركة العام' : 'Copy public share link'}</TooltipContent>
-              </Tooltip>
+               </Tooltip>
+              <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setShowCloudBackup(true)}>
+                <Cloud className="w-4 h-4" />
+                {isRTL ? 'سحابة' : 'Cloud'}
+              </Button>
               <Link to={`/preview/${activePage.slug}`}>
                 <Button variant="outline" size="sm" className="gap-1.5">
                   <Eye className="w-4 h-4" />
