@@ -50,6 +50,30 @@ export type Database = {
         }
         Relationships: []
       }
+      page_builder_backups: {
+        Row: {
+          backup_name: string
+          created_at: string
+          id: string
+          pages_data: Json
+          user_id: string
+        }
+        Insert: {
+          backup_name?: string
+          created_at?: string
+          id?: string
+          pages_data?: Json
+          user_id: string
+        }
+        Update: {
+          backup_name?: string
+          created_at?: string
+          id?: string
+          pages_data?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
       quiz_results: {
         Row: {
           created_at: string
