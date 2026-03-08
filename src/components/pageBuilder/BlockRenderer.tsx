@@ -394,15 +394,15 @@ const RenderTestimonial = ({ block }: { block: TestimonialBlock }) => (
 // ===== DEVELOPER & RESEARCH BLOCKS =====
 
 const RenderTerminal = ({ block }: { block: TerminalBlock }) => (
-  <div className="rounded-lg border border-border overflow-hidden bg-[#1e1e2e] text-[#cdd6f4]">
+  <div className="rounded-lg border border-border overflow-hidden bg-card text-card-foreground dark:bg-muted/80">
     {block.title && (
-      <div className="flex items-center gap-2 px-4 py-2 bg-[#181825] border-b border-[#313244]">
+      <div className="flex items-center gap-2 px-4 py-2 bg-muted border-b border-border">
         <div className="flex gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-[#f38ba8]" />
-          <div className="w-3 h-3 rounded-full bg-[#a6e3a1]" />
-          <div className="w-3 h-3 rounded-full bg-[#f9e2af]" />
+          <div className="w-3 h-3 rounded-full bg-destructive/70" />
+          <div className="w-3 h-3 rounded-full bg-primary/70" />
+          <div className="w-3 h-3 rounded-full bg-accent/70" />
         </div>
-        <span className="text-xs font-mono text-[#a6adc8]">{block.title}</span>
+        <span className="text-xs font-mono text-muted-foreground">{block.title}</span>
       </div>
     )}
     <div className="p-4 font-mono text-sm space-y-1">
@@ -410,11 +410,11 @@ const RenderTerminal = ({ block }: { block: TerminalBlock }) => (
         <div key={i} className="leading-relaxed">
           {cmd.startsWith(block.prompt) ? (
             <>
-              <span className="text-[#a6e3a1]">{block.prompt} </span>
+              <span className="text-primary">{block.prompt} </span>
               <span>{cmd.slice(block.prompt.length + 1)}</span>
             </>
           ) : (
-            <span className="text-[#a6adc8]">{cmd}</span>
+            <span className="text-muted-foreground">{cmd}</span>
           )}
         </div>
       ))}
