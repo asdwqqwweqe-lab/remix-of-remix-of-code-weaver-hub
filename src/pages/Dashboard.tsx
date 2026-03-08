@@ -21,6 +21,12 @@ import {
   ArrowRight,
   Star
 } from 'lucide-react';
+import {
+  PostsByCategoryChart,
+  PostStatusChart,
+  ViewsDistributionChart,
+  RoadmapProgressChart,
+} from '@/components/dashboard/DashboardCharts';
 
 export default function Dashboard() {
   const { language } = useLanguage();
@@ -179,6 +185,14 @@ export default function Dashboard() {
             </p>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Interactive Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <PostsByCategoryChart />
+        <PostStatusChart />
+        <ViewsDistributionChart />
+        <RoadmapProgressChart />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
