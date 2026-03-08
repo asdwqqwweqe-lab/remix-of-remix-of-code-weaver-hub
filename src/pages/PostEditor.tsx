@@ -52,6 +52,7 @@ import {
   PanelLeft,
   Eye,
   EyeOff,
+  Maximize2,
 } from 'lucide-react';
 
 // Quick Add Collection Component
