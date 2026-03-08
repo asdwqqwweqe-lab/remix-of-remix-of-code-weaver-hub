@@ -360,7 +360,6 @@ const PostEditor = () => {
           <RichTextEditor
             content={formData.content}
             onChange={(content) => setFormData(prev => ({ ...prev, content }))}
-            dir={formData.mainLanguage === 'ar' ? 'rtl' : 'ltr'}
           />
         ) : (
           <MarkdownEditor
