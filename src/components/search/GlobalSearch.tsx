@@ -141,6 +141,19 @@ export default function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) 
         result.excerpt?.toLowerCase().includes(lowerQuery)
       );
     }
+
+    // Filter by date range
+    if (dateRange !== 'all') {
+      const now = Date.now();
+      const ranges: Record<string, number> = {
+        today: 86400000,
+        week: 604800000,
+        month: 2592000000,
+        year: 31536000000,
+      };
+      const cutoff = now - (ranges[dateRange] || 0);
+      results = results.filter(r => r.date.getTime() >= cutoff);
+    }
     
     // Sort
     results.sort((a, b) => {
