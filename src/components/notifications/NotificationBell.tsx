@@ -10,12 +10,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { Bell, Check, CheckCheck, Trash2, Info, Award, MessageSquare, Map } from 'lucide-react';
+import { Bell, Check, CheckCheck, Trash2, Info, Award, MessageSquare, Map, ListTodo } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export interface AppNotification {
   id: string;
-  type: 'info' | 'achievement' | 'comment' | 'roadmap';
+  type: 'info' | 'achievement' | 'comment' | 'roadmap' | 'todo';
   title: string;
   message: string;
   read: boolean;
@@ -65,6 +65,7 @@ export default function NotificationBell() {
       case 'achievement': return <Award className="w-4 h-4 text-chart-3" />;
       case 'comment': return <MessageSquare className="w-4 h-4 text-primary" />;
       case 'roadmap': return <Map className="w-4 h-4 text-chart-2" />;
+      case 'todo': return <ListTodo className="w-4 h-4 text-chart-4" />;
       default: return <Info className="w-4 h-4 text-muted-foreground" />;
     }
   };

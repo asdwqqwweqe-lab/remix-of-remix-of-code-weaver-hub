@@ -11,6 +11,7 @@ import SearchTrigger from '@/components/search/SearchTrigger';
 import QuickNotes from '@/components/notes/QuickNotes';
 import NotificationBell from '@/components/notifications/NotificationBell';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
+import { useNotificationTriggers } from '@/hooks/useNotificationTriggers';
 import {
   Moon,
   Sun,
@@ -58,6 +59,9 @@ const MainLayout = ({ children }: MainLayoutProps) => {
   
   // Initialize keyboard shortcuts
   const { showShortcutsHelp } = useKeyboardShortcuts();
+  
+  // Watch for events and fire notifications
+  useNotificationTriggers();
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_COLLAPSED_KEY, sidebarCollapsed.toString());
