@@ -9,6 +9,7 @@ import SyncStatusIndicator from '@/components/common/SyncStatusIndicator';
 import StorageTypeIndicator from '@/components/common/StorageTypeIndicator';
 import SearchTrigger from '@/components/search/SearchTrigger';
 import QuickNotes from '@/components/notes/QuickNotes';
+import NotificationBell from '@/components/notifications/NotificationBell';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import {
   Moon,
