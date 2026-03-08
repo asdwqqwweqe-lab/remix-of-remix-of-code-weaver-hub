@@ -19,7 +19,7 @@ export function useKeyboardShortcuts() {
   const showShortcutsHelp = useCallback(() => {
     toast({
       title: '⌨️ اختصارات لوحة المفاتيح',
-      description: 'Ctrl+K: بحث | Ctrl+N: جديد | Ctrl+S: حفظ | Ctrl+P: معاينة | ← →: تنقل',
+      description: 'Ctrl+K: بحث | Ctrl+N: جديد | Ctrl+S: حفظ | Alt+1-8: تنقل الأقسام | Ctrl+/: مساعدة',
       duration: 5000,
     });
   }, [toast]);
