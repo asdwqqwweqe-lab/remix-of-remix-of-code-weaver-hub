@@ -117,8 +117,10 @@ const PostDetails = () => {
           {isRTL ? <ArrowRight className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}
           {t('common.back')}
         </Button>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <PostSearch content={post.content} />
+          <ExportContentButton title={post.title} content={post.content} type="post" />
+          <VersionDiffView postId={post.id} />
           <ReadingMode title={post.title}>
             <CodeHighlighter
               content={post.content}

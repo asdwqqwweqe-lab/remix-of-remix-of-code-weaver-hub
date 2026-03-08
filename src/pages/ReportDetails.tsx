@@ -289,6 +289,7 @@ const ReportDetails = () => {
         </Button>
         <div className="flex gap-2 flex-wrap">
           <ReportSearch content={report.content} />
+          <ExportContentButton title={report.title} content={report.content} type="report" />
           <ReadingMode title={report.title}>
             <div className="report-content">
               {renderMarkdown(report.content)}
