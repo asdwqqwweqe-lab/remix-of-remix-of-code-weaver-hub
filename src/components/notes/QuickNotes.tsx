@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, forwardRef } from 'react';
 import { StickyNote, X, Plus, Trash2, Save, Minimize2, Maximize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -17,7 +17,7 @@ interface QuickNote {
 
 const STORAGE_KEY = 'quick-notes-storage';
 
-const QuickNotes = () => {
+const QuickNotes = forwardRef<HTMLDivElement>((_, ref) => {
   const { language } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
@@ -238,6 +238,8 @@ const QuickNotes = () => {
       )}
     </div>
   );
-};
+});
+
+QuickNotes.displayName = 'QuickNotes';
 
 export default QuickNotes;
