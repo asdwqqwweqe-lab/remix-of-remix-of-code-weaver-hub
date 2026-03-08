@@ -77,6 +77,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
     { path: '/snippets', icon: Layers, label: t('nav.snippets') },
     { path: '/collections', icon: BookOpen, label: t('nav.collections') },
     { path: '/gallery', icon: Image, label: language === 'ar' ? 'المعرض' : 'Gallery' },
+    { path: '/todo', icon: ListTodo, label: language === 'ar' ? 'المهام' : 'Todo' },
     { path: '/favorites', icon: Star, label: t('nav.favorites') },
     { path: '/statistics', icon: BarChart3, label: t('nav.statistics') },
     { path: '/settings', icon: Settings, label: language === 'ar' ? 'الإعدادات' : 'Settings' },
