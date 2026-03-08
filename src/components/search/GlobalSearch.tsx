@@ -52,6 +52,7 @@ export default function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) 
   const [query, setQuery] = useState('');
   const [contentType, setContentType] = useState<ContentType>('all');
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
+  const [dateRange, setDateRange] = useState<DateRange>('all');
   const [showFilters, setShowFilters] = useState(false);
   
   const { posts, snippets, getCategoryById } = useBlogStore();
