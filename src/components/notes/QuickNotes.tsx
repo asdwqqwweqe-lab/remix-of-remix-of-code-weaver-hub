@@ -238,6 +238,8 @@ const QuickNotes = forwardRef<HTMLDivElement>((_, ref) => {
       )}
     </div>
   );
-};
+});
+
+QuickNotes.displayName = 'QuickNotes';
 
 export default QuickNotes;
