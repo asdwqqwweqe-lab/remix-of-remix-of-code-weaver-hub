@@ -15,7 +15,7 @@ import { cn } from '@/lib/utils';
 
 export interface AppNotification {
   id: string;
-  type: 'info' | 'achievement' | 'comment' | 'roadmap';
+  type: 'info' | 'achievement' | 'comment' | 'roadmap' | 'todo';
   title: string;
   message: string;
   read: boolean;
