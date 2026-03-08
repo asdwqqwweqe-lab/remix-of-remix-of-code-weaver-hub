@@ -99,6 +99,7 @@ export default function PageBuilder() {
   const { pages, activePageId, updatePage, addBlock, updateBlock, deleteBlock, duplicateBlock, moveBlock, reorderBlocks } = usePageBuilderStore();
   const activePage = pages.find((p) => p.id === activePageId);
   const [editingBlock, setEditingBlock] = useState<Block | null>(null);
+  const [showCloudBackup, setShowCloudBackup] = useState(false);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }), useSensor(KeyboardSensor));
   const prevBlocksRef = useRef<string>('');
 
