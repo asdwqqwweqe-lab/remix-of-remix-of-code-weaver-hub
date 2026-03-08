@@ -7,6 +7,7 @@ import BlockRenderer from '@/components/pageBuilder/BlockRenderer';
 import BlockEditor from '@/components/pageBuilder/BlockEditor';
 import BlockToolbar from '@/components/pageBuilder/BlockToolbar';
 import BlockContextMenu from '@/components/pageBuilder/BlockContextMenu';
+import CloudBackupDialog from '@/components/pageBuilder/CloudBackupDialog';
 import { useUndoRedo } from '@/hooks/useUndoRedo';
 import { v4 as uuidv4 } from 'uuid';
 import { Button } from '@/components/ui/button';
@@ -16,7 +17,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { Eye, GripVertical, Pencil, LayoutTemplate, Undo2, Redo2, Share2, Check } from 'lucide-react';
+import { Eye, GripVertical, Pencil, LayoutTemplate, Undo2, Redo2, Share2, Check, Cloud } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { generateSlug } from '@/lib/slug-utils';
 import {
