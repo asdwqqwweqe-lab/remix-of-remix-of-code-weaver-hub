@@ -234,7 +234,7 @@ export default function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) 
       </div>
       
       {showFilters && (
-        <div className="flex gap-2 p-3 border-b bg-muted/30">
+        <div className="flex gap-2 p-3 border-b bg-muted/30 flex-wrap">
           <Select value={contentType} onValueChange={(v) => setContentType(v as ContentType)}>
             <SelectTrigger className="w-[140px]">
               <SelectValue />
@@ -245,6 +245,20 @@ export default function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) 
               <SelectItem value="reports">{language === 'ar' ? 'التقارير' : 'Reports'}</SelectItem>
               <SelectItem value="roadmaps">{language === 'ar' ? 'خرائط الطريق' : 'Roadmaps'}</SelectItem>
               <SelectItem value="snippets">{language === 'ar' ? 'الأكواد' : 'Snippets'}</SelectItem>
+            </SelectContent>
+          </Select>
+          
+          <Select value={dateRange} onValueChange={(v) => setDateRange(v as DateRange)}>
+            <SelectTrigger className="w-[140px]">
+              <Calendar className="h-3 w-3 me-1" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{language === 'ar' ? 'كل الوقت' : 'All time'}</SelectItem>
+              <SelectItem value="today">{language === 'ar' ? 'اليوم' : 'Today'}</SelectItem>
+              <SelectItem value="week">{language === 'ar' ? 'هذا الأسبوع' : 'This week'}</SelectItem>
+              <SelectItem value="month">{language === 'ar' ? 'هذا الشهر' : 'This month'}</SelectItem>
+              <SelectItem value="year">{language === 'ar' ? 'هذا العام' : 'This year'}</SelectItem>
             </SelectContent>
           </Select>
           
