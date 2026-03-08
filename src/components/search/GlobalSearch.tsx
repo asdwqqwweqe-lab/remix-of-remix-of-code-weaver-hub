@@ -170,7 +170,7 @@ export default function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) 
     });
     
     return results;
-  }, [allResults, query, sortOrder]);
+  }, [allResults, query, sortOrder, dateRange]);
 
   const groupedResults = useMemo(() => {
     const groups: Record<ContentType, SearchResult[]> = {
