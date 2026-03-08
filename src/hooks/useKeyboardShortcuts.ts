@@ -33,7 +33,17 @@ export function useKeyboardShortcuts() {
     { key: 'n', ctrl: true, action: () => navigate('/posts/new'), description: 'موضوع جديد' },
     { key: 'h', ctrl: true, action: () => navigate('/'), description: 'الرئيسية' },
     
-    // Editor shortcuts (will be caught by specific pages)
+    // Section navigation
+    { key: '1', alt: true, action: () => navigate('/dashboard'), description: 'لوحة التحكم' },
+    { key: '2', alt: true, action: () => navigate('/posts'), description: 'المقالات' },
+    { key: '3', alt: true, action: () => navigate('/reports'), description: 'التقارير' },
+    { key: '4', alt: true, action: () => navigate('/roadmap'), description: 'خريطة الطريق' },
+    { key: '5', alt: true, action: () => navigate('/snippets'), description: 'الأكواد' },
+    { key: '6', alt: true, action: () => navigate('/page-builder'), description: 'منشئ الصفحات' },
+    { key: '7', alt: true, action: () => navigate('/todo'), description: 'المهام' },
+    { key: '8', alt: true, action: () => navigate('/settings'), description: 'الإعدادات' },
+    
+    // Editor shortcuts
     { key: 's', ctrl: true, action: () => {
       const saveBtn = document.querySelector('[data-save-button]') as HTMLButtonElement;
       if (saveBtn) {
@@ -46,7 +56,7 @@ export function useKeyboardShortcuts() {
       if (previewBtn) previewBtn.click();
     }, description: 'تبديل المعاينة' },
     
-    // Post navigation (on post details page)
+    // Post navigation
     { key: 'ArrowLeft', alt: true, action: () => {
       const prevBtn = document.querySelector('[data-prev-post]') as HTMLButtonElement;
       if (prevBtn) prevBtn.click();
