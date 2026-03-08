@@ -40,7 +40,7 @@ import NotFound from "./pages/NotFound";
 import PageBuilder from "./pages/PageBuilder";
 import PagePreview from "./pages/PagePreview";
 import PublicPagePreview from "./pages/PublicPagePreview";
-
+import TodoList from "./pages/TodoList";
 const queryClient = new QueryClient();
 
 const App = () => (
