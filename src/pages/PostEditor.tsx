@@ -934,6 +934,7 @@ const PostEditor = () => {
 
       <ScrollButtons />
     </div>
+    </>
   );
 };
 
