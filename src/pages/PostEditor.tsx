@@ -341,6 +341,36 @@ const PostEditor = () => {
   };
 
   return (
+    <>
+    <FocusMode
+      isOpen={focusMode}
+      onClose={() => setFocusMode(false)}
+      onSave={handleSubmit}
+      title={formData.title}
+    >
+      <div className="space-y-4 max-w-4xl mx-auto">
+        <Input
+          value={formData.title}
+          onChange={(e) => handleTitleChange(e.target.value)}
+          placeholder={t('posts.titlePlaceholder')}
+          dir={formData.mainLanguage === 'ar' ? 'rtl' : 'ltr'}
+          className="text-3xl font-bold border-0 shadow-none focus-visible:ring-0 px-0 bg-transparent"
+        />
+        {editorMode === 'wysiwyg' ? (
+          <RichTextEditor
+            content={formData.content}
+            onChange={(content) => setFormData(prev => ({ ...prev, content }))}
+            placeholder={t('posts.contentPlaceholder')}
+            dir={formData.mainLanguage === 'ar' ? 'rtl' : 'ltr'}
+          />
+        ) : (
+          <MarkdownEditor
+            value={formData.content}
+            onChange={(content) => setFormData(prev => ({ ...prev, content }))}
+          />
+        )}
+      </div>
+    </FocusMode>
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
