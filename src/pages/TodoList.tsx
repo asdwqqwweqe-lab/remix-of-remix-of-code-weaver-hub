@@ -431,6 +431,10 @@ export default function TodoPanel() {
     setTodos(prev => prev.filter(t => t.id !== id));
   }, []);
 
+  const editTodo = useCallback((id: string, newText: string) => {
+    setTodos(prev => prev.map(t => t.id === id ? { ...t, text: newText } : t));
+  }, []);
+
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event;
     if (over && active.id !== over.id) {
