@@ -10,7 +10,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { Bell, Check, CheckCheck, Trash2, Info, Award, MessageSquare, Map } from 'lucide-react';
+import { Bell, Check, CheckCheck, Trash2, Info, Award, MessageSquare, Map, ListTodo } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export interface AppNotification {
