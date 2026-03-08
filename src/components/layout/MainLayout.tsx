@@ -35,6 +35,7 @@ import {
   FileText as ReportIcon,
   Keyboard,
   LayoutTemplate,
+  ListTodo,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
