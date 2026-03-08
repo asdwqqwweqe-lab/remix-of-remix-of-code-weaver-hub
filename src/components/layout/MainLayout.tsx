@@ -205,6 +205,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
 
           <div className="flex items-center gap-2">
             <SearchTrigger />
+            <NotificationBell />
             <SyncStatusIndicator />
             <StorageTypeIndicator />
             <Button
