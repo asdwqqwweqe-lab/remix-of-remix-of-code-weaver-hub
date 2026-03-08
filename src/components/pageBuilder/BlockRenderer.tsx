@@ -337,7 +337,7 @@ const RenderPricing = ({ block }: { block: PricingBlock }) => (
   <Card className={cn('card-hover max-w-sm mx-auto', block.highlighted ? 'border-primary shadow-lg shadow-primary/10 ring-1 ring-primary/20' : 'border-border/50')}>
     {block.highlighted && (
       <div className="bg-primary text-primary-foreground text-xs text-center py-1.5 font-medium">
-        ⭐ مميز
+        ⭐ Featured
       </div>
     )}
     <CardContent className="p-6 space-y-4 text-center">
