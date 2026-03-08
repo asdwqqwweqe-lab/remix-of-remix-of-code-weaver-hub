@@ -45,12 +45,14 @@ import AIAutoFillButton from '@/components/common/AIAutoFillButton';
 import PostTemplates from '@/components/posts/PostTemplates';
 import LivePostPreview from '@/components/posts/LivePostPreview';
 import ScrollButtons from '@/components/common/ScrollButtons';
+import FocusMode from '@/components/common/FocusMode';
 import { toast } from 'sonner';
 import { 
   PanelLeftClose,
   PanelLeft,
   Eye,
   EyeOff,
+  Maximize2,
 } from 'lucide-react';
 
 // Quick Add Collection Component
@@ -155,7 +157,7 @@ const PostEditor = () => {
   const [editorMode, setEditorMode] = useState<'wysiwyg' | 'markdown'>('wysiwyg');
   const [showSidebar, setShowSidebar] = useState(true);
   const [showPreview, setShowPreview] = useState(false);
-
+  const [focusMode, setFocusMode] = useState(false);
   useEffect(() => {
     if (existingPost) {
       setFormData({
@@ -339,6 +341,34 @@ const PostEditor = () => {
   };
 
   return (
+    <>
+    <FocusMode
+      isOpen={focusMode}
+      onClose={() => setFocusMode(false)}
+      onSave={handleSubmit}
+      title={formData.title}
+    >
+      <div className="space-y-4 max-w-4xl mx-auto">
+        <Input
+          value={formData.title}
+          onChange={(e) => handleTitleChange(e.target.value)}
+          placeholder={t('posts.titlePlaceholder')}
+          dir={formData.mainLanguage === 'ar' ? 'rtl' : 'ltr'}
+          className="text-3xl font-bold border-0 shadow-none focus-visible:ring-0 px-0 bg-transparent"
+        />
+        {editorMode === 'wysiwyg' ? (
+          <RichTextEditor
+            content={formData.content}
+            onChange={(content) => setFormData(prev => ({ ...prev, content }))}
+          />
+        ) : (
+          <MarkdownEditor
+            value={formData.content}
+            onChange={(content) => setFormData(prev => ({ ...prev, content }))}
+          />
+        )}
+      </div>
+    </FocusMode>
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -352,6 +382,9 @@ const PostEditor = () => {
           </Button>
           <Button variant="ghost" size="icon" onClick={() => setShowPreview(!showPreview)} title={showPreview ? 'Hide preview' : 'Show preview'} data-preview-toggle>
             {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          </Button>
+          <Button variant="ghost" size="icon" onClick={() => setFocusMode(true)} title="Focus Mode (Ctrl+Shift+F)">
+            <Maximize2 className="w-4 h-4" />
           </Button>
         </div>
         <Button onClick={handleSubmit} className="gap-2" data-save-button>
@@ -902,6 +935,7 @@ const PostEditor = () => {
 
       <ScrollButtons />
     </div>
+    </>
   );
 };
 

@@ -9,6 +9,7 @@ import SyncStatusIndicator from '@/components/common/SyncStatusIndicator';
 import StorageTypeIndicator from '@/components/common/StorageTypeIndicator';
 import SearchTrigger from '@/components/search/SearchTrigger';
 import QuickNotes from '@/components/notes/QuickNotes';
+import NotificationBell from '@/components/notifications/NotificationBell';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import {
   Moon,
@@ -34,6 +35,7 @@ import {
   FileText as ReportIcon,
   Keyboard,
   LayoutTemplate,
+  ListTodo,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -75,6 +77,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
     { path: '/snippets', icon: Layers, label: t('nav.snippets') },
     { path: '/collections', icon: BookOpen, label: t('nav.collections') },
     { path: '/gallery', icon: Image, label: language === 'ar' ? 'المعرض' : 'Gallery' },
+    { path: '/todo', icon: ListTodo, label: language === 'ar' ? 'المهام' : 'Todo' },
     { path: '/favorites', icon: Star, label: t('nav.favorites') },
     { path: '/statistics', icon: BarChart3, label: t('nav.statistics') },
     { path: '/settings', icon: Settings, label: language === 'ar' ? 'الإعدادات' : 'Settings' },
@@ -202,6 +205,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
 
           <div className="flex items-center gap-2">
             <SearchTrigger />
+            <NotificationBell />
             <SyncStatusIndicator />
             <StorageTypeIndicator />
             <Button

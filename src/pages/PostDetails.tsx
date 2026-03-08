@@ -31,9 +31,11 @@ import { format } from 'date-fns';
 import { ar, enUS } from 'date-fns/locale';
 import CommentSection from '@/components/blog/CommentSection';
 import VersionHistory from '@/components/post/VersionHistory';
+import VersionDiffView from '@/components/post/VersionDiffView';
 import CodeHighlighter from '@/components/post/CodeHighlighter';
 import RelatedPosts from '@/components/post/RelatedPosts';
 import ScrollProgress from '@/components/common/ScrollProgress';
+import ExportContentButton from '@/components/common/ExportContentButton';
 import DisplaySettings, { DisplaySettingsValues } from '@/components/reports/DisplaySettings';
 import PostSearch from '@/components/post/PostSearch';
 import ContentNavigation from '@/components/navigation/ContentNavigation';
@@ -115,8 +117,10 @@ const PostDetails = () => {
           {isRTL ? <ArrowRight className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}
           {t('common.back')}
         </Button>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <PostSearch content={post.content} />
+          <ExportContentButton title={post.title} content={post.content} type="post" />
+          <VersionDiffView postId={post.id} />
           <ReadingMode title={post.title}>
             <CodeHighlighter
               content={post.content}

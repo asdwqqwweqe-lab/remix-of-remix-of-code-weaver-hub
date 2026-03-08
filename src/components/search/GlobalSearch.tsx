@@ -15,7 +15,7 @@ import {
   CommandSeparator,
 } from '@/components/ui/command';
 import { Badge } from '@/components/ui/badge';
-import { FileText, BookOpen, Map, Code, Search, Filter, SortAsc, SortDesc } from 'lucide-react';
+import { FileText, BookOpen, Map, Code, Search, Filter, SortAsc, SortDesc, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -32,6 +32,7 @@ interface GlobalSearchProps {
 
 type ContentType = 'all' | 'posts' | 'reports' | 'roadmaps' | 'snippets';
 type SortOrder = 'newest' | 'oldest' | 'alphabetical';
+type DateRange = 'all' | 'today' | 'week' | 'month' | 'year';
 
 interface SearchResult {
   id: string;
@@ -51,6 +52,7 @@ export default function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) 
   const [query, setQuery] = useState('');
   const [contentType, setContentType] = useState<ContentType>('all');
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
+  const [dateRange, setDateRange] = useState<DateRange>('all');
   const [showFilters, setShowFilters] = useState(false);
   
   const { posts, snippets, getCategoryById } = useBlogStore();
@@ -139,6 +141,19 @@ export default function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) 
         result.excerpt?.toLowerCase().includes(lowerQuery)
       );
     }
+
+    // Filter by date range
+    if (dateRange !== 'all') {
+      const now = Date.now();
+      const ranges: Record<string, number> = {
+        today: 86400000,
+        week: 604800000,
+        month: 2592000000,
+        year: 31536000000,
+      };
+      const cutoff = now - (ranges[dateRange] || 0);
+      results = results.filter(r => r.date.getTime() >= cutoff);
+    }
     
     // Sort
     results.sort((a, b) => {
@@ -155,7 +170,7 @@ export default function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) 
     });
     
     return results;
-  }, [allResults, query, sortOrder]);
+  }, [allResults, query, sortOrder, dateRange]);
 
   const groupedResults = useMemo(() => {
     const groups: Record<ContentType, SearchResult[]> = {
@@ -219,7 +234,7 @@ export default function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) 
       </div>
       
       {showFilters && (
-        <div className="flex gap-2 p-3 border-b bg-muted/30">
+        <div className="flex gap-2 p-3 border-b bg-muted/30 flex-wrap">
           <Select value={contentType} onValueChange={(v) => setContentType(v as ContentType)}>
             <SelectTrigger className="w-[140px]">
               <SelectValue />
@@ -230,6 +245,20 @@ export default function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) 
               <SelectItem value="reports">{language === 'ar' ? 'التقارير' : 'Reports'}</SelectItem>
               <SelectItem value="roadmaps">{language === 'ar' ? 'خرائط الطريق' : 'Roadmaps'}</SelectItem>
               <SelectItem value="snippets">{language === 'ar' ? 'الأكواد' : 'Snippets'}</SelectItem>
+            </SelectContent>
+          </Select>
+          
+          <Select value={dateRange} onValueChange={(v) => setDateRange(v as DateRange)}>
+            <SelectTrigger className="w-[140px]">
+              <Calendar className="h-3 w-3 me-1" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{language === 'ar' ? 'كل الوقت' : 'All time'}</SelectItem>
+              <SelectItem value="today">{language === 'ar' ? 'اليوم' : 'Today'}</SelectItem>
+              <SelectItem value="week">{language === 'ar' ? 'هذا الأسبوع' : 'This week'}</SelectItem>
+              <SelectItem value="month">{language === 'ar' ? 'هذا الشهر' : 'This month'}</SelectItem>
+              <SelectItem value="year">{language === 'ar' ? 'هذا العام' : 'This year'}</SelectItem>
             </SelectContent>
           </Select>
           

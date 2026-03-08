@@ -31,6 +31,7 @@ import ReportSearch from '@/components/reports/ReportSearch';
 import TextTranslator from '@/components/reports/TextTranslator';
 import ContentNavigation from '@/components/navigation/ContentNavigation';
 import ReadingMode from '@/components/common/ReadingMode';
+import ExportContentButton from '@/components/common/ExportContentButton';
 import { cn } from '@/lib/utils';
 import {
   AlertDialog,
@@ -288,6 +289,7 @@ const ReportDetails = () => {
         </Button>
         <div className="flex gap-2 flex-wrap">
           <ReportSearch content={report.content} />
+          <ExportContentButton title={report.title} content={report.content} type="report" />
           <ReadingMode title={report.title}>
             <div className="report-content">
               {renderMarkdown(report.content)}
