@@ -157,7 +157,7 @@ const PostEditor = () => {
   const [editorMode, setEditorMode] = useState<'wysiwyg' | 'markdown'>('wysiwyg');
   const [showSidebar, setShowSidebar] = useState(true);
   const [showPreview, setShowPreview] = useState(false);
-
+  const [focusMode, setFocusMode] = useState(false);
   useEffect(() => {
     if (existingPost) {
       setFormData({
