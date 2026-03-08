@@ -17,7 +17,7 @@ interface QuickNote {
 
 const STORAGE_KEY = 'quick-notes-storage';
 
-const QuickNotes = () => {
+const QuickNotes = forwardRef<HTMLDivElement>((_, ref) => {
   const { language } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
