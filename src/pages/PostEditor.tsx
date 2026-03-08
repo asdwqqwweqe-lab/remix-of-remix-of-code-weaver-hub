@@ -45,6 +45,7 @@ import AIAutoFillButton from '@/components/common/AIAutoFillButton';
 import PostTemplates from '@/components/posts/PostTemplates';
 import LivePostPreview from '@/components/posts/LivePostPreview';
 import ScrollButtons from '@/components/common/ScrollButtons';
+import FocusMode from '@/components/common/FocusMode';
 import { toast } from 'sonner';
 import { 
   PanelLeftClose,
