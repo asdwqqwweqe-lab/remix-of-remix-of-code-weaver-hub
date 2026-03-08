@@ -44,6 +44,7 @@ export default function TodoPanel() {
   const { posts } = useBlogStore();
   const { roadmaps } = useRoadmapStore();
 
+  const { addNotification } = useNotificationStore();
   const [todos, setTodos] = useState<TodoItem[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
