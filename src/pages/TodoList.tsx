@@ -632,6 +632,7 @@ export default function TodoPanel() {
                     roadmaps={roadmapsList}
                     labels={labels}
                     onToggle={() => toggleTodo(todo.id)}
+                    onEdit={(newText) => editTodo(todo.id, newText)}
                     onDelete={() => deleteTodo(todo.id)}
                   />
                 ))
