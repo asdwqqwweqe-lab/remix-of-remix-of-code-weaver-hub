@@ -31,6 +31,7 @@ import ReportSearch from '@/components/reports/ReportSearch';
 import TextTranslator from '@/components/reports/TextTranslator';
 import ContentNavigation from '@/components/navigation/ContentNavigation';
 import ReadingMode from '@/components/common/ReadingMode';
+import ExportContentButton from '@/components/common/ExportContentButton';
 import { cn } from '@/lib/utils';
 import {
   AlertDialog,
