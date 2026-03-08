@@ -11,6 +11,7 @@ import SearchTrigger from '@/components/search/SearchTrigger';
 import QuickNotes from '@/components/notes/QuickNotes';
 import NotificationBell from '@/components/notifications/NotificationBell';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
+import { useNotificationTriggers } from '@/hooks/useNotificationTriggers';
 import {
   Moon,
   Sun,
