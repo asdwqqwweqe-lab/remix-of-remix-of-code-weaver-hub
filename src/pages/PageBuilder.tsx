@@ -289,6 +289,7 @@ export default function PageBuilder() {
           }
         }}
       />
+      <CloudBackupDialog open={showCloudBackup} onOpenChange={setShowCloudBackup} />
     </div>
   );
 }
