@@ -65,6 +65,7 @@ export default function NotificationBell() {
       case 'achievement': return <Award className="w-4 h-4 text-chart-3" />;
       case 'comment': return <MessageSquare className="w-4 h-4 text-primary" />;
       case 'roadmap': return <Map className="w-4 h-4 text-chart-2" />;
+      case 'todo': return <ListTodo className="w-4 h-4 text-chart-4" />;
       default: return <Info className="w-4 h-4 text-muted-foreground" />;
     }
   };
