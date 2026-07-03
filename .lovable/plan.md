@@ -1,54 +1,80 @@
-# خطة تنفيذ 4 ميزات جديدة بالتوازي
+# خطة تنفيذ 4 ميزات بالتوازي
 
-سأنفذ الميزات الأربع دفعة واحدة، كل ميزة صفحة مستقلة مع رابط في الشريط الجانبي وتخزين محلي. لا حاجة لأي backend جديد باستثناء استدعاء Lovable AI عبر edge function واحدة للبطاقات.
+## نظرة عامة
+سيتم إنشاء 4 صفحات مستقلة، لكل منها ملف واحد فقط + إدخال في التنقل. بدون تعديلات backend — كلها LocalStorage.
 
-## 1) البطاقات التعليمية (Flashcards) — `/flashcards`
+---
 
-- تخزين محلي (localStorage) بمجموعات (Decks) وبطاقات (Cards).
-- خوارزمية **SM-2** للتكرار المتباعد: كل بطاقة تحمل `ease, interval, repetitions, dueDate`.
-- **جلسة مراجعة يومية**: تعرض البطاقات المستحقة اليوم، تقلب البطاقة، تقييم بأربعة أزرار (Again / Hard / Good / Easy) يحدّث الجدولة.
-- **توليد بطاقات بالذكاء الاصطناعي**: زر «توليد من نص» يستدعي edge function جديدة `generate-flashcards` تستخدم `google/gemini-2.5-flash` عبر Lovable AI لإرجاع JSON من `[{front, back}]`.
-- إحصائيات: عدد البطاقات، المستحقة اليوم، متتاليّة أيام الدراسة.
-- استيراد/تصدير JSON.
+## 1) مدير المهام اليومية `/tasks`
 
-## 2) متتبع العادات — `/habits`
+**الملف:** `src/pages/Tasks.tsx`
 
-- تخزين محلي: `Habit { id, name, color, icon, target (يومي/أسبوعي), createdAt, completions: string[] (تواريخ) }`.
-- شبكة **خريطة حرارية** (heatmap) على غرار GitHub لآخر 12 أسبوعاً لكل عادة.
-- سلاسل متتابعة (streaks): السلسلة الحالية + الأطول.
-- تحقق سريع من إتمام اليوم، وحساب معدل الإكمال الأسبوعي/الشهري.
-- إحصائيات إجمالية: إجمالي عدد الأيام المكتملة، معدل الإكمال %.
+- بنية `Task`: `{ id, title, notes?, priority: 'low'|'med'|'high', dueDate?, tags: string[], completed, createdAt }`
+- تخزين: `localStorage["tasks-v1"]`
+- الواجهة:
+  - شريط إضافة سريعة (Enter للحفظ)
+  - فلاتر: الكل / اليوم / متأخرة / منجزة
+  - فرز: حسب الأولوية أو تاريخ الاستحقاق
+  - بحث نصي + وسوم قابلة للنقر
+  - عدّاد إنجاز اليوم + شريط تقدّم
+- إجراءات: تحديد كمنجز، تعديل داخل السطر، حذف، تكرار المهمة
 
-## 3) محوّلات الصيغ — `/converters`
+## 2) مولّد كلمات مرور `/password`
 
-صفحة تبويبات فيها 5 أدوات، كلها في المتصفح دون شبكة:
+**الملف:** `src/pages/PasswordGen.tsx`
 
-- **JSON ↔ YAML**: تبادل مع كشف الأخطاء (إضافة مكتبة `js-yaml`).
-- **CSV ↔ JSON**: تحويل ثنائي الاتجاه (parser مكتوب يدوياً — بدون تبعيات جديدة).
-- **Base64 ↔ Text**: تشفير/فك تشفير UTF-8 آمن.
-- **URL Encode/Decode**.
-- **JSON Formatter/Minifier + مقارنة نصّين** (diff بسيط سطر-بسطر).
+- خيارات: الطول (8-64 slider)، أحرف كبيرة/صغيرة/أرقام/رموز، استبعاد المتشابهة (`0O1lI`)
+- توليد فوري عبر `crypto.getRandomValues`
+- مؤشر قوة (Zxcvbn-lite تقديري بدون مكتبات: entropy = log2(pool^length))
+- زر توليد passphrase (4-6 كلمات من قائمة مدمجة)
+- سجل آخر 10 كلمات مرور (LocalStorage، خيار مسح)
+- نسخ للحافظة + toast
 
-كل أداة: منطقتا إدخال/إخراج، أزرار (نسخ، تحميل، مسح)، رسائل خطأ واضحة.
+## 3) مؤقت تركيز متقدم `/focus`
 
-## 4) لوحة الاختزالات — `/shortcuts`
+**الملف:** `src/pages/FocusTimer.tsx`
 
-- عرض بصري للاختزالات الموجودة (من `useKeyboardShortcuts`) مصنّفة (تنقّل، إجراءات، تحرير).
-- إضافة **اختزالات مخصّصة**: يربط المستخدم مفتاحاً (مثل `Ctrl+Shift+N`) بأمر (فتح صفحة، إنشاء موضوع/تقرير/ملاحظة صوتية…).
-- تخزين محلي؛ مستمع عالمي يطلق الأوامر.
-- بحث/تصفية، تمكين/تعطيل كل اختزال، إعادة تعيين.
+- جلسات قابلة للتخصيص (25/50/90 دقيقة أو مخصص)
+- 3 حالات: تركيز، استراحة قصيرة، استراحة طويلة (كل 4 دورات)
+- عدّاد دائري SVG كبير مع نسبة مئوية
+- تسجيل جلسات مكتملة: `{ date, duration, label }` في LocalStorage
+- إحصائيات: مجموع دقائق اليوم/الأسبوع، عدد الجلسات، أطول سلسلة أيام
+- هدف يومي قابل للتعديل + شريط تقدّم
+- إشعار صوتي (Web Audio API tone)
 
-## التغييرات الفنية المشتركة
+## 4) مدير مقتطفات API `/api-snippets`
 
-- `src/App.tsx` — إضافة 4 مسارات lazy.
-- `src/components/layout/MainLayout.tsx` — 4 أيقونات وروابط جانبية (Layers, Flame, Repeat, Keyboard).
-- `src/pages/Flashcards.tsx`، `src/pages/Habits.tsx`، `src/pages/Converters.tsx`، `src/pages/Shortcuts.tsx`.
-- `src/lib/sm2.ts` — منطق SM-2.
-- `src/lib/shortcutsRegistry.ts` — مسجّل الاختزالات المخصّصة.
-- `supabase/functions/generate-flashcards/index.ts` — استدعاء Lovable AI لتوليد بطاقات (JSON output). CORS + معالجة 402/429.
-- `supabase/config.toml` — تسجيل الوظيفة الجديدة.
-- تبعيات جديدة: `js-yaml` + `@types/js-yaml` فقط.
+**الملف:** `src/pages/ApiSnippets.tsx`
 
-## الترتيب
+- بنية `Snippet`: `{ id, name, method, url, headers: Record<string,string>, body?, createdAt }`
+- تخزين: `localStorage["api-snippets-v1"]`
+- نموذج: اختيار METHOD (GET/POST/PUT/PATCH/DELETE)، URL، JSON headers، body
+- زر **تشغيل** يستخدم `fetch` مباشرة ويعرض:
+  - حالة + مدة + حجم الاستجابة
+  - Body مُنسّق (JSON pretty) مع تبويب raw
+  - Headers الاستجابة
+- استبدال متغيرات `{{VAR}}` من جدول متغيرات بيئة (localStorage)
+- استيراد/تصدير JSON
+- بحث في المقتطفات
 
-ملفات مستقلة تماماً → أنشئها بالتوازي. المسارات وقائمة الشريط الجانبي تُعدّل في بلوك واحد بعد إنشاء الصفحات. لا تعديلات على قواعد البيانات ولا على المخطط.
+---
+
+## ملفات مشتركة (تعديل)
+
+- **`src/App.tsx`**: إضافة 4 مسارات lazy جديدة
+- **`src/components/layout/MainLayout.tsx`**: 4 روابط + أيقونات
+  - Tasks: `CheckSquare`
+  - Password: `KeyRound`
+  - Focus: `Timer`
+  - API: `Send`
+
+## تفاصيل تقنية
+
+- كل الحالة عبر `useState` + `useEffect` sync إلى LocalStorage
+- استعمال `sonner` toast للإشعارات (موجود)
+- استخدام مكونات shadcn الموجودة: `Card`, `Button`, `Input`, `Tabs`, `Slider`, `Select`, `Badge`, `Progress`
+- التوافق مع الثيم الحالي (dark + teal/coral tokens من `index.css`)
+- دعم RTL/LTR عبر `useLanguage()`
+
+## التنفيذ
+كتابة الملفات الأربعة الجديدة بالتوازي في استدعاء واحد، ثم تحديث `App.tsx` و `MainLayout.tsx` معاً.

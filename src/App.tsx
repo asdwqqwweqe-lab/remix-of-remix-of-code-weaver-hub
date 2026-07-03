@@ -44,6 +44,10 @@ const Flashcards = lazy(() => import("./pages/Flashcards"));
 const Habits = lazy(() => import("./pages/Habits"));
 const Converters = lazy(() => import("./pages/Converters"));
 const Shortcuts = lazy(() => import("./pages/Shortcuts"));
+const Tasks = lazy(() => import("./pages/Tasks"));
+const PasswordGen = lazy(() => import("./pages/PasswordGen"));
+const FocusTimer = lazy(() => import("./pages/FocusTimer"));
+const ApiSnippets = lazy(() => import("./pages/ApiSnippets"));
 const Collections = lazy(() => import("./pages/Collections"));
 const CollectionDetails = lazy(() => import("./pages/CollectionDetails"));
 const Favorites = lazy(() => import("./pages/Favorites"));
@@ -145,6 +149,10 @@ const App = () => {
                                     <Route path="/habits" element={<Habits />} />
                                     <Route path="/converters" element={<Converters />} />
                                     <Route path="/shortcuts" element={<Shortcuts />} />
+                                    <Route path="/tasks" element={<Tasks />} />
+                                    <Route path="/password" element={<PasswordGen />} />
+                                    <Route path="/focus" element={<FocusTimer />} />
+                                    <Route path="/api-snippets" element={<ApiSnippets />} />
                                     <Route path="/collections" element={<Collections />} />
                                     <Route path="/collections/:slug" element={<CollectionDetails />} />
                                     <Route path="/favorites" element={<Favorites />} />
