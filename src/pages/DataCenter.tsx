@@ -122,7 +122,7 @@ export default function DataCenter() {
           `DTSTART:${toIcsDate(start)}`,
           `DTEND:${toIcsDate(end)}`,
           `SUMMARY:${icsEscape(p.title || 'Untitled')}`,
-          `DESCRIPTION:${icsEscape((p.excerpt || '').slice(0, 300))}`,
+          `DESCRIPTION:${icsEscape(((p.content || '').replace(/\s+/g, ' ')).slice(0, 300))}`,
           'END:VEVENT',
         ].join('\r\n');
       });
