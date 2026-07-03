@@ -151,10 +151,17 @@ const StudyModeDialog = ({ isOpen, onClose, sections, roadmapTitle, languageName
   const loadSavedExplanations = async () => {
     setLoadingSaved(true);
     try {
+      const { ensureAuth } = await import('@/lib/ensureAuth');
+      const uid = await ensureAuth();
+      if (!uid) {
+        setSavedExplanations([]);
+        return;
+      }
       const { data, error } = await supabase
         .from('saved_explanations')
         .select('*')
         .eq('roadmap_title', roadmapTitle)
+        .eq('user_id', uid)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
@@ -450,6 +457,9 @@ const StudyModeDialog = ({ isOpen, onClose, sections, roadmapTitle, languageName
     
     setIsSaving(true);
     try {
+      const { ensureAuth } = await import('@/lib/ensureAuth');
+      const uid = await ensureAuth();
+      if (!uid) throw new Error('Auth unavailable');
       const { error } = await supabase
         .from('saved_explanations')
         .insert({
@@ -457,6 +467,7 @@ const StudyModeDialog = ({ isOpen, onClose, sections, roadmapTitle, languageName
           language_name: languageName,
           topics: generateTopicsText(),
           explanation,
+          user_id: uid,
         });
       
       if (error) throw error;
@@ -552,14 +563,18 @@ const StudyModeDialog = ({ isOpen, onClose, sections, roadmapTitle, languageName
     
     if (currentQuestionIndex === quizQuestions.length - 1) {
       setShowResult(true);
-      // Save quiz result
-      supabase.from('quiz_results').insert({
-        roadmap_title: roadmapTitle,
-        topics: generateTopicsText(),
-        score: isCorrect ? quizScore + 1 : quizScore,
-        total_questions: quizQuestions.length,
-      }).then(({ error }) => {
-        if (error) console.error('Error saving quiz result:', error);
+      // Save quiz result (scoped to current anonymous/auth user)
+      import('@/lib/ensureAuth').then(({ ensureAuth }) => ensureAuth()).then((uid) => {
+        if (!uid) return;
+        supabase.from('quiz_results').insert({
+          roadmap_title: roadmapTitle,
+          topics: generateTopicsText(),
+          score: isCorrect ? quizScore + 1 : quizScore,
+          total_questions: quizQuestions.length,
+          user_id: uid,
+        }).then(({ error }) => {
+          if (error) console.error('Error saving quiz result:', error);
+        });
       });
     }
   };
