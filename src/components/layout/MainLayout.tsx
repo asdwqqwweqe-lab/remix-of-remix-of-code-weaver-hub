@@ -12,6 +12,7 @@ import QuickNotes from '@/components/notes/QuickNotes';
 import NotificationBell from '@/components/notifications/NotificationBell';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useNotificationTriggers } from '@/hooks/useNotificationTriggers';
+import { useSharedCommentNotifications } from '@/hooks/useSharedCommentNotifications';
 import {
   Moon,
   Sun,
@@ -67,6 +68,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
   
   // Watch for events and fire notifications
   useNotificationTriggers();
+  useSharedCommentNotifications();
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_COLLAPSED_KEY, sidebarCollapsed.toString());
