@@ -15,7 +15,8 @@ import {
   CommandSeparator,
 } from '@/components/ui/command';
 import { Badge } from '@/components/ui/badge';
-import { FileText, BookOpen, Map, Code, Search, Filter, SortAsc, SortDesc, Calendar } from 'lucide-react';
+import { FileText, BookOpen, Map, Code, Search, Filter, SortAsc, SortDesc, Calendar, LayoutDashboard, PenSquare, Settings as SettingsIcon, CheckSquare, Image as ImageIcon, Star, Folder, Zap, Sun, Moon, Languages as LangIcon } from 'lucide-react';
+import { useTheme } from '@/contexts/ThemeContext';
 import { Button } from '@/components/ui/button';
 import {
   Select,
