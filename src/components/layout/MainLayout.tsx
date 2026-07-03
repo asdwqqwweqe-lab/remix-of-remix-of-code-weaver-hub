@@ -15,6 +15,7 @@ import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useNotificationTriggers } from '@/hooks/useNotificationTriggers';
 import { useSharedCommentNotifications } from '@/hooks/useSharedCommentNotifications';
 import { useWeeklyReviewReminder } from '@/hooks/useWeeklyReviewReminder';
+import { useTaskReminders } from '@/hooks/useTaskReminders';
 import {
   Moon,
   Sun,
