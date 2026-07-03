@@ -156,6 +156,10 @@ export default function MarkdownEditor() {
   const onPaste = (e: React.ClipboardEvent) => {
     const item = Array.from(e.clipboardData.items).find((i) => i.type.startsWith('image/'));
     if (item) { const f = item.getAsFile(); if (f) insertImageFromFile(f); }
+  };
+
+  const t = (ar: string, en: string) => (language === 'ar' ? ar : en);
+
 
   const toolbar = [
     { icon: Heading1, label: 'H1', act: () => prefixLine('# ') },
