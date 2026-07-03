@@ -54,6 +54,7 @@ interface SettingsStore {
   
   // Sound notifications
   setSoundNotificationsEnabled: (enabled: boolean) => void;
+  setAiAutoTagOnSave: (enabled: boolean) => void;
 }
 
 export const useSettingsStore = create<SettingsStore>()(
@@ -69,6 +70,7 @@ export const useSettingsStore = create<SettingsStore>()(
         theme: 'system',
         customCss: [],
         soundNotificationsEnabled: true,
+        aiAutoTagOnSave: false,
       },
       
       // OpenRouter actions
