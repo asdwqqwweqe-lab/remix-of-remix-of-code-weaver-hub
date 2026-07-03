@@ -47,7 +47,7 @@ import {
   Rss,
   Users2,
   Download,
-  Database, Timer, Kanban, FileCode, GitBranch, Mic, Layers, Flame, Repeat,
+  Database, Timer, Kanban, FileCode, GitBranch, Mic, Flame, Repeat, GraduationCap,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
