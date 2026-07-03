@@ -196,6 +196,58 @@ export default function MindMap() {
     setNodes(defaultData()); setSelectedId('root'); setPan({ x: 0, y: 0 }); setZoom(1);
   };
 
+  // Keyboard shortcuts (disabled while editing text)
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (editingId || tag === 'INPUT' || tag === 'TEXTAREA') return;
+      if (e.key === '+' || (e.key === '=' && e.shiftKey)) { e.preventDefault(); setZoom((z) => Math.min(3, z + 0.1)); }
+      else if (e.key === '-' || e.key === '_') { e.preventDefault(); setZoom((z) => Math.max(0.2, z - 0.1)); }
+      else if (e.key === '0') { setZoom(1); setPan({ x: 0, y: 0 }); }
+      else if (e.key === 'f' || e.key === 'F') { e.preventDefault(); toggleFullscreen(); }
+      else if (e.key === 'g' || e.key === 'G') { e.preventDefault(); fitToView(); }
+      else if (e.key === '?') { setShowHelp((v) => !v); }
+      else if ((e.key === 'Enter' || e.key === 'Tab') && selectedId) {
+        e.preventDefault(); addChild(selectedId);
+      }
+      else if (e.key === 'F2' && selectedId) { e.preventDefault(); setEditingId(selectedId); }
+      else if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId && selectedId !== 'root') {
+        e.preventDefault(); deleteNode(selectedId);
+      }
+      else if (e.key === 'Escape') { setConnectFrom(null); setShowHelp(false); }
+      else if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
+        e.preventDefault();
+        const step = e.shiftKey ? 60 : 20;
+        setPan((p) => ({
+          x: p.x + (e.key === 'ArrowLeft' ? step : e.key === 'ArrowRight' ? -step : 0),
+          y: p.y + (e.key === 'ArrowUp' ? step : e.key === 'ArrowDown' ? -step : 0),
+        }));
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+    // eslint-disable-next-line
+  }, [editingId, selectedId, nodes.length]);
+
+  const onWheel = (e: React.WheelEvent) => {
+    if (!e.ctrlKey && !e.metaKey) return;
+    e.preventDefault();
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    const delta = e.deltaY < 0 ? 1.1 : 0.9;
+    setZoom((z) => {
+      const nz = Math.max(0.2, Math.min(3, z * delta));
+      // Zoom toward cursor
+      setPan((p) => ({
+        x: mx - ((mx - p.x) * nz) / z,
+        y: my - ((my - p.y) * nz) / z,
+      }));
+      return nz;
+    });
+  };
+
   // Curves between parent and child
   const paths = nodes
     .filter((n) => n.parentId)
@@ -207,16 +259,26 @@ export default function MindMap() {
     })
     .filter(Boolean) as { id: string; d: string; color: string }[];
 
+  const canvasHeight = isFullscreen ? '100vh' : '75vh';
+
   return (
-    <div className="p-4 md:p-6 space-y-4" dir={isRTL ? 'rtl' : 'ltr'}>
+    <div
+      ref={wrapperRef}
+      className={isFullscreen
+        ? 'fixed inset-0 z-50 bg-background p-3 flex flex-col gap-3 overflow-hidden'
+        : 'p-4 md:p-6 space-y-4'}
+      dir={isRTL ? 'rtl' : 'ltr'}
+    >
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">{t('الخريطة الذهنية', 'Mind Map')}</h1>
-          <p className="text-sm text-muted-foreground">
-            {t('اسحب العقد، أضف فروعاً، واربط الأفكار بصرياً', 'Drag nodes, add branches, and connect ideas visually')}
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
+        {!isFullscreen && (
+          <div>
+            <h1 className="text-2xl font-bold">{t('الخريطة الذهنية', 'Mind Map')}</h1>
+            <p className="text-sm text-muted-foreground">
+              {t('اسحب العقد، أضف فروعاً، واربط الأفكار بصرياً', 'Drag nodes, add branches, and connect ideas visually')}
+            </p>
+          </div>
+        )}
+        <div className="flex flex-wrap items-center gap-2 md:ms-auto">
           <Button size="sm" onClick={() => addChild(selectedId ?? 'root')}>
             <Plus className="w-4 h-4 me-1" />{t('عقدة فرعية', 'Add child')}
           </Button>
@@ -233,29 +295,59 @@ export default function MindMap() {
           <Button size="sm" variant="outline" onClick={resetMap}>
             <RotateCcw className="w-4 h-4 me-1" />{t('إعادة', 'Reset')}
           </Button>
+          <Button size="sm" variant="outline" onClick={() => setShowHelp((v) => !v)}>
+            <KeyboardIcon className="w-4 h-4 me-1" />{t('اختصارات', 'Shortcuts')}
+          </Button>
+          <Button size="sm" variant={isFullscreen ? 'default' : 'outline'} onClick={toggleFullscreen}>
+            {isFullscreen
+              ? <><Minimize2 className="w-4 h-4 me-1" />{t('خروج', 'Exit')}</>
+              : <><Expand className="w-4 h-4 me-1" />{t('ملء الشاشة', 'Fullscreen')}</>}
+          </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4">
-        <Card className="relative overflow-hidden bg-gradient-to-br from-background to-muted/30" style={{ height: '75vh' }}>
+      <div className={isFullscreen
+        ? 'flex-1 grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-3 min-h-0'
+        : 'grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4'}>
+        <Card
+          className="relative overflow-hidden bg-gradient-to-br from-background to-muted/30"
+          style={isFullscreen ? { height: '100%' } : { height: canvasHeight }}
+        >
           <div className="absolute top-3 end-3 z-10 flex gap-1 bg-background/80 backdrop-blur rounded-md border p-1">
-            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setZoom((z) => Math.min(2, z + 0.1))}><ZoomIn className="w-4 h-4" /></Button>
-            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setZoom((z) => Math.max(0.4, z - 0.1))}><ZoomOut className="w-4 h-4" /></Button>
-            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}><Maximize2 className="w-4 h-4" /></Button>
-            <span className="px-2 self-center text-xs text-muted-foreground">{Math.round(zoom * 100)}%</span>
+            <Button size="icon" variant="ghost" className="h-7 w-7" title="Ctrl+Wheel / +" onClick={() => setZoom((z) => Math.min(3, z + 0.1))}><ZoomIn className="w-4 h-4" /></Button>
+            <Button size="icon" variant="ghost" className="h-7 w-7" title="-" onClick={() => setZoom((z) => Math.max(0.2, z - 0.1))}><ZoomOut className="w-4 h-4" /></Button>
+            <Button size="icon" variant="ghost" className="h-7 w-7" title={t('احتواء (G)', 'Fit to view (G)')} onClick={fitToView}><LocateFixed className="w-4 h-4" /></Button>
+            <Button size="icon" variant="ghost" className="h-7 w-7" title={t('إعادة التكبير (0)', 'Reset zoom (0)')} onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}><Maximize2 className="w-4 h-4" /></Button>
+            <span className="px-2 self-center text-xs text-muted-foreground tabular-nums">{Math.round(zoom * 100)}%</span>
           </div>
           {connectFrom && (
             <div className="absolute top-3 start-3 z-10 bg-primary text-primary-foreground text-xs px-3 py-1.5 rounded-md">
               {t('اضغط على عقدة لجعلها الأب', 'Click a node to set as parent')}
             </div>
           )}
+          {showHelp && (
+            <div className="absolute bottom-3 start-3 z-10 bg-background/95 backdrop-blur border rounded-md p-3 text-xs space-y-1 shadow-lg max-w-xs">
+              <div className="font-semibold mb-1">{t('اختصارات لوحة المفاتيح', 'Keyboard shortcuts')}</div>
+              <div><kbd className="px-1.5 py-0.5 bg-muted rounded">F</kbd> {t('ملء الشاشة', 'Fullscreen')}</div>
+              <div><kbd className="px-1.5 py-0.5 bg-muted rounded">G</kbd> {t('احتواء الخريطة', 'Fit to view')}</div>
+              <div><kbd className="px-1.5 py-0.5 bg-muted rounded">+</kbd> / <kbd className="px-1.5 py-0.5 bg-muted rounded">-</kbd> {t('تكبير / تصغير', 'Zoom in / out')}</div>
+              <div><kbd className="px-1.5 py-0.5 bg-muted rounded">0</kbd> {t('إعادة التكبير', 'Reset zoom')}</div>
+              <div><kbd className="px-1.5 py-0.5 bg-muted rounded">Ctrl+↺</kbd> {t('تكبير بعجلة الفأرة', 'Wheel zoom')}</div>
+              <div><kbd className="px-1.5 py-0.5 bg-muted rounded">← ↑ → ↓</kbd> {t('تحريك (Shift أسرع)', 'Pan (Shift faster)')}</div>
+              <div><kbd className="px-1.5 py-0.5 bg-muted rounded">Enter</kbd> {t('عقدة فرعية', 'Add child')}</div>
+              <div><kbd className="px-1.5 py-0.5 bg-muted rounded">F2</kbd> {t('تعديل النص', 'Edit text')}</div>
+              <div><kbd className="px-1.5 py-0.5 bg-muted rounded">Del</kbd> {t('حذف', 'Delete')}</div>
+              <div><kbd className="px-1.5 py-0.5 bg-muted rounded">Esc</kbd> {t('إلغاء', 'Cancel')}</div>
+            </div>
+          )}
           <div
             ref={canvasRef}
-            className="w-full h-full cursor-grab active:cursor-grabbing"
+            className="w-full h-full cursor-grab active:cursor-grabbing touch-none"
             onPointerDown={startPan}
             onPointerMove={onPointerMove}
             onPointerUp={endDrag}
             onPointerLeave={endDrag}
+            onWheel={onWheel}
           >
             <div
               className="relative origin-top-left"
@@ -306,7 +398,7 @@ export default function MindMap() {
           </div>
         </Card>
 
-        <Card className="p-4 space-y-4 h-fit">
+        <Card className={isFullscreen ? 'p-4 space-y-4 overflow-y-auto' : 'p-4 space-y-4 h-fit'}>
           <div className="flex items-center gap-2">
             <Save className="w-4 h-4 text-muted-foreground" />
             <span className="text-xs text-muted-foreground">{t('حفظ تلقائي محلي', 'Auto-saved locally')}</span>
@@ -361,7 +453,7 @@ export default function MindMap() {
               <div className="text-xs text-muted-foreground pt-2 border-t space-y-1">
                 <div>{t('نقر مزدوج للتحرير', 'Double-click to edit')}</div>
                 <div>{t('اسحب الخلفية للتحريك', 'Drag background to pan')}</div>
-                <div>{t('اسحب العقدة لتحريكها', 'Drag a node to move it')}</div>
+                <div>{t('Ctrl+عجلة الفأرة للتكبير', 'Ctrl+Wheel to zoom')}</div>
               </div>
             </>
           ) : (
