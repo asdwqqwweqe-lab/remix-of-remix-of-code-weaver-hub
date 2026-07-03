@@ -32,6 +32,7 @@ const LanguageDetails = lazy(() => import("./pages/LanguageDetails"));
 const CategoryDetails = lazy(() => import("./pages/CategoryDetails"));
 const TagDetails = lazy(() => import("./pages/TagDetails"));
 const Snippets = lazy(() => import("./pages/Snippets"));
+const Collaborate = lazy(() => import("./pages/Collaborate"));
 const Collections = lazy(() => import("./pages/Collections"));
 const CollectionDetails = lazy(() => import("./pages/CollectionDetails"));
 const Favorites = lazy(() => import("./pages/Favorites"));
@@ -119,6 +120,7 @@ const App = () => {
                                     <Route path="/languages" element={<Languages />} />
                                     <Route path="/languages/:slug" element={<LanguageDetails />} />
                                     <Route path="/snippets" element={<Snippets />} />
+                                    <Route path="/collaborate" element={<Collaborate />} />
                                     <Route path="/collections" element={<Collections />} />
                                     <Route path="/collections/:slug" element={<CollectionDetails />} />
                                     <Route path="/favorites" element={<Favorites />} />
