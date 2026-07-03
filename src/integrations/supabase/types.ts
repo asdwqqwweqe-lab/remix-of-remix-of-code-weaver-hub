@@ -379,6 +379,42 @@ export type Database = {
         }
         Relationships: []
       }
+      shared_docs: {
+        Row: {
+          content: Json
+          created_at: string
+          id: string
+          is_public: boolean
+          kind: string
+          owner_id: string
+          share_token: string
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          content?: Json
+          created_at?: string
+          id?: string
+          is_public?: boolean
+          kind: string
+          owner_id: string
+          share_token?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          id?: string
+          is_public?: boolean
+          kind?: string
+          owner_id?: string
+          share_token?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       shared_gallery_items: {
         Row: {
           author_name: string | null
