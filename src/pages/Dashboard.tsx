@@ -28,6 +28,7 @@ import {
   RoadmapProgressChart,
 } from '@/components/dashboard/DashboardCharts';
 import ReadingAnalytics from '@/components/dashboard/ReadingAnalytics';
+import StudyStreakCard from '@/components/dashboard/StudyStreakCard';
 
 
 export default function Dashboard() {
@@ -197,8 +198,12 @@ export default function Dashboard() {
         <RoadmapProgressChart />
       </div>
 
+      {/* Study Streak + Reading Analytics */}
+      <StudyStreakCard />
+
       {/* Reading Analytics */}
       <ReadingAnalytics />
+
 
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
