@@ -21,13 +21,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Plus, Edit, Trash2, Copy, Layers, Search, Play } from 'lucide-react';
+import { Plus, Edit, Trash2, Copy, Layers, Search, Play, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import hljs from 'highlight.js';
 import 'highlight.js/styles/github-dark.css';
 import Pagination from '@/components/common/Pagination';
 import AIGenerateButton from '@/components/common/AIGenerateButton';
 import CodePlayground, { detectRuntime } from '@/components/snippets/CodePlayground';
+import AICodeReviewDialog from '@/components/snippets/AICodeReviewDialog';
 
 const ITEMS_PER_PAGE = 8;
 
@@ -46,6 +47,7 @@ const Snippets = () => {
     languageId: '',
   });
   const [playSnippetId, setPlaySnippetId] = useState<string | null>(null);
+  const [reviewSnippetId, setReviewSnippetId] = useState<string | null>(null);
 
   // Filter snippets
   const filteredSnippets = useMemo(() => {
