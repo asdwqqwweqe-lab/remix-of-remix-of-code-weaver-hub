@@ -76,6 +76,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
   useNotificationTriggers();
   useSharedCommentNotifications();
   useWeeklyReviewReminder();
+  useTaskReminders();
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_COLLAPSED_KEY, sidebarCollapsed.toString());
