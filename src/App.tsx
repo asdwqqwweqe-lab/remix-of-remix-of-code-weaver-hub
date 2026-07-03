@@ -40,6 +40,10 @@ const KanbanBoard = lazy(() => import("./pages/KanbanBoard"));
 const MarkdownEditor = lazy(() => import("./pages/MarkdownEditor"));
 const MindMap = lazy(() => import("./pages/MindMap"));
 const VoiceNotes = lazy(() => import("./pages/VoiceNotes"));
+const Flashcards = lazy(() => import("./pages/Flashcards"));
+const Habits = lazy(() => import("./pages/Habits"));
+const Converters = lazy(() => import("./pages/Converters"));
+const Shortcuts = lazy(() => import("./pages/Shortcuts"));
 const Collections = lazy(() => import("./pages/Collections"));
 const CollectionDetails = lazy(() => import("./pages/CollectionDetails"));
 const Favorites = lazy(() => import("./pages/Favorites"));
@@ -135,6 +139,10 @@ const App = () => {
                                     <Route path="/markdown" element={<MarkdownEditor />} />
                                     <Route path="/mindmap" element={<MindMap />} />
                                     <Route path="/voice-notes" element={<VoiceNotes />} />
+                                    <Route path="/flashcards" element={<Flashcards />} />
+                                    <Route path="/habits" element={<Habits />} />
+                                    <Route path="/converters" element={<Converters />} />
+                                    <Route path="/shortcuts" element={<Shortcuts />} />
                                     <Route path="/collections" element={<Collections />} />
                                     <Route path="/collections/:slug" element={<CollectionDetails />} />
                                     <Route path="/favorites" element={<Favorites />} />
