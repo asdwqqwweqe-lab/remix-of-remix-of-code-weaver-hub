@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import yaml from 'js-yaml';
+import * as yaml from 'js-yaml';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
