@@ -5,8 +5,8 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import {
-  Plus, Trash2, Download, Upload, Save, Maximize2, ZoomIn, ZoomOut, RotateCcw,
-  Palette, Edit3, Link2,
+  Plus, Trash2, Download, Upload, Save, Maximize2, Minimize2, ZoomIn, ZoomOut, RotateCcw,
+  Palette, Edit3, Link2, Expand, LocateFixed, Keyboard as KeyboardIcon,
 } from 'lucide-react';
 
 interface MNode {
@@ -47,7 +47,10 @@ export default function MindMap() {
   const [connectFrom, setConnectFrom] = useState<string | null>(null);
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const canvasRef = useRef<HTMLDivElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<{ id: string; offX: number; offY: number } | null>(null);
   const panRef = useRef<{ x: number; y: number } | null>(null);
 
@@ -55,6 +58,48 @@ export default function MindMap() {
     const id = setTimeout(() => localStorage.setItem(STORAGE_KEY, JSON.stringify(nodes)), 200);
     return () => clearTimeout(id);
   }, [nodes]);
+
+  // Sync with native fullscreen state
+  useEffect(() => {
+    const onFsChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', onFsChange);
+    return () => document.removeEventListener('fullscreenchange', onFsChange);
+  }, []);
+
+  const toggleFullscreen = async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await wrapperRef.current?.requestFullscreen?.();
+      } else {
+        await document.exitFullscreen?.();
+      }
+    } catch {
+      // Fallback: CSS fullscreen
+      setIsFullscreen((v) => !v);
+    }
+  };
+
+  const fitToView = () => {
+    if (nodes.length === 0) return;
+    const pad = 100;
+    const xs = nodes.map((n) => n.x);
+    const ys = nodes.map((n) => n.y);
+    const minX = Math.min(...xs) - pad;
+    const maxX = Math.max(...xs) + pad;
+    const minY = Math.min(...ys) - pad;
+    const maxY = Math.max(...ys) + pad;
+    const w = canvasRef.current?.clientWidth ?? 1000;
+    const h = canvasRef.current?.clientHeight ?? 700;
+    const scaleX = w / (maxX - minX);
+    const scaleY = h / (maxY - minY);
+    const newZoom = Math.min(2, Math.max(0.3, Math.min(scaleX, scaleY)));
+    setZoom(newZoom);
+    setPan({
+      x: w / 2 - ((minX + maxX) / 2) * newZoom,
+      y: h / 2 - ((minY + maxY) / 2) * newZoom,
+    });
+  };
+
 
   const selected = useMemo(() => nodes.find((n) => n.id === selectedId) || null, [nodes, selectedId]);
 
