@@ -45,6 +45,7 @@ import ReadingMode from '@/components/common/ReadingMode';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useReadingAnalytics } from '@/hooks/useReadingAnalytics';
+import { setAIContext } from '@/components/ai/AIAssistantDrawer';
 
 
 
