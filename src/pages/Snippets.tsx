@@ -21,12 +21,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Plus, Edit, Trash2, Copy, Layers, Search } from 'lucide-react';
+import { Plus, Edit, Trash2, Copy, Layers, Search, Play } from 'lucide-react';
 import { toast } from 'sonner';
 import hljs from 'highlight.js';
 import 'highlight.js/styles/github-dark.css';
 import Pagination from '@/components/common/Pagination';
 import AIGenerateButton from '@/components/common/AIGenerateButton';
+import CodePlayground, { detectRuntime } from '@/components/snippets/CodePlayground';
 
 const ITEMS_PER_PAGE = 8;
 
@@ -44,6 +45,7 @@ const Snippets = () => {
     code: '',
     languageId: '',
   });
+  const [playSnippetId, setPlaySnippetId] = useState<string | null>(null);
 
   // Filter snippets
   const filteredSnippets = useMemo(() => {
@@ -295,13 +297,23 @@ const Snippets = () => {
                     <Copy className="w-4 h-4" />
                   </Button>
                 </div>
-                <div className="flex gap-2 mt-4">
+                <div className="flex gap-2 mt-4 flex-wrap">
+                  {detectRuntime(highlightLang) !== 'unsupported' && (
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={() => setPlaySnippetId(snippet.id)}
+                    >
+                      <Play className="w-4 h-4 me-1" />
+                      Run
+                    </Button>
+                  )}
                   <Button variant="outline" size="sm" onClick={() => handleEdit(snippet)}>
                     <Edit className="w-4 h-4 me-1" />
                     {t('common.edit')}
                   </Button>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
                     className="text-destructive hover:text-destructive"
                     onClick={() => handleDelete(snippet.id)}
@@ -333,6 +345,21 @@ const Snippets = () => {
         itemsPerPage={ITEMS_PER_PAGE}
         totalItems={filteredSnippets.length}
       />
+
+      {/* Code Playground */}
+      {(() => {
+        const s = snippets.find(x => x.id === playSnippetId);
+        if (!s) return null;
+        return (
+          <CodePlayground
+            open={!!playSnippetId}
+            onOpenChange={(o) => !o && setPlaySnippetId(null)}
+            title={s.title}
+            code={s.code}
+            language={getLanguageName(s.languageId)}
+          />
+        );
+      })()}
     </div>
   );
 };
