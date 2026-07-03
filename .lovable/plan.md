@@ -1,29 +1,54 @@
-# المرحلة التالية: AI Auto-Tag + Citation Manager
+# خطة تنفيذ 4 ميزات جديدة بالتوازي
 
-## 1) AI Auto-Tagging للمقالات
-- زر "توليد وسوم بالذكاء" في محرر المقال (Posts editor) بجانب حقل الوسوم.
-- Edge Function جديدة `auto-tag-post` تستخدم Lovable AI (`google/gemini-3-flash-preview`) مع structured output (Zod) لإرجاع `{ tags: string[], category?: string, summary?: string }`.
-- Input: عنوان + محتوى المقال (مقتطع لأول ~4000 حرف).
-- خيار "تطبيق تلقائي عند الحفظ" في الإعدادات (toggle) — عند التفعيل يُستدعى قبل الحفظ إذا كانت الوسوم فارغة.
-- Toast يعرض الوسوم المقترحة، والمستخدم يقبل/يرفض قبل الإدراج.
+سأنفذ الميزات الأربع دفعة واحدة، كل ميزة صفحة مستقلة مع رابط في الشريط الجانبي وتخزين محلي. لا حاجة لأي backend جديد باستثناء استدعاء Lovable AI عبر edge function واحدة للبطاقات.
 
-## 2) Citation Manager (للباحثين)
-جدول `citations` موجود بالفعل في القاعدة (14 عمود) — سنبني الواجهة فوقه.
-- صفحة جديدة `/citations` مع Sidebar entry (أيقونة كتاب).
-- CRUD كامل: إضافة/تعديل/حذف مرجع (نوع، مؤلفون، عنوان، سنة، ناشر، DOI، URL، ملاحظات).
-- استيراد سريع من DOI عبر `https://api.crossref.org/works/{doi}` (بدون مفتاح).
-- تصدير BibTeX (نص عادي) وتنزيله كملف `.bib`.
-- ربط المراجع بالمقالات: حقل `post_id` (اختياري) + عرض المراجع داخل صفحة المقال في نهايته كقائمة مرقّمة.
-- Shortcode بسيط `[cite:ID]` داخل المحرر يُستبدل بروابط ترقيم `[1]` عند العرض.
+## 1) البطاقات التعليمية (Flashcards) — `/flashcards`
 
-## التقنيات
-- Edge Functions: `auto-tag-post` (JWT off، Zod validation، CORS).
-- Frontend: صفحة `Citations.tsx`، مكوّن `CitationsList` + `CitationForm` + `BibtexExporter`، hook `useCitations` (Supabase).
-- تحديث `PostDetails` لعرض المراجع المرتبطة.
-- تحديث `Sidebar` + `router` لإضافة مسار `/citations`.
+- تخزين محلي (localStorage) بمجموعات (Decks) وبطاقات (Cards).
+- خوارزمية **SM-2** للتكرار المتباعد: كل بطاقة تحمل `ease, interval, repetitions, dueDate`.
+- **جلسة مراجعة يومية**: تعرض البطاقات المستحقة اليوم، تقلب البطاقة، تقييم بأربعة أزرار (Again / Hard / Good / Easy) يحدّث الجدولة.
+- **توليد بطاقات بالذكاء الاصطناعي**: زر «توليد من نص» يستدعي edge function جديدة `generate-flashcards` تستخدم `google/gemini-2.5-flash` عبر Lovable AI لإرجاع JSON من `[{front, back}]`.
+- إحصائيات: عدد البطاقات، المستحقة اليوم، متتاليّة أيام الدراسة.
+- استيراد/تصدير JSON.
 
-## خارج النطاق (للمراحل القادمة)
-- Code Playground (Sandpack/Pyodide)
-- Zettelkasten graph view
-- AI Code Review
-- Reading Analytics dashboard heatmap
+## 2) متتبع العادات — `/habits`
+
+- تخزين محلي: `Habit { id, name, color, icon, target (يومي/أسبوعي), createdAt, completions: string[] (تواريخ) }`.
+- شبكة **خريطة حرارية** (heatmap) على غرار GitHub لآخر 12 أسبوعاً لكل عادة.
+- سلاسل متتابعة (streaks): السلسلة الحالية + الأطول.
+- تحقق سريع من إتمام اليوم، وحساب معدل الإكمال الأسبوعي/الشهري.
+- إحصائيات إجمالية: إجمالي عدد الأيام المكتملة، معدل الإكمال %.
+
+## 3) محوّلات الصيغ — `/converters`
+
+صفحة تبويبات فيها 5 أدوات، كلها في المتصفح دون شبكة:
+
+- **JSON ↔ YAML**: تبادل مع كشف الأخطاء (إضافة مكتبة `js-yaml`).
+- **CSV ↔ JSON**: تحويل ثنائي الاتجاه (parser مكتوب يدوياً — بدون تبعيات جديدة).
+- **Base64 ↔ Text**: تشفير/فك تشفير UTF-8 آمن.
+- **URL Encode/Decode**.
+- **JSON Formatter/Minifier + مقارنة نصّين** (diff بسيط سطر-بسطر).
+
+كل أداة: منطقتا إدخال/إخراج، أزرار (نسخ، تحميل، مسح)، رسائل خطأ واضحة.
+
+## 4) لوحة الاختزالات — `/shortcuts`
+
+- عرض بصري للاختزالات الموجودة (من `useKeyboardShortcuts`) مصنّفة (تنقّل، إجراءات، تحرير).
+- إضافة **اختزالات مخصّصة**: يربط المستخدم مفتاحاً (مثل `Ctrl+Shift+N`) بأمر (فتح صفحة، إنشاء موضوع/تقرير/ملاحظة صوتية…).
+- تخزين محلي؛ مستمع عالمي يطلق الأوامر.
+- بحث/تصفية، تمكين/تعطيل كل اختزال، إعادة تعيين.
+
+## التغييرات الفنية المشتركة
+
+- `src/App.tsx` — إضافة 4 مسارات lazy.
+- `src/components/layout/MainLayout.tsx` — 4 أيقونات وروابط جانبية (Layers, Flame, Repeat, Keyboard).
+- `src/pages/Flashcards.tsx`، `src/pages/Habits.tsx`، `src/pages/Converters.tsx`، `src/pages/Shortcuts.tsx`.
+- `src/lib/sm2.ts` — منطق SM-2.
+- `src/lib/shortcutsRegistry.ts` — مسجّل الاختزالات المخصّصة.
+- `supabase/functions/generate-flashcards/index.ts` — استدعاء Lovable AI لتوليد بطاقات (JSON output). CORS + معالجة 402/429.
+- `supabase/config.toml` — تسجيل الوظيفة الجديدة.
+- تبعيات جديدة: `js-yaml` + `@types/js-yaml` فقط.
+
+## الترتيب
+
+ملفات مستقلة تماماً → أنشئها بالتوازي. المسارات وقائمة الشريط الجانبي تُعدّل في بلوك واحد بعد إنشاء الصفحات. لا تعديلات على قواعد البيانات ولا على المخطط.
