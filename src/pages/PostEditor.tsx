@@ -36,6 +36,7 @@ import {
   Globe,
   FileEdit,
   FileText,
+  Sparkles,
 } from 'lucide-react';
 import { Post, PostLink, ContentLanguage, PostStatus } from '@/types/blog';
 import RichTextEditor from '@/components/editor/RichTextEditor';
