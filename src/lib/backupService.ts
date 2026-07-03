@@ -15,7 +15,6 @@ export interface BackupSnapshot {
   posts: unknown;
   categories: unknown;
   tags: unknown;
-  languages: unknown;
   roadmaps: unknown;
   roadmapSections: unknown;
   settings: unknown;
