@@ -114,6 +114,9 @@ export default function Analytics() {
         </Card>
       </div>
 
+      <WritingStreaks />
+
+
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         {kpis.map((k, i) => (
           <Card key={i} className="p-4 space-y-2">
