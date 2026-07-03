@@ -121,6 +121,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
     { path: '/graph', icon: Network, label: language === 'ar' ? 'خريطة المعرفة' : 'Knowledge Graph' },
     { path: '/calendar', icon: CalendarDays, label: language === 'ar' ? 'تقويم المحتوى' : 'Content Calendar' },
     { path: '/feeds', icon: Rss, label: language === 'ar' ? 'خلاصات RSS' : 'RSS Feeds' },
+    { path: '/reader', icon: Rss, label: language === 'ar' ? 'قارئ RSS' : 'RSS Reader' },
     { path: '/library', icon: Users2, label: language === 'ar' ? 'المكتبة المشتركة' : 'Shared Library' },
     { path: '/collaborate', icon: Users2, label: language === 'ar' ? 'التعاون' : 'Collaborate' },
     { path: '/data', icon: Database, label: language === 'ar' ? 'مركز البيانات' : 'Data Center' },
