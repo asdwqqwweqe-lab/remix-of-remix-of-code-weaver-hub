@@ -87,7 +87,9 @@ const PostDetails = () => {
   useEffect(() => {
     if (post) {
       incrementViews(post.id);
+      setAIContext(`# ${post.title}\n\n${post.content}`);
     }
+    return () => setAIContext(null);
   }, [id]);
 
   useReadingAnalytics({
