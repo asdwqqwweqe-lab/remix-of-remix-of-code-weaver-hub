@@ -366,6 +366,21 @@ const Snippets = () => {
           />
         );
       })()}
+
+      {/* AI Code Review */}
+      {(() => {
+        const s = snippets.find(x => x.id === reviewSnippetId);
+        if (!s) return null;
+        return (
+          <AICodeReviewDialog
+            open={!!reviewSnippetId}
+            onOpenChange={(o) => !o && setReviewSnippetId(null)}
+            title={s.title}
+            code={s.code}
+            language={getLanguageName(s.languageId)}
+          />
+        );
+      })()}
     </div>
   );
 };
