@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Sun, Moon, Monitor, Palette, Type, Sparkles, RotateCcw, Languages } from 'lucide-react';
+import { Sun, Moon, Monitor, Palette, Type, Sparkles, RotateCcw, Languages, Bell } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface UIPrefs {
