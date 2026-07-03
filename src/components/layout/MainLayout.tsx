@@ -13,6 +13,7 @@ import QuickNotes from '@/components/notes/QuickNotes';
 import NotificationBell from '@/components/notifications/NotificationBell';
 import InstallPrompt from '@/components/pwa/InstallPrompt';
 const AIAssistantDrawer = lazy(() => import('@/components/ai/AIAssistantDrawer'));
+const CommandPalette = lazy(() => import('@/components/command/CommandPalette'));
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useNotificationTriggers } from '@/hooks/useNotificationTriggers';
 import { useSharedCommentNotifications } from '@/hooks/useSharedCommentNotifications';

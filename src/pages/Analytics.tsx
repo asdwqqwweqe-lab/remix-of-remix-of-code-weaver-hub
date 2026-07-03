@@ -6,6 +6,7 @@ import {
   AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid, Legend,
 } from 'recharts';
 import { BarChart3, CheckSquare, StickyNote, Timer, FileText, Flame } from 'lucide-react';
+import WritingInsights from '@/components/analytics/WritingInsights';
 
 const readJSON = <T,>(k: string, fallback: T): T => {
   try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fallback; } catch { return fallback; }
@@ -195,6 +196,8 @@ export default function Analytics() {
           </ResponsiveContainer>
         </Card>
       </div>
+
+      <WritingInsights />
     </div>
   );
 }
