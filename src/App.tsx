@@ -47,6 +47,7 @@ const PageBuilder = lazy(() => import("./pages/PageBuilder"));
 const PagePreview = lazy(() => import("./pages/PagePreview"));
 const PublicPagePreview = lazy(() => import("./pages/PublicPagePreview"));
 const TodoList = lazy(() => import("./pages/TodoList"));
+const Citations = lazy(() => import("./pages/Citations"));
 
 const queryClient = new QueryClient();
 
@@ -115,6 +116,7 @@ const App = () => {
                                     <Route path="/statistics" element={<Statistics />} />
                                     <Route path="/gallery" element={<Gallery />} />
                                     <Route path="/todo" element={<TodoList />} />
+                                    <Route path="/citations" element={<Citations />} />
                                     <Route path="/roadmap" element={<Roadmap />} />
                                     <Route path="/reports" element={<Reports />} />
                                     <Route path="/reports/new" element={<ReportEditor />} />

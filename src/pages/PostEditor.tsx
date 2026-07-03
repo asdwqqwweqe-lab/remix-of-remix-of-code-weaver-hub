@@ -36,6 +36,7 @@ import {
   Globe,
   FileEdit,
   FileText,
+  Sparkles,
 } from 'lucide-react';
 import { Post, PostLink, ContentLanguage, PostStatus } from '@/types/blog';
 import RichTextEditor from '@/components/editor/RichTextEditor';
@@ -924,12 +925,57 @@ const PostEditor = () => {
                   <Tag className="w-5 h-5" />
                   {t('posts.tags')}
                 </span>
-                <Dialog open={showTagDialog} onOpenChange={setShowTagDialog}>
-                  <DialogTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                      <Plus className="w-4 h-4" />
-                    </Button>
-                  </DialogTrigger>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    title={language === 'ar' ? 'توليد وسوم بالذكاء' : 'AI Auto-Tag'}
+                    onClick={async () => {
+                      if (!formData.content.trim() && !formData.title.trim()) {
+                        toast.error(language === 'ar' ? 'أضف عنواناً أو محتوى أولاً' : 'Add title or content first');
+                        return;
+                      }
+                      const tid = toast.loading(language === 'ar' ? 'يقوم الذكاء الاصطناعي بالتحليل…' : 'AI analyzing…');
+                      try {
+                        const { supabase } = await import('@/integrations/supabase/client');
+                        const { data, error } = await supabase.functions.invoke('auto-tag-post', {
+                          body: { title: formData.title, content: formData.content, language: formData.mainLanguage },
+                        });
+                        if (error) throw error;
+                        const suggested: string[] = Array.isArray(data?.tags) ? data.tags : [];
+                        if (!suggested.length) {
+                          toast.error(language === 'ar' ? 'لم يتم اقتراح وسوم' : 'No tags suggested', { id: tid });
+                          return;
+                        }
+                        const newIds: string[] = [];
+                        for (const name of suggested) {
+                          const existing = tags.find(tg => tg.name.toLowerCase() === name.toLowerCase());
+                          if (existing) { newIds.push(existing.id); continue; }
+                          addTag({ name, slug: name.toLowerCase().replace(/\s+/g, '-') } as any);
+                          const latest = useBlogStore.getState().tags.find(tg => tg.name === name);
+                          if (latest) newIds.push(latest.id);
+                        }
+                        setFormData(prev => ({
+                          ...prev,
+                          selectedTags: Array.from(new Set([...prev.selectedTags, ...newIds])),
+                        }));
+                        toast.success(
+                          (language === 'ar' ? '✨ تم إضافة ' : '✨ Added ') + newIds.length + (language === 'ar' ? ' وسم' : ' tags'),
+                          { id: tid, description: suggested.join(' · ') }
+                        );
+                      } catch (e: any) {
+                        toast.error(e.message || 'Failed', { id: tid });
+                      }
+                    }}
+                  >
+                    <Sparkles className="w-4 h-4 text-primary" />
+                  </Button>
+                  <Dialog open={showTagDialog} onOpenChange={setShowTagDialog}>
+                    <DialogTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <Plus className="w-4 h-4" />
+                      </Button>
+                    </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
                       <DialogTitle>{t('tags.add')}</DialogTitle>
@@ -952,7 +998,8 @@ const PostEditor = () => {
                       </div>
                     </div>
                   </DialogContent>
-                </Dialog>
+                  </Dialog>
+                </div>
               </CardTitle>
             </CardHeader>
             <CardContent>
