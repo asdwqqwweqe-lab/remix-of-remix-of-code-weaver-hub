@@ -101,6 +101,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
     { path: '/statistics', icon: BarChart3, label: t('nav.statistics') },
     { path: '/weekly-review', icon: CalendarCheck, label: language === 'ar' ? 'مراجعة الأسبوع' : 'Weekly Review' },
     { path: '/templates', icon: LayoutTemplate, label: language === 'ar' ? 'معرض القوالب' : 'Templates' },
+    { path: '/data', icon: Download, label: language === 'ar' ? 'تصدير/استيراد' : 'Export/Import' },
     { path: '/settings', icon: Settings, label: language === 'ar' ? 'الإعدادات' : 'Settings' },
   ];
 
