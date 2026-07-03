@@ -106,6 +106,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
     { path: '/pomodoro', icon: Timer, label: language === 'ar' ? 'مؤقّت التركيز' : 'Focus Timer' },
     { path: '/kanban', icon: Kanban, label: language === 'ar' ? 'كانبان' : 'Kanban' },
     { path: '/markdown', icon: FileCode, label: language === 'ar' ? 'محرر Markdown' : 'Markdown Editor' },
+    { path: '/mindmap', icon: GitBranch, label: language === 'ar' ? 'خريطة ذهنية' : 'Mind Map' },
     { path: '/favorites', icon: Star, label: t('nav.favorites') },
     { path: '/statistics', icon: BarChart3, label: t('nav.statistics') },
     { path: '/weekly-review', icon: CalendarCheck, label: language === 'ar' ? 'مراجعة الأسبوع' : 'Weekly Review' },
