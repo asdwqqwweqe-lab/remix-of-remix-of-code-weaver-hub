@@ -238,6 +238,7 @@ export const useSettingsStore = create<SettingsStore>()(
       
       // Sound notifications
       setSoundNotificationsEnabled: (enabled) => set((state) => ({ settings: { ...state.settings, soundNotificationsEnabled: enabled } })),
+      setAiAutoTagOnSave: (enabled) => set((state) => ({ settings: { ...state.settings, aiAutoTagOnSave: enabled } })),
     }),
     { name: 'blog-settings-storage' }
   )
