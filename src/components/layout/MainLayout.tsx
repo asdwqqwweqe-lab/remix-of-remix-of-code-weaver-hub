@@ -100,6 +100,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
     { path: '/feeds', icon: Rss, label: language === 'ar' ? 'خلاصات RSS' : 'RSS Feeds' },
     { path: '/library', icon: Users2, label: language === 'ar' ? 'المكتبة المشتركة' : 'Shared Library' },
     { path: '/collaborate', icon: Users2, label: language === 'ar' ? 'التعاون' : 'Collaborate' },
+    { path: '/data', icon: Database, label: language === 'ar' ? 'مركز البيانات' : 'Data Center' },
     { path: '/favorites', icon: Star, label: t('nav.favorites') },
     { path: '/statistics', icon: BarChart3, label: t('nav.statistics') },
     { path: '/weekly-review', icon: CalendarCheck, label: language === 'ar' ? 'مراجعة الأسبوع' : 'Weekly Review' },

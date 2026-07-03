@@ -122,6 +122,7 @@ const App = () => {
                                     <Route path="/languages/:slug" element={<LanguageDetails />} />
                                     <Route path="/snippets" element={<Snippets />} />
                                     <Route path="/collaborate" element={<Collaborate />} />
+                                    <Route path="/data" element={<DataCenter />} />
                                     <Route path="/collections" element={<Collections />} />
                                     <Route path="/collections/:slug" element={<CollectionDetails />} />
                                     <Route path="/favorites" element={<Favorites />} />
