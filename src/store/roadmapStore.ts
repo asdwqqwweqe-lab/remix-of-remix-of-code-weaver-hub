@@ -242,9 +242,11 @@ export const useRoadmapStore = create<RoadmapStore>()(
       }),
       
       toggleTopicComplete: (sectionId, topicId) => set((state) => {
+        let wasCompleted = false;
         const toggleCompleteRecursive = (topics: RoadmapTopic[]): RoadmapTopic[] => {
           return topics.map((t) => {
             if (t.id === topicId) {
+              wasCompleted = t.completed;
               return { ...t, completed: !t.completed };
             }
             if (t.subTopics && t.subTopics.length > 0) {
