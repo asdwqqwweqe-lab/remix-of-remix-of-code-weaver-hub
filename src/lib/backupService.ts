@@ -34,7 +34,6 @@ export function buildSnapshot(): BackupSnapshot {
     posts: blog.posts,
     categories: blog.categories,
     tags: blog.tags,
-    languages: blog.languages,
     roadmaps: rm.roadmaps,
     roadmapSections: rm.roadmapSections,
     settings: s.settings,
@@ -109,7 +108,6 @@ export async function restoreBackup(id: string) {
     posts: snap.posts as never,
     categories: snap.categories as never,
     tags: snap.tags as never,
-    languages: snap.languages as never,
   });
   useRoadmapStore.setState({
     roadmaps: snap.roadmaps as never,
