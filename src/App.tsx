@@ -158,6 +158,7 @@ const App = () => {
                                     <Route path="/api-snippets" element={<ApiSnippets />} />
                                     <Route path="/appearance" element={<Appearance />} />
                                     <Route path="/analytics" element={<Analytics />} />
+                                    <Route path="/devtools" element={<DevTools />} />
                                     <Route path="/collections" element={<Collections />} />
                                     <Route path="/collections/:slug" element={<CollectionDetails />} />
                                     <Route path="/favorites" element={<Favorites />} />
