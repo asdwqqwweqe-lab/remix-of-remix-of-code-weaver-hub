@@ -30,6 +30,7 @@ import {
 import ReadingAnalytics from '@/components/dashboard/ReadingAnalytics';
 import CommunityDiscover from '@/components/dashboard/CommunityDiscover';
 import StudyStreakCard from '@/components/dashboard/StudyStreakCard';
+import DashboardWidgets from '@/components/dashboard/DashboardWidgets';
 
 
 export default function Dashboard() {
@@ -127,6 +128,10 @@ export default function Dashboard() {
           </p>
         </div>
       </div>
+
+      <DashboardWidgets />
+
+
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
