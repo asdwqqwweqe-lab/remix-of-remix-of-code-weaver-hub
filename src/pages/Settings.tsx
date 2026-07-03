@@ -29,6 +29,7 @@ import CustomCssManager from '@/components/settings/CustomCssManager';
 import DemoDataManager from '@/components/data/DemoDataManager';
 import FirebaseSettings from '@/components/settings/FirebaseSettings';
 import DataBackupManager from '@/components/settings/DataBackupManager';
+import BackupManager from '@/components/settings/BackupManager';
 import BaseSettingsManager from '@/components/settings/BaseSettingsManager';
 import { AIProvider } from '@/types/blog';
 import { useAuth } from '@/contexts/AuthContext';
@@ -1292,6 +1293,10 @@ export default function Settings() {
 
       {/* Data Backup */}
       <DataBackupManager />
+
+      {/* Versioned Cloud Backups */}
+      <BackupManager />
+
 
       {/* Custom CSS */}
       <CustomCssManager />
