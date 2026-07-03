@@ -102,6 +102,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
     { path: '/library', icon: Users2, label: language === 'ar' ? 'المكتبة المشتركة' : 'Shared Library' },
     { path: '/collaborate', icon: Users2, label: language === 'ar' ? 'التعاون' : 'Collaborate' },
     { path: '/data', icon: Database, label: language === 'ar' ? 'مركز البيانات' : 'Data Center' },
+    { path: '/playground', icon: Code, label: language === 'ar' ? 'ملعب الكود' : 'Playground' },
     { path: '/favorites', icon: Star, label: t('nav.favorites') },
     { path: '/statistics', icon: BarChart3, label: t('nav.statistics') },
     { path: '/weekly-review', icon: CalendarCheck, label: language === 'ar' ? 'مراجعة الأسبوع' : 'Weekly Review' },
