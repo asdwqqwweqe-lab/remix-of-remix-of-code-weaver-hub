@@ -343,6 +343,42 @@ export default function VoiceNotes() {
                   dir="auto"
                 />
               </div>
+
+              {selected.transcript && (
+                <div className="space-y-2">
+                  <div className="flex flex-wrap gap-2">
+                    <Button size="sm" variant="secondary"
+                      disabled={aiWorkingId === selected.id + 'summarize'}
+                      onClick={() => runAI(selected, 'summarize')}>
+                      {aiWorkingId === selected.id + 'summarize'
+                        ? <Loader2 className="w-3 h-3 me-1 animate-spin" />
+                        : <Sparkles className="w-3 h-3 me-1" />}
+                      {t('لخّص', 'Summarize')}
+                    </Button>
+                    <Button size="sm" variant="secondary"
+                      disabled={aiWorkingId === selected.id + 'tasks'}
+                      onClick={() => runAI(selected, 'tasks')}>
+                      {aiWorkingId === selected.id + 'tasks'
+                        ? <Loader2 className="w-3 h-3 me-1 animate-spin" />
+                        : <ListChecks className="w-3 h-3 me-1" />}
+                      {t('استخرج المهام', 'Extract tasks')}
+                    </Button>
+                    <Button size="sm" variant="secondary"
+                      disabled={aiWorkingId === selected.id + 'quiz'}
+                      onClick={() => runAI(selected, 'quiz')}>
+                      {aiWorkingId === selected.id + 'quiz'
+                        ? <Loader2 className="w-3 h-3 me-1 animate-spin" />
+                        : <FileText className="w-3 h-3 me-1" />}
+                      {t('أسئلة اختبار', 'Quiz')}
+                    </Button>
+                  </div>
+                  {(['summarize', 'tasks', 'quiz'] as const).map((m) => aiOutput[selected.id + m] && (
+                    <div key={m} className="p-3 rounded bg-primary/5 border border-primary/20 text-sm whitespace-pre-wrap">
+                      {aiOutput[selected.id + m]}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </Card>
