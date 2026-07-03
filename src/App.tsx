@@ -160,6 +160,7 @@ const App = () => {
                                     <Route path="/appearance" element={<Appearance />} />
                                     <Route path="/analytics" element={<Analytics />} />
                                     <Route path="/devtools" element={<DevTools />} />
+                                    <Route path="/workshop" element={<Workshop />} />
                                     <Route path="/collections" element={<Collections />} />
                                     <Route path="/collections/:slug" element={<CollectionDetails />} />
                                     <Route path="/favorites" element={<Favorites />} />
