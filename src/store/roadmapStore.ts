@@ -259,7 +259,7 @@ export const useRoadmapStore = create<RoadmapStore>()(
           });
         };
 
-        return {
+        const next = {
           roadmapSections: state.roadmapSections.map((s) =>
             s.id === sectionId
               ? {
@@ -270,6 +270,18 @@ export const useRoadmapStore = create<RoadmapStore>()(
               : s
           ),
         };
+        // Fire streak recording on completion (not un-completion).
+        if (!wasCompleted) {
+          import('@/lib/streakService').then(({ recordActivity }) => {
+            const { newAchievement } = recordActivity();
+            if (newAchievement) {
+              import('sonner').then(({ toast }) =>
+                toast.success(`🏆 إنجاز جديد: ${newAchievement} يوم متتالي!`)
+              );
+            }
+          });
+        }
+        return next;
       }),
       
       reorderTopics: (sectionId, topicIds) => set((state) => ({
