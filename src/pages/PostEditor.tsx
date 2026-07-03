@@ -47,6 +47,8 @@ import LivePostPreview from '@/components/posts/LivePostPreview';
 import ScrollButtons from '@/components/common/ScrollButtons';
 import FocusMode from '@/components/common/FocusMode';
 import { toast } from 'sonner';
+import { useSettingsStore } from '@/store/settingsStore';
+import { callAI } from '@/lib/ai-service';
 import { 
   PanelLeftClose,
   PanelLeft,
@@ -276,10 +278,48 @@ const PostEditor = () => {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!formData.title.trim()) {
       toast.error(t('posts.titleRequired'));
       return;
+    }
+
+    // AI Auto-Tag on Save
+    const autoTagEnabled = useSettingsStore.getState().settings.aiAutoTagOnSave;
+    let finalTags = formData.selectedTags;
+    if (autoTagEnabled && finalTags.length === 0 && formData.content.trim().length > 100) {
+      try {
+        toast.info('🏷️ يقوم الذكاء الاصطناعي باقتراح وسوم...');
+        const existingTagsText = tags.map(tg => tg.name).join(', ');
+        const prompt = `اقترح 3-5 وسوم مناسبة للمحتوى التالي. الوسوم الموجودة: ${existingTagsText || 'لا يوجد'}\n\nالمحتوى:\n${formData.content.substring(0, 2000)}\n\nأجب بـ JSON فقط: {"tags":["وسم1","وسم2","وسم3"]}`;
+        const aiResult = await callAI(prompt, 'أنت مساعد لاقتراح الوسوم. أجب بـ JSON فقط.');
+        if (aiResult.success && aiResult.content) {
+          const match = aiResult.content.match(/\{[\s\S]*\}/);
+          if (match) {
+            const parsed = JSON.parse(match[0]) as { tags: string[] };
+            const tagIds: string[] = [];
+            for (const tagName of parsed.tags || []) {
+              const existing = tags.find(tg => tg.name.toLowerCase() === tagName.toLowerCase());
+              if (existing) {
+                tagIds.push(existing.id);
+              } else {
+                const newId = Math.random().toString(36).substr(2, 9);
+                addTag({ name: tagName, slug: tagName.toLowerCase().replace(/\s+/g, '-') } as any);
+                // Find newly added tag
+                setTimeout(() => {}, 0);
+                const latest = useBlogStore.getState().tags.find(tg => tg.name === tagName);
+                if (latest) tagIds.push(latest.id);
+              }
+            }
+            if (tagIds.length > 0) {
+              finalTags = tagIds;
+              toast.success(`✨ تم إضافة ${tagIds.length} وسم تلقائياً`);
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Auto-tag failed:', err);
+      }
     }
 
     const postData = {
@@ -293,7 +333,7 @@ const PostEditor = () => {
       collectionId: formData.collectionId || undefined,
       isFavorite: formData.isFavorite,
       commentsEnabled: formData.commentsEnabled,
-      tags: formData.selectedTags,
+      tags: finalTags,
       programmingLanguages: formData.selectedLanguages,
       links: formData.links,
       attachments: existingPost?.attachments || [],
