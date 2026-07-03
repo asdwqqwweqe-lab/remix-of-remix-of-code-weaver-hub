@@ -81,6 +81,8 @@ const App = () => {
   useEffect(() => {
     // Run weekly auto-backup on app boot (silent no-op if signed out or run <7d ago)
     import("@/lib/backupService").then(({ maybeRunWeeklyBackup }) => maybeRunWeeklyBackup());
+    // Establish an anonymous auth session so RLS-scoped tables work per device.
+    import("@/lib/ensureAuth").then(({ ensureAuth }) => ensureAuth());
   }, []);
 
   return (
