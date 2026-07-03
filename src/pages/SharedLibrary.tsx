@@ -177,6 +177,11 @@ export default function SharedLibrary() {
   const [gLiveCounts, setGLiveCounts] = useState<Map<string, number>>(new Map());
   const [gMine, setGMine] = useState<SharedGalleryItem[]>([]);
 
+  // Comments state
+  const [commentCounts, setCommentCounts] = useState<Map<string, number>>(new Map());
+  const [gCommentCounts, setGCommentCounts] = useState<Map<string, number>>(new Map());
+  const [commentsOn, setCommentsOn] = useState<{ type: 'snippet' | 'gallery'; id: string; title: string } | null>(null);
+
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUid(data?.user?.id ?? null));
     const { data: sub } = supabase.auth.onAuthStateChange((_e, sess) => setUid(sess?.user?.id ?? null));
@@ -194,6 +199,7 @@ export default function SharedLibrary() {
         });
         setItems(res.items); setLikedIds(res.likedIds); setLiveCounts(res.liveCounts);
         if (uid) setMine(await listMyPublications());
+        setCommentCounts(await countComments('snippet', res.items.map(i => i.id)));
       } else {
         const res = await listSharedGallery({
           search: search.trim() || undefined,
@@ -201,6 +207,7 @@ export default function SharedLibrary() {
         });
         setGItems(res.items); setGLikedIds(res.likedIds); setGLiveCounts(res.liveCounts);
         if (uid) setGMine(await listMyGalleryPublications());
+        setGCommentCounts(await countComments('gallery', res.items.map(i => i.id)));
       }
     } catch (e) {
       toast.error((e as Error).message || (isAr ? 'فشل التحميل' : 'Load failed'));
@@ -364,10 +371,12 @@ export default function SharedLibrary() {
                   key={item.id} item={item}
                   liked={likedIds.has(item.id)}
                   liveCount={liveCounts.get(item.id) ?? item.likes_count ?? 0}
+                  commentsCount={commentCounts.get(item.id) ?? 0}
                   isMine={uid === item.user_id}
                   onLike={() => handleLike(item)}
                   onClone={() => handleClone(item)}
                   onUnpublish={uid === item.user_id ? () => handleUnpublish(item) : undefined}
+                  onComments={() => setCommentsOn({ type: 'snippet', id: item.id, title: item.title })}
                 />
               ))
             : displayedGallery.map(item => (
@@ -375,13 +384,32 @@ export default function SharedLibrary() {
                   key={item.id} item={item}
                   liked={gLikedIds.has(item.id)}
                   liveCount={gLiveCounts.get(item.id) ?? item.likes_count ?? 0}
+                  commentsCount={gCommentCounts.get(item.id) ?? 0}
                   isMine={uid === item.user_id}
                   onLike={() => handleGalleryLike(item)}
                   onClone={() => handleGalleryClone(item)}
                   onUnpublish={uid === item.user_id ? () => handleGalleryUnpublish(item) : undefined}
+                  onComments={() => setCommentsOn({ type: 'gallery', id: item.id, title: item.title })}
                 />
               ))}
         </div>
+      )}
+
+      {commentsOn && (
+        <CommentsDialog
+          open={!!commentsOn}
+          onOpenChange={(o) => { if (!o) setCommentsOn(null); }}
+          itemType={commentsOn.type}
+          itemId={commentsOn.id}
+          title={commentsOn.title}
+          onCountChange={(n) => {
+            if (commentsOn.type === 'snippet') {
+              setCommentCounts(prev => { const m = new Map(prev); m.set(commentsOn.id, n); return m; });
+            } else {
+              setGCommentCounts(prev => { const m = new Map(prev); m.set(commentsOn.id, n); return m; });
+            }
+          }}
+        />
       )}
     </div>
   );
