@@ -11,6 +11,7 @@ import SearchTrigger from '@/components/search/SearchTrigger';
 import WorkspaceSwitcher from '@/components/layout/WorkspaceSwitcher';
 import QuickNotes from '@/components/notes/QuickNotes';
 import NotificationBell from '@/components/notifications/NotificationBell';
+import InstallPrompt from '@/components/pwa/InstallPrompt';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useNotificationTriggers } from '@/hooks/useNotificationTriggers';
 import { useSharedCommentNotifications } from '@/hooks/useSharedCommentNotifications';
@@ -48,7 +49,7 @@ import {
   Rss,
   Users2,
   Download,
-  Database, Timer, Kanban, FileCode, GitBranch, Mic, Flame, Repeat, GraduationCap, CheckSquare, KeyRound, Send, Sparkles,
+  Database, Timer, Kanban, FileCode, GitBranch, Mic, Flame, Repeat, GraduationCap, CheckSquare, KeyRound, Send, Sparkles, Wrench,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -120,6 +121,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
     { path: '/api-snippets', icon: Send, label: language === 'ar' ? 'مقتطفات API' : 'API Snippets' },
     { path: '/appearance', icon: Sparkles, label: language === 'ar' ? 'المظهر' : 'Appearance' },
     { path: '/analytics', icon: BarChart3, label: language === 'ar' ? 'التحليلات' : 'Analytics' },
+    { path: '/devtools', icon: Wrench, label: language === 'ar' ? 'أدوات المطوّر' : 'Dev Tools' },
     { path: '/favorites', icon: Star, label: t('nav.favorites') },
     { path: '/statistics', icon: BarChart3, label: t('nav.statistics') },
     { path: '/weekly-review', icon: CalendarCheck, label: language === 'ar' ? 'مراجعة الأسبوع' : 'Weekly Review' },
@@ -296,6 +298,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
         {/* Quick Notes */}
         <QuickNotes />
       </div>
+      <InstallPrompt />
     </div>
   );
 };
