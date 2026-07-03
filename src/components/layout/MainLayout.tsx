@@ -45,6 +45,7 @@ import {
   CalendarCheck,
   Rss,
   Users2,
+  Download,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
