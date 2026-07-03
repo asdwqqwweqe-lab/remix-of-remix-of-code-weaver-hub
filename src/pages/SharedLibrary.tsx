@@ -105,7 +105,7 @@ function SnippetCard({
 }
 
 function GalleryCard({
-  item, liked, liveCount, isMine, onLike, onClone, onUnpublish,
+  item, liked, liveCount, commentsCount, isMine, onLike, onClone, onUnpublish, onComments,
 }: {
   item: SharedGalleryItem; liked: boolean; liveCount: number; commentsCount: number; isMine: boolean;
   onLike: () => void; onClone: () => void; onUnpublish?: () => void; onComments: () => void;
