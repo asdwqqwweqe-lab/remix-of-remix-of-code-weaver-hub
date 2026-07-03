@@ -16,6 +16,28 @@ import {
 } from '@/lib/dataPortability';
 
 const TODO_KEY = 'app-todo-items';
+const SNAPSHOTS_KEY = 'quick-backups-v1';
+const MAX_SNAPSHOTS = 5;
+
+interface Snapshot { id: string; createdAt: number; label: string; data: string; }
+
+const readSnapshots = (): Snapshot[] => {
+  try { return JSON.parse(localStorage.getItem(SNAPSHOTS_KEY) || '[]'); } catch { return []; }
+};
+const writeSnapshots = (s: Snapshot[]) => localStorage.setItem(SNAPSHOTS_KEY, JSON.stringify(s));
+
+const collectLocalData = (): string => {
+  const dump: Record<string, unknown> = { format: 'devtale-backup', createdAt: Date.now(), data: {} };
+  const data = dump.data as Record<string, unknown>;
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (!key || key === SNAPSHOTS_KEY) continue;
+    const raw = localStorage.getItem(key);
+    if (raw == null) continue;
+    try { data[key] = JSON.parse(raw); } catch { data[key] = raw; }
+  }
+  return JSON.stringify(dump);
+};
 
 export default function DataPortability() {
   const { language } = useLanguage();
