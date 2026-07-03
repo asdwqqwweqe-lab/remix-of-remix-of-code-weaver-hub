@@ -139,6 +139,10 @@ const App = () => {
                                     <Route path="/markdown" element={<MarkdownEditor />} />
                                     <Route path="/mindmap" element={<MindMap />} />
                                     <Route path="/voice-notes" element={<VoiceNotes />} />
+                                    <Route path="/flashcards" element={<Flashcards />} />
+                                    <Route path="/habits" element={<Habits />} />
+                                    <Route path="/converters" element={<Converters />} />
+                                    <Route path="/shortcuts" element={<Shortcuts />} />
                                     <Route path="/collections" element={<Collections />} />
                                     <Route path="/collections/:slug" element={<CollectionDetails />} />
                                     <Route path="/favorites" element={<Favorites />} />
