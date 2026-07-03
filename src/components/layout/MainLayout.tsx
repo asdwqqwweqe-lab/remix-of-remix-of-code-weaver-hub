@@ -100,6 +100,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
     { path: '/favorites', icon: Star, label: t('nav.favorites') },
     { path: '/statistics', icon: BarChart3, label: t('nav.statistics') },
     { path: '/weekly-review', icon: CalendarCheck, label: language === 'ar' ? 'مراجعة الأسبوع' : 'Weekly Review' },
+    { path: '/templates', icon: LayoutTemplate, label: language === 'ar' ? 'معرض القوالب' : 'Templates' },
     { path: '/settings', icon: Settings, label: language === 'ar' ? 'الإعدادات' : 'Settings' },
   ];
 
