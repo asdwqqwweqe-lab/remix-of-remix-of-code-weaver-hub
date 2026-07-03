@@ -179,6 +179,42 @@ export type Database = {
         }
         Relationships: []
       }
+      public_post_shares: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          post_id: string
+          revoked: boolean
+          snapshot: Json
+          token: string
+          updated_at: string
+          view_count: number
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          post_id: string
+          revoked?: boolean
+          snapshot: Json
+          token: string
+          updated_at?: string
+          view_count?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          post_id?: string
+          revoked?: boolean
+          snapshot?: Json
+          token?: string
+          updated_at?: string
+          view_count?: number
+        }
+        Relationships: []
+      }
       quiz_results: {
         Row: {
           created_at: string

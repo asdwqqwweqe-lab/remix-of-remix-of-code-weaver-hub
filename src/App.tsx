@@ -55,6 +55,7 @@ const SharedLibrary = lazy(() => import("./pages/SharedLibrary"));
 const WeeklyReview = lazy(() => import("./pages/WeeklyReview"));
 const TemplatesGallery = lazy(() => import("./pages/TemplatesGallery"));
 const DataPortability = lazy(() => import("./pages/DataPortability"));
+const PublicPostShare = lazy(() => import("./pages/PublicPostShare"));
 
 const queryClient = new QueryClient();
 
@@ -90,6 +91,7 @@ const App = () => {
 
                         {/* Public Page Preview - no auth required */}
                         <Route path="/p/:slug" element={<PublicPagePreview />} />
+                        <Route path="/share/post/:token" element={<PublicPostShare />} />
 
                         {/* Preview Route - outside MainLayout */}
                         <Route path="/preview/:slug" element={
