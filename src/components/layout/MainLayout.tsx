@@ -135,6 +135,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
     { path: '/appearance', icon: Sparkles, label: language === 'ar' ? 'المظهر' : 'Appearance' },
     { path: '/analytics', icon: BarChart3, label: language === 'ar' ? 'التحليلات' : 'Analytics' },
     { path: '/devtools', icon: Wrench, label: language === 'ar' ? 'أدوات المطوّر' : 'Dev Tools' },
+    { path: '/workshop', icon: Zap, label: language === 'ar' ? 'ورشة الإنتاجية' : 'Workshop' },
     { path: '/favorites', icon: Star, label: t('nav.favorites') },
     { path: '/statistics', icon: BarChart3, label: t('nav.statistics') },
     { path: '/weekly-review', icon: CalendarCheck, label: language === 'ar' ? 'مراجعة الأسبوع' : 'Weekly Review' },
