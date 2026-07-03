@@ -3,10 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { useBlogStore } from '@/store/blogStore';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { buildGraph } from '@/lib/backlinks';
+import { detectBacklinks } from '@/lib/knowledgeEngine';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Network, Search } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Network, Search, Sparkles } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface Positioned {
   id: string;
@@ -85,6 +88,7 @@ export default function KnowledgeGraph() {
   const { language } = useLanguage();
   const isAr = language === 'ar';
   const posts = useBlogStore(s => s.posts);
+  const updatePost = useBlogStore(s => s.updatePost);
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [hoverId, setHoverId] = useState<string | null>(null);
@@ -140,6 +144,41 @@ export default function KnowledgeGraph() {
         <div className="flex items-center gap-2 flex-wrap">
           <Badge variant="secondary">{nodes.length} {isAr ? 'عقدة' : 'nodes'}</Badge>
           <Badge variant="secondary">{edges.length} {isAr ? 'رابط' : 'edges'}</Badge>
+          <Button
+            size="sm"
+            variant="outline"
+            className="gap-1"
+            onClick={() => {
+              const others = posts.map(p => ({ id: p.id, title: p.title }));
+              let updated = 0;
+              let linksAdded = 0;
+              for (const p of posts) {
+                if (!p.content) continue;
+                const cands = detectBacklinks(p.content, others.filter(o => o.id !== p.id));
+                if (cands.length === 0) continue;
+                let next = p.content;
+                for (const c of cands) {
+                  const re = new RegExp(`(?<!\\[\\[)\\b${c.title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b(?!\\]\\])`, 'gi');
+                  const before = next;
+                  next = next.replace(re, `[[${c.title}]]`);
+                  if (next !== before) linksAdded++;
+                }
+                if (next !== p.content) {
+                  updatePost(p.id, { content: next });
+                  updated++;
+                }
+              }
+              toast.success(
+                isAr
+                  ? `تم تحديث ${updated} مقالاً وإضافة ${linksAdded} رابطاً تلقائياً`
+                  : `Updated ${updated} posts, added ${linksAdded} links`
+              );
+            }}
+            title={isAr ? 'يمرّ على كل المقالات ويولّد روابط [[..]] تلقائياً' : 'Auto-generate [[..]] links across all posts'}
+          >
+            <Sparkles className="w-4 h-4" />
+            {isAr ? 'أعد اكتشاف الروابط' : 'Rediscover links'}
+          </Button>
           <div className="relative">
             <Search className="w-4 h-4 absolute start-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
