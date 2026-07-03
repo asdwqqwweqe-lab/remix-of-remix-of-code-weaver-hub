@@ -52,6 +52,7 @@ const KnowledgeGraph = lazy(() => import("./pages/KnowledgeGraph"));
 const ContentCalendar = lazy(() => import("./pages/ContentCalendar"));
 const Feeds = lazy(() => import("./pages/Feeds"));
 const SharedLibrary = lazy(() => import("./pages/SharedLibrary"));
+const WeeklyReview = lazy(() => import("./pages/WeeklyReview"));
 
 const queryClient = new QueryClient();
 
@@ -125,6 +126,7 @@ const App = () => {
                                     <Route path="/calendar" element={<ContentCalendar />} />
                                     <Route path="/feeds" element={<Feeds />} />
                                     <Route path="/library" element={<SharedLibrary />} />
+                                    <Route path="/weekly-review" element={<WeeklyReview />} />
                                     <Route path="/roadmap" element={<Roadmap />} />
                                     <Route path="/reports" element={<Reports />} />
                                     <Route path="/reports/new" element={<ReportEditor />} />

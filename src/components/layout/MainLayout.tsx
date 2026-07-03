@@ -13,6 +13,7 @@ import NotificationBell from '@/components/notifications/NotificationBell';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useNotificationTriggers } from '@/hooks/useNotificationTriggers';
 import { useSharedCommentNotifications } from '@/hooks/useSharedCommentNotifications';
+import { useWeeklyReviewReminder } from '@/hooks/useWeeklyReviewReminder';
 import {
   Moon,
   Sun,
@@ -41,6 +42,7 @@ import {
   BookMarked,
   Network,
   CalendarDays,
+  CalendarCheck,
   Rss,
   Users2,
 } from 'lucide-react';
@@ -69,6 +71,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
   // Watch for events and fire notifications
   useNotificationTriggers();
   useSharedCommentNotifications();
+  useWeeklyReviewReminder();
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_COLLAPSED_KEY, sidebarCollapsed.toString());
@@ -96,6 +99,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
     { path: '/library', icon: Users2, label: language === 'ar' ? 'المكتبة المشتركة' : 'Shared Library' },
     { path: '/favorites', icon: Star, label: t('nav.favorites') },
     { path: '/statistics', icon: BarChart3, label: t('nav.statistics') },
+    { path: '/weekly-review', icon: CalendarCheck, label: language === 'ar' ? 'مراجعة الأسبوع' : 'Weekly Review' },
     { path: '/settings', icon: Settings, label: language === 'ar' ? 'الإعدادات' : 'Settings' },
   ];
 
