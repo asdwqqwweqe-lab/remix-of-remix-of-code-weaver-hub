@@ -38,6 +38,7 @@ import {
   LayoutTemplate,
   ListTodo,
   BookMarked,
+  Network,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -84,6 +85,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
     { path: '/gallery', icon: Image, label: language === 'ar' ? 'المعرض' : 'Gallery' },
     { path: '/todo', icon: ListTodo, label: language === 'ar' ? 'المهام' : 'Todo' },
     { path: '/citations', icon: BookMarked, label: language === 'ar' ? 'المراجع' : 'Citations' },
+    { path: '/graph', icon: Network, label: language === 'ar' ? 'خريطة المعرفة' : 'Knowledge Graph' },
     { path: '/favorites', icon: Star, label: t('nav.favorites') },
     { path: '/statistics', icon: BarChart3, label: t('nav.statistics') },
     { path: '/settings', icon: Settings, label: language === 'ar' ? 'الإعدادات' : 'Settings' },
