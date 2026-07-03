@@ -555,6 +555,26 @@ export default function Settings() {
                   تشغيل صوت عند نجاح أو فشل عمليات الذكاء الاصطناعي
                 </p>
               </div>
+
+              {/* AI Auto-Tag on Save */}
+              <div className="pt-4 border-t">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-primary" />
+                    <Label>توسيم تلقائي بالذكاء الاصطناعي عند الحفظ</Label>
+                  </div>
+                  <Switch
+                    checked={settings.aiAutoTagOnSave ?? false}
+                    onCheckedChange={(checked) => {
+                      const { setAiAutoTagOnSave } = useSettingsStore.getState();
+                      setAiAutoTagOnSave(checked);
+                    }}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  عند تفعيله، يقترح الذكاء الاصطناعي وسوماً تلقائياً للمقالات التي لا تحتوي على وسوم عند الحفظ.
+                </p>
+              </div>
             </div>
           )}
 

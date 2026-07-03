@@ -251,6 +251,7 @@ export interface AppSettings {
   firebaseAutoSync?: boolean;
   syncNotifications?: boolean;
   soundNotificationsEnabled?: boolean;
+  aiAutoTagOnSave?: boolean;
 }
 
 // Report types
