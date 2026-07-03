@@ -1,6 +1,6 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import {
-  Download, Upload, FileJson, CalendarDays, FileText, AlertTriangle, ShieldCheck,
+  Download, Upload, FileJson, CalendarDays, FileText, AlertTriangle, ShieldCheck, Camera, RotateCcw, Trash2,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
