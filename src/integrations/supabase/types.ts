@@ -311,6 +311,39 @@ export type Database = {
         }
         Relationships: []
       }
+      shared_item_comments: {
+        Row: {
+          author_name: string | null
+          body: string
+          created_at: string
+          id: string
+          item_id: string
+          item_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          author_name?: string | null
+          body: string
+          created_at?: string
+          id?: string
+          item_id: string
+          item_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          author_name?: string | null
+          body?: string
+          created_at?: string
+          id?: string
+          item_id?: string
+          item_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       shared_item_likes: {
         Row: {
           created_at: string
