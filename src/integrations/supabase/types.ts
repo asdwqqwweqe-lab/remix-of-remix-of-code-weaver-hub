@@ -14,6 +14,87 @@ export type Database = {
   }
   public: {
     Tables: {
+      backup_versions: {
+        Row: {
+          created_at: string
+          id: string
+          is_auto: boolean
+          label: string
+          size_bytes: number
+          snapshot: Json
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_auto?: boolean
+          label?: string
+          size_bytes?: number
+          snapshot: Json
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_auto?: boolean
+          label?: string
+          size_bytes?: number
+          snapshot?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
+      citations: {
+        Row: {
+          authors: string | null
+          citation_type: string
+          created_at: string
+          doi: string | null
+          id: string
+          journal: string | null
+          note: string | null
+          publisher: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string
+          url: string | null
+          user_id: string
+          year: number | null
+        }
+        Insert: {
+          authors?: string | null
+          citation_type?: string
+          created_at?: string
+          doi?: string | null
+          id?: string
+          journal?: string | null
+          note?: string | null
+          publisher?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          url?: string | null
+          user_id: string
+          year?: number | null
+        }
+        Update: {
+          authors?: string | null
+          citation_type?: string
+          created_at?: string
+          doi?: string | null
+          id?: string
+          journal?: string | null
+          note?: string | null
+          publisher?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          url?: string | null
+          user_id?: string
+          year?: number | null
+        }
+        Relationships: []
+      }
       ollama_keys: {
         Row: {
           created_at: string
@@ -71,6 +152,30 @@ export type Database = {
           id?: string
           pages_data?: Json
           user_id?: string
+        }
+        Relationships: []
+      }
+      post_backlinks: {
+        Row: {
+          created_at: string
+          id: string
+          source_post_id: string
+          target_post_id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          source_post_id: string
+          target_post_id: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          source_post_id?: string
+          target_post_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -158,6 +263,120 @@ export type Database = {
           language_name?: string
           roadmap_title?: string
           topics?: string
+        }
+        Relationships: []
+      }
+      shared_gallery_items: {
+        Row: {
+          author_name: string | null
+          category: string | null
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string
+          is_public: boolean
+          likes_count: number
+          tags: string[] | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          author_name?: string | null
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url: string
+          is_public?: boolean
+          likes_count?: number
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          author_name?: string | null
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string
+          is_public?: boolean
+          likes_count?: number
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      shared_item_likes: {
+        Row: {
+          created_at: string
+          id: string
+          item_id: string
+          item_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_id: string
+          item_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_id?: string
+          item_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      shared_snippets: {
+        Row: {
+          author_name: string | null
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          is_public: boolean
+          language: string
+          likes_count: number
+          tags: string[] | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          author_name?: string | null
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          language?: string
+          likes_count?: number
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          author_name?: string | null
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          language?: string
+          likes_count?: number
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
