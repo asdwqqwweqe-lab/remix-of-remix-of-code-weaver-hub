@@ -47,7 +47,7 @@ import {
   Rss,
   Users2,
   Download,
-  Database, Timer, Kanban, FileCode, GitBranch, Mic, Flame, Repeat, GraduationCap,
+  Database, Timer, Kanban, FileCode, GitBranch, Mic, Flame, Repeat, GraduationCap, CheckSquare, KeyRound, Send,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -112,6 +112,10 @@ const MainLayout = ({ children }: MainLayoutProps) => {
     { path: '/habits', icon: Flame, label: language === 'ar' ? 'متتبع العادات' : 'Habits' },
     { path: '/converters', icon: Repeat, label: language === 'ar' ? 'المحوّلات' : 'Converters' },
     { path: '/shortcuts', icon: Keyboard, label: language === 'ar' ? 'الاختزالات' : 'Shortcuts' },
+    { path: '/tasks', icon: CheckSquare, label: language === 'ar' ? 'المهام المتقدمة' : 'Advanced Tasks' },
+    { path: '/password', icon: KeyRound, label: language === 'ar' ? 'مولّد كلمات المرور' : 'Password Gen' },
+    { path: '/focus', icon: Timer, label: language === 'ar' ? 'تركيز متقدم' : 'Focus Pro' },
+    { path: '/api-snippets', icon: Send, label: language === 'ar' ? 'مقتطفات API' : 'API Snippets' },
     { path: '/favorites', icon: Star, label: t('nav.favorites') },
     { path: '/statistics', icon: BarChart3, label: t('nav.statistics') },
     { path: '/weekly-review', icon: CalendarCheck, label: language === 'ar' ? 'مراجعة الأسبوع' : 'Weekly Review' },
