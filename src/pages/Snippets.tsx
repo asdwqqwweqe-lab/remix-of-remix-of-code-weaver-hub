@@ -345,6 +345,21 @@ const Snippets = () => {
         itemsPerPage={ITEMS_PER_PAGE}
         totalItems={filteredSnippets.length}
       />
+
+      {/* Code Playground */}
+      {(() => {
+        const s = snippets.find(x => x.id === playSnippetId);
+        if (!s) return null;
+        return (
+          <CodePlayground
+            open={!!playSnippetId}
+            onOpenChange={(o) => !o && setPlaySnippetId(null)}
+            title={s.title}
+            code={s.code}
+            language={getLanguageName(s.languageId)}
+          />
+        );
+      })()}
     </div>
   );
 };
