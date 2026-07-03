@@ -120,6 +120,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
     { path: '/api-snippets', icon: Send, label: language === 'ar' ? 'مقتطفات API' : 'API Snippets' },
     { path: '/appearance', icon: Sparkles, label: language === 'ar' ? 'المظهر' : 'Appearance' },
     { path: '/analytics', icon: BarChart3, label: language === 'ar' ? 'التحليلات' : 'Analytics' },
+    { path: '/devtools', icon: Wrench, label: language === 'ar' ? 'أدوات المطوّر' : 'Dev Tools' },
     { path: '/favorites', icon: Star, label: t('nav.favorites') },
     { path: '/statistics', icon: BarChart3, label: t('nav.statistics') },
     { path: '/weekly-review', icon: CalendarCheck, label: language === 'ar' ? 'مراجعة الأسبوع' : 'Weekly Review' },
