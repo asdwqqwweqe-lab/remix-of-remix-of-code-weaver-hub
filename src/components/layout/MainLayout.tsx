@@ -11,6 +11,7 @@ import SearchTrigger from '@/components/search/SearchTrigger';
 import WorkspaceSwitcher from '@/components/layout/WorkspaceSwitcher';
 import QuickNotes from '@/components/notes/QuickNotes';
 import NotificationBell from '@/components/notifications/NotificationBell';
+import InstallPrompt from '@/components/pwa/InstallPrompt';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useNotificationTriggers } from '@/hooks/useNotificationTriggers';
 import { useSharedCommentNotifications } from '@/hooks/useSharedCommentNotifications';
