@@ -175,7 +175,7 @@ export default function AIAssistantDrawer({ open, onOpenChange }: Props) {
           )}
         </SheetHeader>
 
-        <ScrollArea className="flex-1 p-4" viewportRef={scrollRef as never}>
+        <ScrollArea className="flex-1 p-4">
           <div ref={scrollRef} className="space-y-3">
             {messages.length === 0 && (
               <div className="text-center text-sm text-muted-foreground py-8">
