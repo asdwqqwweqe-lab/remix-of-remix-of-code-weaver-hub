@@ -47,6 +47,7 @@ import {
   Rss,
   Users2,
   Download,
+  Database,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
