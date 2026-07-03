@@ -80,8 +80,13 @@ const MainLayout = ({ children }: MainLayoutProps) => {
         setAiOpen((v) => !v);
       }
     };
+    const onAiOpen = () => setAiOpen(true);
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    window.addEventListener('ai-assistant:open', onAiOpen);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('ai-assistant:open', onAiOpen);
+    };
   }, []);
   
   // Initialize keyboard shortcuts
