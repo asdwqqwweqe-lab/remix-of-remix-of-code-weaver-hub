@@ -305,7 +305,7 @@ const Snippets = () => {
                       onClick={() => setPlaySnippetId(snippet.id)}
                     >
                       <Play className="w-4 h-4 me-1" />
-                      {t('common.run') || (language_ui_run())}
+                      Run
                     </Button>
                   )}
                   <Button variant="outline" size="sm" onClick={() => handleEdit(snippet)}>
