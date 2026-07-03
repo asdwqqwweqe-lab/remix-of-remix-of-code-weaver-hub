@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Mic, Square, Play, Pause, Trash2, Download, FileText, Loader2, Save, Search } from 'lucide-react';
+import { Mic, Square, Play, Pause, Trash2, Download, FileText, Loader2, Save, Search, Sparkles, ListChecks } from 'lucide-react';
 import { putBlob, getBlob, deleteBlob } from '@/lib/voiceNotesDb';
 
 interface VoiceNote {
@@ -50,6 +50,8 @@ export default function VoiceNotes() {
   const [transcribingId, setTranscribingId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [aiWorkingId, setAiWorkingId] = useState<string | null>(null);
+  const [aiOutput, setAiOutput] = useState<Record<string, string>>({});
 
   const recRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
@@ -166,6 +168,34 @@ export default function VoiceNotes() {
     } finally {
       setTranscribingId(null);
     }
+  };
+
+  const runAI = async (n: VoiceNote, mode: 'summarize' | 'quiz' | 'tasks') => {
+    if (!n.transcript) { toast.error(t('انسخ الصوت أولاً', 'Transcribe first')); return; }
+    setAiWorkingId(n.id + mode);
+    try {
+      const prompt = mode === 'tasks'
+        ? 'استخرج قائمة مهام واضحة (Action Items) من النص التالي كنقاط مرقّمة بصيغة "- [ ] المهمة".'
+        : mode === 'summarize'
+          ? 'لخّص النص التالي في 3-5 نقاط مركّزة.'
+          : 'أنشئ 5 أسئلة تعليمية من النص التالي.';
+      const apiMode = mode === 'tasks' ? 'summarize' : mode;
+      const res = await supabase.functions.invoke('ai-assistant', {
+        body: { messages: [{ role: 'user', content: prompt }], context: n.transcript, mode: apiMode },
+      });
+      const raw = typeof res.data === 'string' ? res.data : (res.data as any)?.toString?.() ?? '';
+      let out = '';
+      for (const line of raw.split('\n')) {
+        if (!line.startsWith('data:')) continue;
+        const p = line.slice(5).trim();
+        if (!p || p === '[DONE]') continue;
+        try { out += JSON.parse(p)?.choices?.[0]?.delta?.content ?? ''; } catch { /**/ }
+      }
+      setAiOutput((s) => ({ ...s, [n.id + mode]: out || t('لا نتيجة', 'No output') }));
+      toast.success(t('اكتمل', 'Done'));
+    } catch (e) {
+      toast.error(t('فشل الطلب', 'Request failed'));
+    } finally { setAiWorkingId(null); }
   };
 
   const filtered = notes.filter((n) =>
