@@ -997,7 +997,8 @@ const PostEditor = () => {
                       </div>
                     </div>
                   </DialogContent>
-                </Dialog>
+                  </Dialog>
+                </div>
               </CardTitle>
             </CardHeader>
             <CardContent>
