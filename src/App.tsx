@@ -78,6 +78,8 @@ const DataPortability = lazy(() => import("./pages/DataPortability"));
 const PublicPostShare = lazy(() => import("./pages/PublicPostShare"));
 const SharedDoc = lazy(() => import("./pages/SharedDoc"));
 const RssReader = lazy(() => import("./pages/RssReader"));
+const SemanticSearch = lazy(() => import("./pages/SemanticSearch"));
+const UnifiedCalendar = lazy(() => import("./pages/UnifiedCalendar"));
 
 const queryClient = new QueryClient();
 

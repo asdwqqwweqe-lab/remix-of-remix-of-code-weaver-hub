@@ -7,6 +7,7 @@ import {
 } from 'recharts';
 import { BarChart3, CheckSquare, StickyNote, Timer, FileText, Flame } from 'lucide-react';
 import WritingInsights from '@/components/analytics/WritingInsights';
+import WritingStreaks from '@/components/analytics/WritingStreaks';
 
 const readJSON = <T,>(k: string, fallback: T): T => {
   try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fallback; } catch { return fallback; }
