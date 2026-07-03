@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -6,12 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import {
   Bold, Italic, Heading1, Heading2, Heading3, Link as LinkIcon, Image as ImageIcon,
   Code as CodeIcon, List, ListOrdered, Quote, Minus, Table as TableIcon,
-  Download, Copy, FileDown, Trash2, Eye, Split, Pencil,
+  Download, Copy, FileDown, Trash2, Eye, Split, Pencil, Maximize2, Minimize2, Focus, Feather,
 } from 'lucide-react';
 
 const STORAGE_KEY = 'markdown-editor-doc';
