@@ -42,6 +42,7 @@ import {
   BookMarked,
   Network,
   CalendarDays,
+  CalendarCheck,
   Rss,
   Users2,
 } from 'lucide-react';
