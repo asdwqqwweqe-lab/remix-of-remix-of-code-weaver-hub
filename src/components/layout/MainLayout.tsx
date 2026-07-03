@@ -13,6 +13,7 @@ import QuickNotes from '@/components/notes/QuickNotes';
 import NotificationBell from '@/components/notifications/NotificationBell';
 import InstallPrompt from '@/components/pwa/InstallPrompt';
 const AIAssistantDrawer = lazy(() => import('@/components/ai/AIAssistantDrawer'));
+const CommandPalette = lazy(() => import('@/components/command/CommandPalette'));
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useNotificationTriggers } from '@/hooks/useNotificationTriggers';
 import { useSharedCommentNotifications } from '@/hooks/useSharedCommentNotifications';
@@ -79,8 +80,13 @@ const MainLayout = ({ children }: MainLayoutProps) => {
         setAiOpen((v) => !v);
       }
     };
+    const onAiOpen = () => setAiOpen(true);
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    window.addEventListener('ai-assistant:open', onAiOpen);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('ai-assistant:open', onAiOpen);
+    };
   }, []);
   
   // Initialize keyboard shortcuts
@@ -115,6 +121,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
     { path: '/graph', icon: Network, label: language === 'ar' ? 'خريطة المعرفة' : 'Knowledge Graph' },
     { path: '/calendar', icon: CalendarDays, label: language === 'ar' ? 'تقويم المحتوى' : 'Content Calendar' },
     { path: '/feeds', icon: Rss, label: language === 'ar' ? 'خلاصات RSS' : 'RSS Feeds' },
+    { path: '/reader', icon: Rss, label: language === 'ar' ? 'قارئ RSS' : 'RSS Reader' },
     { path: '/library', icon: Users2, label: language === 'ar' ? 'المكتبة المشتركة' : 'Shared Library' },
     { path: '/collaborate', icon: Users2, label: language === 'ar' ? 'التعاون' : 'Collaborate' },
     { path: '/data', icon: Database, label: language === 'ar' ? 'مركز البيانات' : 'Data Center' },
@@ -324,6 +331,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
       </button>
       <Suspense fallback={null}>
         {aiOpen && <AIAssistantDrawer open={aiOpen} onOpenChange={setAiOpen} />}
+        <CommandPalette />
       </Suspense>
     </div>
   );

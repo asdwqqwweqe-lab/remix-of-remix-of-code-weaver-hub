@@ -77,6 +77,7 @@ const TemplatesGallery = lazy(() => import("./pages/TemplatesGallery"));
 const DataPortability = lazy(() => import("./pages/DataPortability"));
 const PublicPostShare = lazy(() => import("./pages/PublicPostShare"));
 const SharedDoc = lazy(() => import("./pages/SharedDoc"));
+const RssReader = lazy(() => import("./pages/RssReader"));
 
 const queryClient = new QueryClient();
 
@@ -173,6 +174,7 @@ const App = () => {
                                     <Route path="/graph" element={<KnowledgeGraph />} />
                                     <Route path="/calendar" element={<ContentCalendar />} />
                                     <Route path="/feeds" element={<Feeds />} />
+                                    <Route path="/reader" element={<RssReader />} />
                                     <Route path="/library" element={<SharedLibrary />} />
                                     <Route path="/weekly-review" element={<WeeklyReview />} />
                                     <Route path="/templates" element={<TemplatesGallery />} />
