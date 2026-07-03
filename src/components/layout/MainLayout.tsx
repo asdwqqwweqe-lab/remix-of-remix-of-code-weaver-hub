@@ -227,6 +227,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
           <div className="flex-1" />
 
           <div className="flex items-center gap-2">
+            <WorkspaceSwitcher />
             <SearchTrigger />
             <NotificationBell />
             <SyncStatusIndicator />
