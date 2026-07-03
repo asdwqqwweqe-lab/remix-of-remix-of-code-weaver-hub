@@ -47,7 +47,7 @@ import {
   Rss,
   Users2,
   Download,
-  Database, Timer,
+  Database, Timer, Kanban,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -104,6 +104,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
     { path: '/data', icon: Database, label: language === 'ar' ? 'مركز البيانات' : 'Data Center' },
     { path: '/playground', icon: Code, label: language === 'ar' ? 'ملعب الكود' : 'Playground' },
     { path: '/pomodoro', icon: Timer, label: language === 'ar' ? 'مؤقّت التركيز' : 'Focus Timer' },
+    { path: '/kanban', icon: Kanban, label: language === 'ar' ? 'كانبان' : 'Kanban' },
     { path: '/favorites', icon: Star, label: t('nav.favorites') },
     { path: '/statistics', icon: BarChart3, label: t('nav.statistics') },
     { path: '/weekly-review', icon: CalendarCheck, label: language === 'ar' ? 'مراجعة الأسبوع' : 'Weekly Review' },
