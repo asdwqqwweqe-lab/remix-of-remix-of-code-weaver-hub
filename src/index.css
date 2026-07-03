@@ -523,3 +523,32 @@
 .animate-progress-indeterminate {
   animation: progress-indeterminate 1.5s ease-in-out infinite;
 }
+
+/* ============ UI preferences (Appearance page) ============ */
+:root[data-motion="reduced"] * {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+:root[data-contrast="high"] {
+  --border: 0 0% 40%;
+  --muted-foreground: 0 0% 20%;
+}
+:root.dark[data-contrast="high"] {
+  --border: 0 0% 70%;
+  --muted-foreground: 0 0% 85%;
+}
+
+:root[data-density="compact"] {
+  --density-pad: 0.5rem;
+}
+:root[data-density="compact"] .card,
+:root[data-density="compact"] [class*="p-4"] { padding: 0.625rem; }
+:root[data-density="compact"] [class*="p-6"] { padding: 1rem; }
+:root[data-density="compact"] [class*="gap-4"] { gap: 0.5rem; }
+
+:root[data-density="spacious"] [class*="p-4"] { padding: 1.5rem; }
+:root[data-density="spacious"] [class*="p-6"] { padding: 2rem; }
+:root[data-density="spacious"] [class*="gap-4"] { gap: 1.5rem; }
