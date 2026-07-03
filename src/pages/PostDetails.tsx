@@ -34,6 +34,7 @@ import VersionHistory from '@/components/post/VersionHistory';
 import VersionDiffView from '@/components/post/VersionDiffView';
 import CodeHighlighter from '@/components/post/CodeHighlighter';
 import RelatedPosts from '@/components/post/RelatedPosts';
+import BacklinksList from '@/components/post/BacklinksList';
 import ScrollProgress from '@/components/common/ScrollProgress';
 import ExportContentButton from '@/components/common/ExportContentButton';
 import DisplaySettings, { DisplaySettingsValues } from '@/components/reports/DisplaySettings';
@@ -325,6 +326,9 @@ const PostDetails = () => {
           {post.commentsEnabled && (
             <CommentSection postId={post.id} />
           )}
+
+          {/* Backlinks (Zettelkasten) */}
+          <BacklinksList postId={post.id} />
 
           {/* Related Posts */}
           <RelatedPosts currentPost={post} />
