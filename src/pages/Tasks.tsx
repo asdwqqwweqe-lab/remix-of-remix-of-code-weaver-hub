@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { CheckSquare, Copy, Trash2, Plus, Filter, Search } from 'lucide-react';
 import { toast } from 'sonner';
+import ShareLiveButton from '@/components/sharing/ShareLiveButton';
 
 type Priority = 'low' | 'med' | 'high';
 interface Task {
@@ -129,6 +130,14 @@ export default function Tasks() {
       <div className="flex items-center gap-3">
         <CheckSquare className="w-7 h-7 text-primary" />
         <h1 className="text-3xl font-bold">{language === 'ar' ? 'المهام المتقدمة' : 'Advanced Tasks'}</h1>
+        <div className="ms-auto">
+          <ShareLiveButton
+            kind="task"
+            title={language === 'ar' ? 'قائمة المهام' : 'Task List'}
+            getContent={() => ({ items: tasks.map(t => ({ text: t.title, done: t.completed })) })}
+            liveContent={{ items: tasks.map(t => ({ text: t.title, done: t.completed })) }}
+          />
+        </div>
       </div>
 
       <Card className="p-4 space-y-3">

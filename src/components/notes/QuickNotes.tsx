@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
+import ShareLiveButton from '@/components/sharing/ShareLiveButton';
 
 interface QuickNote {
   id: string;
@@ -219,14 +220,23 @@ const QuickNotes = forwardRef<HTMLDivElement>((_, ref) => {
                   className="flex-1 resize-none text-sm"
                   placeholder={language === 'ar' ? 'اكتب ملاحظتك هنا...' : 'Write your note here...'}
                 />
-                <Button
-                  size="sm"
-                  onClick={saveNote}
-                  className="mt-2 gap-1"
-                >
-                  <Save className="w-3 h-3" />
-                  {language === 'ar' ? 'حفظ' : 'Save'}
-                </Button>
+                <div className="flex gap-2 mt-2">
+                  <Button
+                    size="sm"
+                    onClick={saveNote}
+                    className="gap-1"
+                  >
+                    <Save className="w-3 h-3" />
+                    {language === 'ar' ? 'حفظ' : 'Save'}
+                  </Button>
+                  <ShareLiveButton
+                    kind="note"
+                    title={editTitle || (language === 'ar' ? 'ملاحظة' : 'Note')}
+                    getContent={() => ({ text: editContent })}
+                    liveContent={{ text: editContent }}
+                    size="sm"
+                  />
+                </div>
               </>
             ) : (
               <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">

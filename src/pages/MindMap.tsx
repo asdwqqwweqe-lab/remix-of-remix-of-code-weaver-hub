@@ -8,6 +8,7 @@ import {
   Plus, Trash2, Download, Upload, Save, Maximize2, Minimize2, ZoomIn, ZoomOut, RotateCcw,
   Palette, Edit3, Link2, Expand, LocateFixed, Keyboard as KeyboardIcon,
 } from 'lucide-react';
+import ShareLiveButton from '@/components/sharing/ShareLiveButton';
 
 interface MNode {
   id: string;
@@ -282,6 +283,13 @@ export default function MindMap() {
           <Button size="sm" onClick={() => addChild(selectedId ?? 'root')}>
             <Plus className="w-4 h-4 me-1" />{t('عقدة فرعية', 'Add child')}
           </Button>
+          <ShareLiveButton
+            kind="mindmap"
+            title={t('خريطة ذهنية', 'Mind Map')}
+            getContent={() => ({ nodes })}
+            liveContent={{ nodes }}
+            size="sm"
+          />
           <Button size="sm" variant="outline" onClick={exportJson}>
             <Download className="w-4 h-4 me-1" />{t('تصدير', 'Export')}
           </Button>
