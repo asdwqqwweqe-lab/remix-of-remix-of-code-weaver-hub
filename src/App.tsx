@@ -51,6 +51,7 @@ const ApiSnippets = lazy(() => import("./pages/ApiSnippets"));
 const Appearance = lazy(() => import("./pages/Appearance"));
 const Analytics = lazy(() => import("./pages/Analytics"));
 const DevTools = lazy(() => import("./pages/DevTools"));
+const Workshop = lazy(() => import("./pages/Workshop"));
 const Collections = lazy(() => import("./pages/Collections"));
 const CollectionDetails = lazy(() => import("./pages/CollectionDetails"));
 const Favorites = lazy(() => import("./pages/Favorites"));
