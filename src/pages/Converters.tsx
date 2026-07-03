@@ -51,7 +51,7 @@ function toCSV(rows: any[]): string {
     const s = v == null ? '' : String(v);
     return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
-  return [cols.join(','), ...rows.map((r) => cols.map((c) => esc(r?.[c])).join(','))].join('\n');
+  return [cols.join(','), ...rows.map((r) => cols.map((c) => esc(r?.[c as string])).join(','))].join('\n');
 }
 
 // -- Simple line diff
