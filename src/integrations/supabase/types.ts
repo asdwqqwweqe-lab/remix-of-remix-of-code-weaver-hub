@@ -294,6 +294,7 @@ export type Database = {
           score: number
           topics: string
           total_questions: number
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -302,6 +303,7 @@ export type Database = {
           score: number
           topics: string
           total_questions: number
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -310,6 +312,7 @@ export type Database = {
           score?: number
           topics?: string
           total_questions?: number
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -354,6 +357,7 @@ export type Database = {
           language_name: string
           roadmap_title: string
           topics: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -362,6 +366,7 @@ export type Database = {
           language_name: string
           roadmap_title: string
           topics: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -370,6 +375,7 @@ export type Database = {
           language_name?: string
           roadmap_title?: string
           topics?: string
+          user_id?: string | null
         }
         Relationships: []
       }
