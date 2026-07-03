@@ -39,6 +39,7 @@ import ScrollProgress from '@/components/common/ScrollProgress';
 import ExportContentButton from '@/components/common/ExportContentButton';
 import DisplaySettings, { DisplaySettingsValues } from '@/components/reports/DisplaySettings';
 import PostSearch from '@/components/post/PostSearch';
+import PublicShareButton from '@/components/post/PublicShareButton';
 import ContentNavigation from '@/components/navigation/ContentNavigation';
 import ReadingMode from '@/components/common/ReadingMode';
 import { cn } from '@/lib/utils';
@@ -132,6 +133,7 @@ const PostDetails = () => {
         <div className="flex gap-2 flex-wrap">
           <PostSearch content={post.content} />
           <ExportContentButton title={post.title} content={post.content} type="post" />
+          <PublicShareButton post={post} />
           <VersionDiffView postId={post.id} />
           <ReadingMode title={post.title}>
             <CodeHighlighter
