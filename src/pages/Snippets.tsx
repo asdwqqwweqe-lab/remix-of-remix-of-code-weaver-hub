@@ -310,6 +310,10 @@ const Snippets = () => {
                       Run
                     </Button>
                   )}
+                  <Button variant="outline" size="sm" onClick={() => setReviewSnippetId(snippet.id)}>
+                    <Sparkles className="w-4 h-4 me-1" />
+                    AI Review
+                  </Button>
                   <Button variant="outline" size="sm" onClick={() => handleEdit(snippet)}>
                     <Edit className="w-4 h-4 me-1" />
                     {t('common.edit')}
