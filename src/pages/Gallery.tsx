@@ -34,7 +34,9 @@ import {
   X,
   Clipboard,
   ImagePlus,
+  Share2,
 } from 'lucide-react';
+import { publishGalleryItem } from '@/lib/sharedLibraryService';
 import { toast } from 'sonner';
 import Pagination from '@/components/common/Pagination';
 import hljs from 'highlight.js';
@@ -58,6 +60,24 @@ const Gallery = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [sharingId, setSharingId] = useState<string | null>(null);
+
+  const handleShare = async (image: typeof galleryImages[number]) => {
+    setSharingId(image.id);
+    try {
+      await publishGalleryItem({
+        title: image.caption || 'Untitled',
+        description: image.description,
+        image_url: image.dataUrl,
+        tags: image.tags,
+      });
+      toast.success(language === 'ar' ? 'تم النشر في المكتبة المشتركة' : 'Published to Shared Library');
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setSharingId(null);
+    }
+  };
   const [selectedImage, setSelectedImage] = useState<typeof galleryImages[0] | null>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -513,6 +533,18 @@ const Gallery = () => {
                       }}
                     >
                       <Edit className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      disabled={sharingId === image.id}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleShare(image);
+                      }}
+                      title={language === 'ar' ? 'مشاركة في المكتبة' : 'Share to library'}
+                    >
+                      <Share2 className="w-4 h-4" />
                     </Button>
                     <Button
                       variant="destructive"
