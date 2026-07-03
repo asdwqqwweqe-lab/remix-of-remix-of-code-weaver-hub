@@ -70,6 +70,18 @@ const MainLayout = ({ children }: MainLayoutProps) => {
     const saved = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
     return saved === 'true';
   });
+  const [aiOpen, setAiOpen] = useState(false);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'j') {
+        e.preventDefault();
+        setAiOpen((v) => !v);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
   
   // Initialize keyboard shortcuts
   const { showShortcutsHelp } = useKeyboardShortcuts();
