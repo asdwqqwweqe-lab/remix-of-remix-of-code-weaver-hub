@@ -193,7 +193,7 @@ export default function MarkdownEditor() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => setMode(mode === 'focus' ? 'normal' : 'focus')} title="Focus mode"><Focus className="w-4 h-4 me-1" />{mode === 'focus' ? t('عادي', 'Normal') : t('تركيز', 'Focus')}</Button>
-          <Button variant="outline" size="sm" onClick={() => setMode(mode === 'zen' ? 'normal' : 'zen')} title="Zen mode"><Feather className="w-4 h-4 me-1" />Zen</Button>
+          <Button variant="outline" size="sm" onClick={() => setMode('zen')} title="Zen mode"><Feather className="w-4 h-4 me-1" />Zen</Button>
           <Button variant="outline" size="sm" onClick={toggleFullscreen} title="Fullscreen">{fullscreen ? <Minimize2 className="w-4 h-4 me-1" /> : <Maximize2 className="w-4 h-4 me-1" />}{t('ملء الشاشة', 'Full')}</Button>
           <Button variant="outline" size="sm" onClick={copyMd}><Copy className="w-4 h-4 me-1" />{t('نسخ', 'Copy')}</Button>
           <Button variant="outline" size="sm" onClick={exportMd}><Download className="w-4 h-4 me-1" />.md</Button>
