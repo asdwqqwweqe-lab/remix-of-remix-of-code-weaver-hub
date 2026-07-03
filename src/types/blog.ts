@@ -66,6 +66,7 @@ export interface Post {
   attachments: Attachment[];
   createdAt: Date;
   updatedAt: Date;
+  scheduledAt?: string; // ISO date string — for Content Calendar planning
 }
 
 export interface LanguageSection {

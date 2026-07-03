@@ -49,6 +49,7 @@ const PublicPagePreview = lazy(() => import("./pages/PublicPagePreview"));
 const TodoList = lazy(() => import("./pages/TodoList"));
 const Citations = lazy(() => import("./pages/Citations"));
 const KnowledgeGraph = lazy(() => import("./pages/KnowledgeGraph"));
+const ContentCalendar = lazy(() => import("./pages/ContentCalendar"));
 
 const queryClient = new QueryClient();
 
@@ -119,6 +120,7 @@ const App = () => {
                                     <Route path="/todo" element={<TodoList />} />
                                     <Route path="/citations" element={<Citations />} />
                                     <Route path="/graph" element={<KnowledgeGraph />} />
+                                    <Route path="/calendar" element={<ContentCalendar />} />
                                     <Route path="/roadmap" element={<Roadmap />} />
                                     <Route path="/reports" element={<Reports />} />
                                     <Route path="/reports/new" element={<ReportEditor />} />
