@@ -80,6 +80,9 @@ const SharedDoc = lazy(() => import("./pages/SharedDoc"));
 const RssReader = lazy(() => import("./pages/RssReader"));
 const SemanticSearch = lazy(() => import("./pages/SemanticSearch"));
 const UnifiedCalendar = lazy(() => import("./pages/UnifiedCalendar"));
+const PodcastGenerator = lazy(() => import("./pages/PodcastGenerator"));
+const NotificationsCenter = lazy(() => import("./pages/NotificationsCenter"));
+const CollabEditor = lazy(() => import("./pages/CollabEditor"));
 
 const queryClient = new QueryClient();
 
@@ -182,6 +185,9 @@ const App = () => {
                                     <Route path="/library" element={<SharedLibrary />} />
                                     <Route path="/weekly-review" element={<WeeklyReview />} />
                                     <Route path="/templates" element={<TemplatesGallery />} />
+                                    <Route path="/podcast" element={<PodcastGenerator />} />
+                                    <Route path="/notifications" element={<NotificationsCenter />} />
+                                    <Route path="/collab-live" element={<CollabEditor />} />
                                     <Route path="/data" element={<DataPortability />} />
                                     <Route path="/roadmap" element={<Roadmap />} />
                                     <Route path="/reports" element={<Reports />} />
