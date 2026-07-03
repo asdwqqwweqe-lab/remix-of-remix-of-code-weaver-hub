@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -6,12 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import {
   Bold, Italic, Heading1, Heading2, Heading3, Link as LinkIcon, Image as ImageIcon,
   Code as CodeIcon, List, ListOrdered, Quote, Minus, Table as TableIcon,
-  Download, Copy, FileDown, Trash2, Eye, Split, Pencil,
+  Download, Copy, FileDown, Trash2, Eye, Split, Pencil, Maximize2, Minimize2, Focus, Feather,
 } from 'lucide-react';
 
 const STORAGE_KEY = 'markdown-editor-doc';
@@ -45,6 +45,9 @@ export default function MarkdownEditor() {
   const [title, setTitle] = useState<string>(() => localStorage.getItem(TITLE_KEY) || '');
   const [text, setText] = useState<string>(() => localStorage.getItem(STORAGE_KEY) ?? SAMPLE);
   const [view, setView] = useState<'split' | 'edit' | 'preview'>('split');
+  const [mode, setMode] = useState<'normal' | 'focus' | 'zen'>('normal');
+  const [fullscreen, setFullscreen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const id = setTimeout(() => localStorage.setItem(STORAGE_KEY, text), 300);
@@ -106,7 +109,57 @@ export default function MarkdownEditor() {
     setText('');
   };
 
-  const t = (ar: string, en: string) => language === 'ar' ? ar : en;
+  const toggleFullscreen = async () => {
+    if (!document.fullscreenElement) {
+      try { await rootRef.current?.requestFullscreen(); setFullscreen(true); }
+      catch { setFullscreen(true); /* CSS fallback */ }
+    } else {
+      try { await document.exitFullscreen(); } catch {}
+      setFullscreen(false);
+    }
+  };
+
+  useEffect(() => {
+    const onFsChange = () => setFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', onFsChange);
+    return () => document.removeEventListener('fullscreenchange', onFsChange);
+  }, []);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { setMode('normal'); if (fullscreen) toggleFullscreen(); }
+      const ta = document.getElementById('md-textarea');
+      if (document.activeElement !== ta) return;
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') { e.preventDefault(); wrap('**', '**', t('نص عريض', 'bold text')); }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'i') { e.preventDefault(); wrap('*', '*', t('نص مائل', 'italic')); }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); wrap('[', '](https://)', t('نص الرابط', 'link text')); }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [text, fullscreen]);
+
+  const insertImageFromFile = (file: File) => {
+    if (!file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = String(reader.result || '');
+      setText((prev) => `${prev}\n\n![${file.name}](${dataUrl})\n`);
+      toast.success(t('أُدرجت الصورة', 'Image inserted'));
+    };
+    reader.readAsDataURL(file);
+  };
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const f = e.dataTransfer.files?.[0]; if (f) insertImageFromFile(f);
+  };
+  const onPaste = (e: React.ClipboardEvent) => {
+    const item = Array.from(e.clipboardData.items).find((i) => i.type.startsWith('image/'));
+    if (item) { const f = item.getAsFile(); if (f) insertImageFromFile(f); }
+  };
+
+  const t = (ar: string, en: string) => (language === 'ar' ? ar : en);
+
 
   const toolbar = [
     { icon: Heading1, label: 'H1', act: () => prefixLine('# ') },
@@ -125,7 +178,12 @@ export default function MarkdownEditor() {
   ];
 
   return (
-    <div className="p-4 md:p-6 space-y-4 max-w-[1600px] mx-auto" dir={isRTL ? 'rtl' : 'ltr'}>
+    <div
+      ref={rootRef}
+      className={`p-4 md:p-6 space-y-4 max-w-[1600px] mx-auto ${fullscreen ? 'fixed inset-0 z-[100] bg-background overflow-auto max-w-none' : ''} ${mode === 'zen' ? 'bg-background' : ''}`}
+      dir={isRTL ? 'rtl' : 'ltr'}
+    >
+      {mode !== 'zen' && (
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">{t('محرر Markdown', 'Markdown Editor')}</h1>
@@ -134,13 +192,18 @@ export default function MarkdownEditor() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => setMode(mode === 'focus' ? 'normal' : 'focus')} title="Focus mode"><Focus className="w-4 h-4 me-1" />{mode === 'focus' ? t('عادي', 'Normal') : t('تركيز', 'Focus')}</Button>
+          <Button variant="outline" size="sm" onClick={() => setMode('zen')} title="Zen mode"><Feather className="w-4 h-4 me-1" />Zen</Button>
+          <Button variant="outline" size="sm" onClick={toggleFullscreen} title="Fullscreen">{fullscreen ? <Minimize2 className="w-4 h-4 me-1" /> : <Maximize2 className="w-4 h-4 me-1" />}{t('ملء الشاشة', 'Full')}</Button>
           <Button variant="outline" size="sm" onClick={copyMd}><Copy className="w-4 h-4 me-1" />{t('نسخ', 'Copy')}</Button>
           <Button variant="outline" size="sm" onClick={exportMd}><Download className="w-4 h-4 me-1" />.md</Button>
           <Button variant="outline" size="sm" onClick={exportHtml}><FileDown className="w-4 h-4 me-1" />.html</Button>
           <Button variant="outline" size="sm" onClick={clearAll} className="text-destructive"><Trash2 className="w-4 h-4 me-1" />{t('مسح', 'Clear')}</Button>
         </div>
       </div>
+      )}
 
+      {mode === 'normal' && (
       <div className="flex flex-col md:flex-row gap-2 md:items-center">
         <Input
           value={title}
@@ -157,7 +220,9 @@ export default function MarkdownEditor() {
           </TabsList>
         </Tabs>
       </div>
+      )}
 
+      {mode !== 'zen' && (
       <Card className="p-2 flex flex-wrap gap-1">
         {toolbar.map((b, i) => (
           <Button key={i} variant="ghost" size="sm" onClick={b.act} title={b.label} className="h-8 w-8 p-0">
@@ -168,21 +233,25 @@ export default function MarkdownEditor() {
           {stats.words} {t('كلمة', 'words')} · {stats.chars} {t('حرف', 'chars')} · ~{stats.mins} {t('د قراءة', 'min read')}
         </div>
       </Card>
+      )}
 
-      <div className={`grid gap-4 ${view === 'split' ? 'md:grid-cols-2' : 'grid-cols-1'}`}>
-        {(view === 'edit' || view === 'split') && (
-          <Card className="p-0 overflow-hidden">
+      <div className={`grid gap-4 ${mode === 'normal' && view === 'split' ? 'md:grid-cols-2' : 'grid-cols-1'}`}>
+        {(mode !== 'normal' || view === 'edit' || view === 'split') && (
+          <Card className={`p-0 overflow-hidden ${mode === 'zen' ? 'border-0 bg-transparent shadow-none' : ''}`}>
             <Textarea
               id="md-textarea"
               value={text}
               onChange={(e) => setText(e.target.value)}
-              className="min-h-[70vh] font-mono text-sm resize-none border-0 focus-visible:ring-0 rounded-none"
+              onDrop={onDrop}
+              onDragOver={(e) => e.preventDefault()}
+              onPaste={onPaste}
+              className={`${mode === 'zen' ? 'min-h-[85vh] max-w-3xl mx-auto text-lg leading-relaxed p-8' : 'min-h-[70vh] font-mono text-sm'} resize-none border-0 focus-visible:ring-0 rounded-none bg-transparent`}
               dir="auto"
-              placeholder={t('ابدأ الكتابة بصيغة Markdown...', 'Start writing Markdown...')}
+              placeholder={t('اسحب صورة، أو الصق، أو ابدأ الكتابة...', 'Drop an image, paste, or start writing...')}
             />
           </Card>
         )}
-        {(view === 'preview' || view === 'split') && (
+        {mode === 'normal' && (view === 'preview' || view === 'split') && (
           <Card className="p-6 min-h-[70vh] overflow-auto">
             <article
               className="prose prose-invert max-w-none dark:prose-invert

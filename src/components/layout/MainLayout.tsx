@@ -15,6 +15,7 @@ import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useNotificationTriggers } from '@/hooks/useNotificationTriggers';
 import { useSharedCommentNotifications } from '@/hooks/useSharedCommentNotifications';
 import { useWeeklyReviewReminder } from '@/hooks/useWeeklyReviewReminder';
+import { useTaskReminders } from '@/hooks/useTaskReminders';
 import {
   Moon,
   Sun,
@@ -75,6 +76,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
   useNotificationTriggers();
   useSharedCommentNotifications();
   useWeeklyReviewReminder();
+  useTaskReminders();
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_COLLAPSED_KEY, sidebarCollapsed.toString());
@@ -117,6 +119,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
     { path: '/focus', icon: Timer, label: language === 'ar' ? 'تركيز متقدم' : 'Focus Pro' },
     { path: '/api-snippets', icon: Send, label: language === 'ar' ? 'مقتطفات API' : 'API Snippets' },
     { path: '/appearance', icon: Sparkles, label: language === 'ar' ? 'المظهر' : 'Appearance' },
+    { path: '/analytics', icon: BarChart3, label: language === 'ar' ? 'التحليلات' : 'Analytics' },
     { path: '/favorites', icon: Star, label: t('nav.favorites') },
     { path: '/statistics', icon: BarChart3, label: t('nav.statistics') },
     { path: '/weekly-review', icon: CalendarCheck, label: language === 'ar' ? 'مراجعة الأسبوع' : 'Weekly Review' },

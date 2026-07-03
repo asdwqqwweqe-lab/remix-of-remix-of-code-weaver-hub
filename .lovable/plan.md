@@ -1,80 +1,53 @@
-# خطة تنفيذ 4 ميزات بالتوازي
+## خطة تنفيذ المرحلة التالية (4 ميزات بالتوازي)
 
-## نظرة عامة
-سيتم إنشاء 4 صفحات مستقلة، لكل منها ملف واحد فقط + إدخال في التنقل. بدون تعديلات backend — كلها LocalStorage.
+### 1) لوحة إحصائيات شاملة — `/analytics`
+- **`src/pages/Analytics.tsx`**: صفحة جديدة مع مخططات Recharts
+  - **KPI cards**: إجمالي المقالات، المهام (منجزة/معلقة)، جلسات التركيز، الملاحظات، خرائط ذهنية
+  - **مخططات**:
+    - Line chart: نشاط آخر 30 يوم (مقالات + مهام + جلسات)
+    - Bar chart: توزيع المهام حسب الأولوية
+    - Pie chart: توزيع المقالات حسب التصنيف/الوسوم
+    - Area chart: وقت التركيز اليومي (من `focus-sessions`)
+  - **Streak counter**: أيام النشاط المتتالية
+  - يقرأ من: `localStorage` (`tasks-v1`, `focus-sessions`, `quick-notes`, `mindmap-*`) + Supabase (articles/roadmaps)
 
----
+### 2) محرر Markdown متقدم — `src/components/editor/AdvancedMarkdownEditor.tsx`
+- شريط أدوات كامل: عناوين H1-H3، **B**/*I*/~~S~~، قوائم، اقتباس، كود inline/block، جدول، رابط، صورة
+- **معاينة مباشرة** جنبًا إلى جنب (split view) أو تبديل
+- اختصارات: Ctrl+B/I/K، Tab للمسافة البادئة
+- **إدراج صور** عبر paste/drag-drop (base64) أو URL
+- **أوضاع**: عادي، مركّز (تخفي الشريط الجانبي)، ملء الشاشة، Zen (كتابة فقط)
+- عدّاد كلمات/أحرف/وقت قراءة
+- استبدال في: `ArticleEditor` (إذا موجود) وإتاحته في Quick Notes
 
-## 1) مدير المهام اليومية `/tasks`
+### 3) نظام الإشعارات والتذكيرات — `src/lib/notifications.ts` + `src/hooks/useReminders.ts`
+- طلب Permission عند التفعيل من الإعدادات
+- **مصادر التذكيرات**:
+  - مهام لها `dueDate` — تنبيه قبل 15 دقيقة/عند الاستحقاق
+  - نهاية جلسة التركيز (موجود جزئيًا — نوسّعه ليدعم Web Notification)
+  - تذكيرات مخصصة (إضافة/حذف من صفحة جديدة `/reminders` أو دمجها في `/tasks`)
+- خدمة polling كل دقيقة عبر `setInterval` في `App.tsx` (hook global)
+- Fallback: toast داخل التطبيق إذا Permission مرفوض
+- تخزين آخر تنبيه لكل عنصر في `localStorage` لتفادي التكرار
 
-**الملف:** `src/pages/Tasks.tsx`
+### 4) تصدير/استيراد شامل — `src/pages/BackupRestore.tsx`
+- **تصدير**:
+  - JSON كامل: كل مفاتيح `localStorage` ذات الصلة + Supabase (articles, roadmaps, notes)
+  - ZIP اختياري عبر `jszip` يحوي: `data.json` + مجلد `articles/*.md` منفصل
+- **استيراد**:
+  - رفع ملف JSON/ZIP
+  - معاينة قبل الاستيراد (عدد العناصر لكل نوع)
+  - خيارات: **دمج** (بدون تكرار عبر `id`) أو **استبدال كامل**
+  - تأكيد PIN (4419) قبل الاستبدال
+- **نسخ تلقائية**: زر "نسخة سريعة" تُخزّن آخر 5 نسخ في `localStorage["backups"]`
 
-- بنية `Task`: `{ id, title, notes?, priority: 'low'|'med'|'high', dueDate?, tags: string[], completed, createdAt }`
-- تخزين: `localStorage["tasks-v1"]`
-- الواجهة:
-  - شريط إضافة سريعة (Enter للحفظ)
-  - فلاتر: الكل / اليوم / متأخرة / منجزة
-  - فرز: حسب الأولوية أو تاريخ الاستحقاق
-  - بحث نصي + وسوم قابلة للنقر
-  - عدّاد إنجاز اليوم + شريط تقدّم
-- إجراءات: تحديد كمنجز، تعديل داخل السطر، حذف، تكرار المهمة
+### التغييرات المشتركة
+- **`src/App.tsx`**: مسارات جديدة `/analytics`, `/backup` (+ hook `useReminders` global)
+- **`src/components/layout/MainLayout.tsx`**: عناصر تنقّل جديدة بأيقونات `BarChart3`, `Bell`, `Database`
+- **`src/pages/Appearance.tsx`**: تبديل تفعيل الإشعارات
+- **`bun add jszip recharts`** (recharts موجود على الأغلب)
 
-## 2) مولّد كلمات مرور `/password`
+### التنفيذ بالتوازي
+كل ملف مستقل — سنكتبها في نفس الدفعة عبر tool calls متوازية.
 
-**الملف:** `src/pages/PasswordGen.tsx`
-
-- خيارات: الطول (8-64 slider)، أحرف كبيرة/صغيرة/أرقام/رموز، استبعاد المتشابهة (`0O1lI`)
-- توليد فوري عبر `crypto.getRandomValues`
-- مؤشر قوة (Zxcvbn-lite تقديري بدون مكتبات: entropy = log2(pool^length))
-- زر توليد passphrase (4-6 كلمات من قائمة مدمجة)
-- سجل آخر 10 كلمات مرور (LocalStorage، خيار مسح)
-- نسخ للحافظة + toast
-
-## 3) مؤقت تركيز متقدم `/focus`
-
-**الملف:** `src/pages/FocusTimer.tsx`
-
-- جلسات قابلة للتخصيص (25/50/90 دقيقة أو مخصص)
-- 3 حالات: تركيز، استراحة قصيرة، استراحة طويلة (كل 4 دورات)
-- عدّاد دائري SVG كبير مع نسبة مئوية
-- تسجيل جلسات مكتملة: `{ date, duration, label }` في LocalStorage
-- إحصائيات: مجموع دقائق اليوم/الأسبوع، عدد الجلسات، أطول سلسلة أيام
-- هدف يومي قابل للتعديل + شريط تقدّم
-- إشعار صوتي (Web Audio API tone)
-
-## 4) مدير مقتطفات API `/api-snippets`
-
-**الملف:** `src/pages/ApiSnippets.tsx`
-
-- بنية `Snippet`: `{ id, name, method, url, headers: Record<string,string>, body?, createdAt }`
-- تخزين: `localStorage["api-snippets-v1"]`
-- نموذج: اختيار METHOD (GET/POST/PUT/PATCH/DELETE)، URL، JSON headers، body
-- زر **تشغيل** يستخدم `fetch` مباشرة ويعرض:
-  - حالة + مدة + حجم الاستجابة
-  - Body مُنسّق (JSON pretty) مع تبويب raw
-  - Headers الاستجابة
-- استبدال متغيرات `{{VAR}}` من جدول متغيرات بيئة (localStorage)
-- استيراد/تصدير JSON
-- بحث في المقتطفات
-
----
-
-## ملفات مشتركة (تعديل)
-
-- **`src/App.tsx`**: إضافة 4 مسارات lazy جديدة
-- **`src/components/layout/MainLayout.tsx`**: 4 روابط + أيقونات
-  - Tasks: `CheckSquare`
-  - Password: `KeyRound`
-  - Focus: `Timer`
-  - API: `Send`
-
-## تفاصيل تقنية
-
-- كل الحالة عبر `useState` + `useEffect` sync إلى LocalStorage
-- استعمال `sonner` toast للإشعارات (موجود)
-- استخدام مكونات shadcn الموجودة: `Card`, `Button`, `Input`, `Tabs`, `Slider`, `Select`, `Badge`, `Progress`
-- التوافق مع الثيم الحالي (dark + teal/coral tokens من `index.css`)
-- دعم RTL/LTR عبر `useLanguage()`
-
-## التنفيذ
-كتابة الملفات الأربعة الجديدة بالتوازي في استدعاء واحد، ثم تحديث `App.tsx` و `MainLayout.tsx` معاً.
+هل أبدأ التنفيذ؟
