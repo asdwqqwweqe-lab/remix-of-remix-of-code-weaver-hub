@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useBlogStore } from '@/store/blogStore';
+import BacklinkSuggestions from '@/components/knowledge/BacklinkSuggestions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -655,6 +656,11 @@ const PostEditor = () => {
                   />
                 )}
               </div>
+              <BacklinkSuggestions
+                currentId={id}
+                content={formData.content}
+                onInsert={(next) => setFormData(prev => ({ ...prev, content: next }))}
+              />
             </CardContent>
           </Card>
 
