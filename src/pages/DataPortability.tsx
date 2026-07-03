@@ -219,6 +219,51 @@ export default function DataPortability() {
         </Card>
       </div>
 
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Camera className="w-5 h-5 text-primary" />
+            {isAr ? 'لقطات النسخ السريعة' : 'Quick backup snapshots'}
+            <span className="ms-auto text-xs font-normal text-muted-foreground">
+              {snapshots.length}/{MAX_SNAPSHOTS}
+            </span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            {isAr
+              ? `احفظ حتى ${MAX_SNAPSHOTS} نسخ محلياً للاستعادة السريعة دون ملف خارجي.`
+              : `Keep up to ${MAX_SNAPSHOTS} local snapshots for quick restore without an external file.`}
+          </p>
+          <Button onClick={takeSnapshot} className="w-full sm:w-auto">
+            <Camera className="w-4 h-4 mr-2" />
+            {isAr ? 'أخذ لقطة الآن' : 'Take snapshot now'}
+          </Button>
+          {snapshots.length > 0 && (
+            <ul className="divide-y divide-border rounded border border-border/60 mt-2">
+              {snapshots.map((s) => (
+                <li key={s.id} className="flex items-center gap-2 p-2 text-sm">
+                  <Camera className="w-4 h-4 text-muted-foreground shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="truncate">{s.label}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {(s.data.length / 1024).toFixed(1)} KB
+                    </div>
+                  </div>
+                  <Button size="sm" variant="ghost" onClick={() => restoreSnapshot(s)} title={isAr ? 'استعادة' : 'Restore'}>
+                    <RotateCcw className="w-4 h-4" />
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => deleteSnapshot(s.id)} title={isAr ? 'حذف' : 'Delete'} className="text-destructive">
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+
+
       <div className="text-xs text-muted-foreground flex items-start gap-2 p-3 rounded border border-border/50 bg-muted/30">
         <ShieldCheck className="w-4 h-4 mt-0.5 text-emerald-500 shrink-0" />
         <span>
