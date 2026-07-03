@@ -132,6 +132,7 @@ const App = () => {
                                     <Route path="/pomodoro" element={<Pomodoro />} />
                                     <Route path="/kanban" element={<KanbanBoard />} />
                                     <Route path="/markdown" element={<MarkdownEditor />} />
+                                    <Route path="/mindmap" element={<MindMap />} />
                                     <Route path="/collections" element={<Collections />} />
                                     <Route path="/collections/:slug" element={<CollectionDetails />} />
                                     <Route path="/favorites" element={<Favorites />} />
