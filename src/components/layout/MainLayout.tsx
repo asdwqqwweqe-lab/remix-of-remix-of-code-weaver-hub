@@ -325,6 +325,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
       </button>
       <Suspense fallback={null}>
         {aiOpen && <AIAssistantDrawer open={aiOpen} onOpenChange={setAiOpen} />}
+        <CommandPalette />
       </Suspense>
     </div>
   );
