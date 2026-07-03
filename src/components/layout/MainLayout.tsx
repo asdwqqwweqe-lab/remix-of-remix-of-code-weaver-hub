@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode, useEffect, useState, lazy, Suspense } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -12,6 +12,7 @@ import WorkspaceSwitcher from '@/components/layout/WorkspaceSwitcher';
 import QuickNotes from '@/components/notes/QuickNotes';
 import NotificationBell from '@/components/notifications/NotificationBell';
 import InstallPrompt from '@/components/pwa/InstallPrompt';
+const AIAssistantDrawer = lazy(() => import('@/components/ai/AIAssistantDrawer'));
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useNotificationTriggers } from '@/hooks/useNotificationTriggers';
 import { useSharedCommentNotifications } from '@/hooks/useSharedCommentNotifications';
@@ -49,7 +50,7 @@ import {
   Rss,
   Users2,
   Download,
-  Database, Timer, Kanban, FileCode, GitBranch, Mic, Flame, Repeat, GraduationCap, CheckSquare, KeyRound, Send, Sparkles, Wrench,
+  Database, Timer, Kanban, FileCode, GitBranch, Mic, Flame, Repeat, GraduationCap, CheckSquare, KeyRound, Send, Sparkles, Wrench, Zap,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -69,6 +70,18 @@ const MainLayout = ({ children }: MainLayoutProps) => {
     const saved = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
     return saved === 'true';
   });
+  const [aiOpen, setAiOpen] = useState(false);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'j') {
+        e.preventDefault();
+        setAiOpen((v) => !v);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
   
   // Initialize keyboard shortcuts
   const { showShortcutsHelp } = useKeyboardShortcuts();
@@ -122,6 +135,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
     { path: '/appearance', icon: Sparkles, label: language === 'ar' ? 'المظهر' : 'Appearance' },
     { path: '/analytics', icon: BarChart3, label: language === 'ar' ? 'التحليلات' : 'Analytics' },
     { path: '/devtools', icon: Wrench, label: language === 'ar' ? 'أدوات المطوّر' : 'Dev Tools' },
+    { path: '/workshop', icon: Zap, label: language === 'ar' ? 'ورشة الإنتاجية' : 'Workshop' },
     { path: '/favorites', icon: Star, label: t('nav.favorites') },
     { path: '/statistics', icon: BarChart3, label: t('nav.statistics') },
     { path: '/weekly-review', icon: CalendarCheck, label: language === 'ar' ? 'مراجعة الأسبوع' : 'Weekly Review' },
@@ -299,6 +313,18 @@ const MainLayout = ({ children }: MainLayoutProps) => {
         <QuickNotes />
       </div>
       <InstallPrompt />
+
+      {/* AI Assistant floating button */}
+      <button
+        onClick={() => setAiOpen(true)}
+        title={language === 'ar' ? 'مساعد AI (Ctrl+J)' : 'AI Assistant (Ctrl+J)'}
+        className="fixed bottom-6 end-6 z-40 w-12 h-12 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:scale-110 transition-transform"
+      >
+        <Sparkles className="w-5 h-5" />
+      </button>
+      <Suspense fallback={null}>
+        {aiOpen && <AIAssistantDrawer open={aiOpen} onOpenChange={setAiOpen} />}
+      </Suspense>
     </div>
   );
 };

@@ -45,6 +45,7 @@ import ReadingMode from '@/components/common/ReadingMode';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useReadingAnalytics } from '@/hooks/useReadingAnalytics';
+import { setAIContext } from '@/components/ai/AIAssistantDrawer';
 
 
 
@@ -86,7 +87,9 @@ const PostDetails = () => {
   useEffect(() => {
     if (post) {
       incrementViews(post.id);
+      setAIContext(`# ${post.title}\n\n${post.content}`);
     }
+    return () => setAIContext(null);
   }, [id]);
 
   useReadingAnalytics({
