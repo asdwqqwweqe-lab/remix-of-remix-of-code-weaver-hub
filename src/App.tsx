@@ -49,6 +49,7 @@ const PasswordGen = lazy(() => import("./pages/PasswordGen"));
 const FocusTimer = lazy(() => import("./pages/FocusTimer"));
 const ApiSnippets = lazy(() => import("./pages/ApiSnippets"));
 const Appearance = lazy(() => import("./pages/Appearance"));
+const Analytics = lazy(() => import("./pages/Analytics"));
 const Collections = lazy(() => import("./pages/Collections"));
 const CollectionDetails = lazy(() => import("./pages/CollectionDetails"));
 const Favorites = lazy(() => import("./pages/Favorites"));
