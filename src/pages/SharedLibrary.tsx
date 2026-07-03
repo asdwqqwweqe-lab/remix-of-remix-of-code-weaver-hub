@@ -55,10 +55,10 @@ function AuthorLine({ name, date, extra }: { name: string; date: string; extra?:
 }
 
 function SnippetCard({
-  item, liked, liveCount, isMine, onLike, onClone, onUnpublish,
+  item, liked, liveCount, commentsCount, isMine, onLike, onClone, onUnpublish, onComments,
 }: {
-  item: SharedSnippet; liked: boolean; liveCount: number; isMine: boolean;
-  onLike: () => void; onClone: () => void; onUnpublish?: () => void;
+  item: SharedSnippet; liked: boolean; liveCount: number; commentsCount: number; isMine: boolean;
+  onLike: () => void; onClone: () => void; onUnpublish?: () => void; onComments: () => void;
 }) {
   const { language } = useLanguage();
   const isAr = language === 'ar';
@@ -85,9 +85,12 @@ function SnippetCard({
             {item.tags.slice(0, 5).map(t => <Badge key={t} variant="outline" className="text-[10px] h-5">{t}</Badge>)}
           </div>
         )}
-        <div className="flex items-center gap-2 mt-auto pt-1">
+        <div className="flex items-center gap-2 mt-auto pt-1 flex-wrap">
           <Button size="sm" variant={liked ? 'default' : 'outline'} onClick={onLike} className="gap-1">
             <Heart className={`w-4 h-4 ${liked ? 'fill-current' : ''}`} /><span>{liveCount}</span>
+          </Button>
+          <Button size="sm" variant="outline" onClick={onComments} className="gap-1">
+            <MessageCircle className="w-4 h-4" /><span>{commentsCount}</span>
           </Button>
           <Button size="sm" variant="outline" onClick={onClone} className="gap-1">
             <Copy className="w-4 h-4" />{isAr ? 'استيراد' : 'Clone'}
