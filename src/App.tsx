@@ -78,6 +78,8 @@ const DataPortability = lazy(() => import("./pages/DataPortability"));
 const PublicPostShare = lazy(() => import("./pages/PublicPostShare"));
 const SharedDoc = lazy(() => import("./pages/SharedDoc"));
 const RssReader = lazy(() => import("./pages/RssReader"));
+const SemanticSearch = lazy(() => import("./pages/SemanticSearch"));
+const UnifiedCalendar = lazy(() => import("./pages/UnifiedCalendar"));
 
 const queryClient = new QueryClient();
 
@@ -175,6 +177,8 @@ const App = () => {
                                     <Route path="/calendar" element={<ContentCalendar />} />
                                     <Route path="/feeds" element={<Feeds />} />
                                     <Route path="/reader" element={<RssReader />} />
+                                    <Route path="/semantic-search" element={<SemanticSearch />} />
+                                    <Route path="/unified-calendar" element={<UnifiedCalendar />} />
                                     <Route path="/library" element={<SharedLibrary />} />
                                     <Route path="/weekly-review" element={<WeeklyReview />} />
                                     <Route path="/templates" element={<TemplatesGallery />} />
