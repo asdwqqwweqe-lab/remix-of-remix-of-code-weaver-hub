@@ -342,6 +342,14 @@ const Snippets = () => {
                   <Button
                     variant="outline"
                     size="sm"
+                    onClick={() => handleShare(snippet)}
+                    disabled={sharingId === snippet.id}
+                  >
+                    <Share2 className="w-4 h-4 me-1" />
+                    {sharingId === snippet.id ? '…' : t('snippets.share', { defaultValue: 'Share' })}
+                  <Button
+                    variant="outline"
+                    size="sm"
                     className="text-destructive hover:text-destructive"
                     onClick={() => handleDelete(snippet.id)}
                   >
