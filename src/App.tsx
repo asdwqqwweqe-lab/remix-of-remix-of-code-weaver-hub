@@ -34,6 +34,7 @@ const TagDetails = lazy(() => import("./pages/TagDetails"));
 const Snippets = lazy(() => import("./pages/Snippets"));
 const Collaborate = lazy(() => import("./pages/Collaborate"));
 const DataCenter = lazy(() => import("./pages/DataCenter"));
+const Playground = lazy(() => import("./pages/Playground"));
 const Collections = lazy(() => import("./pages/Collections"));
 const CollectionDetails = lazy(() => import("./pages/CollectionDetails"));
 const Favorites = lazy(() => import("./pages/Favorites"));
@@ -123,6 +124,7 @@ const App = () => {
                                     <Route path="/snippets" element={<Snippets />} />
                                     <Route path="/collaborate" element={<Collaborate />} />
                                     <Route path="/data" element={<DataCenter />} />
+                                    <Route path="/playground" element={<Playground />} />
                                     <Route path="/collections" element={<Collections />} />
                                     <Route path="/collections/:slug" element={<CollectionDetails />} />
                                     <Route path="/favorites" element={<Favorites />} />
