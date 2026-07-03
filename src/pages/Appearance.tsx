@@ -271,6 +271,65 @@ export default function Appearance() {
           <Switch checked={prefs.highContrast} onCheckedChange={(v) => update('highContrast', v)} />
         </div>
       </Card>
+
+      {/* Notifications */}
+      <NotificationsCard t={t} />
     </div>
   );
 }
+
+function NotificationsCard({ t }: { t: (ar: string, en: string) => string }) {
+  const [enabled, setEnabled] = useState(() => localStorage.getItem('notifications-enabled') !== 'false');
+  const [permission, setPermission] = useState<NotificationPermission>(
+    typeof Notification !== 'undefined' ? Notification.permission : 'default'
+  );
+
+  const toggle = async (v: boolean) => {
+    setEnabled(v);
+    localStorage.setItem('notifications-enabled', String(v));
+    if (v && typeof Notification !== 'undefined' && Notification.permission === 'default') {
+      try {
+        const p = await Notification.requestPermission();
+        setPermission(p);
+        if (p === 'granted') toast.success(t('تم تفعيل الإشعارات', 'Notifications enabled'));
+      } catch { /* noop */ }
+    }
+  };
+
+  const requestPerm = async () => {
+    try { const p = await Notification.requestPermission(); setPermission(p); } catch { /* noop */ }
+  };
+
+  return (
+    <Card className="p-6 space-y-4">
+      <div className="flex items-center gap-2">
+        <Bell className="w-5 h-5" />
+        <h2 className="text-lg font-semibold">{t('الإشعارات والتذكيرات', 'Notifications & reminders')}</h2>
+      </div>
+      <div className="flex items-center justify-between">
+        <div>
+          <Label>{t('تفعيل التذكيرات', 'Enable reminders')}</Label>
+          <p className="text-xs text-muted-foreground mt-1">
+            {t('تنبيهات للمهام ذات المواعيد وجلسات التركيز', 'Alerts for due tasks and focus sessions')}
+          </p>
+        </div>
+        <Switch checked={enabled} onCheckedChange={toggle} />
+      </div>
+      {enabled && permission !== 'granted' && (
+        <div className="flex items-center justify-between text-sm p-3 rounded bg-muted/40 border border-border/60">
+          <span>
+            {permission === 'denied'
+              ? t('الأذونات مرفوضة — سنستخدم تنبيهات داخل التطبيق', 'Permission denied — using in-app toasts')
+              : t('اسمح للإشعارات في المتصفح', 'Allow browser notifications')}
+          </span>
+          {permission === 'default' && (
+            <Button size="sm" variant="outline" onClick={requestPerm}>
+              {t('طلب الإذن', 'Request')}
+            </Button>
+          )}
+        </div>
+      )}
+    </Card>
+  );
+}
+
