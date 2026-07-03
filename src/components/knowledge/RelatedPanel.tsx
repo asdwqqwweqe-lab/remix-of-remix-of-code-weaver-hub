@@ -21,7 +21,7 @@ export default function RelatedPanel({ currentPostId, currentText, currentTitle 
     const docs = posts.map((p) => ({
       id: p.id,
       title: p.title,
-      text: `${p.title} ${p.excerpt || ''} ${(p.content || '').slice(0, 500)}`,
+      text: `${p.title} ${p.summary || ''} ${(p.content || '').slice(0, 500)}`,
     }));
     return findRelated(currentPostId, `${currentTitle} ${currentText}`, docs, 5);
   }, [currentPostId, currentTitle, currentText, posts]);
