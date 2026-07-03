@@ -13,6 +13,7 @@ import NotificationBell from '@/components/notifications/NotificationBell';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useNotificationTriggers } from '@/hooks/useNotificationTriggers';
 import { useSharedCommentNotifications } from '@/hooks/useSharedCommentNotifications';
+import { useWeeklyReviewReminder } from '@/hooks/useWeeklyReviewReminder';
 import {
   Moon,
   Sun,
@@ -69,6 +70,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
   // Watch for events and fire notifications
   useNotificationTriggers();
   useSharedCommentNotifications();
+  useWeeklyReviewReminder();
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_COLLAPSED_KEY, sidebarCollapsed.toString());
