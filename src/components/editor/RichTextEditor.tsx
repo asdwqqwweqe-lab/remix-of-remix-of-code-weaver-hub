@@ -35,6 +35,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
+import InlineAIBubble from './InlineAIBubble';
 
 const lowlight = createLowlight(common);
 
@@ -125,6 +126,7 @@ const RichTextEditor = ({ content, onChange, language = 'ar' }: RichTextEditorPr
     <ContextMenu>
       <ContextMenuTrigger asChild>
         <div ref={editorRef}>
+          {editor && <InlineAIBubble editor={editor} />}
           <EditorContent 
             editor={editor} 
             className={cn(
