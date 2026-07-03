@@ -293,6 +293,69 @@ export default function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) 
         <CommandEmpty>
           {language === 'ar' ? 'لا توجد نتائج.' : 'No results found.'}
         </CommandEmpty>
+
+        <CommandGroup heading={language === 'ar' ? 'التنقل السريع' : 'Quick Navigation'}>
+          {[
+            { icon: LayoutDashboard, label: language === 'ar' ? 'لوحة التحكم' : 'Dashboard', path: '/dashboard', shortcut: 'Alt+1' },
+            { icon: FileText, label: language === 'ar' ? 'المقالات' : 'Posts', path: '/posts', shortcut: 'Alt+2' },
+            { icon: BookOpen, label: language === 'ar' ? 'التقارير' : 'Reports', path: '/reports', shortcut: 'Alt+3' },
+            { icon: Map, label: language === 'ar' ? 'خريطة الطريق' : 'Roadmap', path: '/roadmap', shortcut: 'Alt+4' },
+            { icon: Code, label: language === 'ar' ? 'الأكواد' : 'Snippets', path: '/snippets', shortcut: 'Alt+5' },
+            { icon: CheckSquare, label: language === 'ar' ? 'المهام' : 'Todo', path: '/todo', shortcut: 'Alt+7' },
+            { icon: Folder, label: language === 'ar' ? 'المجموعات' : 'Collections', path: '/collections' },
+            { icon: Star, label: language === 'ar' ? 'المفضلة' : 'Favorites', path: '/favorites' },
+            { icon: ImageIcon, label: language === 'ar' ? 'المعرض' : 'Gallery', path: '/gallery' },
+            { icon: SettingsIcon, label: language === 'ar' ? 'الإعدادات' : 'Settings', path: '/settings', shortcut: 'Alt+8' },
+          ].map((item) => (
+            <CommandItem
+              key={item.path}
+              value={`nav-${item.label}`}
+              onSelect={() => handleSelect(item.path)}
+              className="flex items-center gap-3"
+            >
+              <item.icon className="h-4 w-4 text-muted-foreground shrink-0" />
+              <span className="flex-1">{item.label}</span>
+              {item.shortcut && (
+                <kbd className="px-1.5 py-0.5 bg-muted rounded text-xs">{item.shortcut}</kbd>
+              )}
+            </CommandItem>
+          ))}
+        </CommandGroup>
+
+        <CommandGroup heading={language === 'ar' ? 'إجراءات' : 'Actions'}>
+          <CommandItem value="action-new-post" onSelect={() => handleSelect('/posts/new')} className="flex items-center gap-3">
+            <PenSquare className="h-4 w-4 text-muted-foreground" />
+            <span className="flex-1">{language === 'ar' ? 'موضوع جديد' : 'New Post'}</span>
+            <kbd className="px-1.5 py-0.5 bg-muted rounded text-xs">Ctrl+N</kbd>
+          </CommandItem>
+          <CommandItem value="action-new-report" onSelect={() => handleSelect('/reports/new')} className="flex items-center gap-3">
+            <PenSquare className="h-4 w-4 text-muted-foreground" />
+            <span className="flex-1">{language === 'ar' ? 'تقرير جديد' : 'New Report'}</span>
+          </CommandItem>
+          <CommandItem
+            value="action-toggle-theme"
+            onSelect={() => { setTheme(theme === 'dark' ? 'light' : 'dark'); onOpenChange(false); }}
+            className="flex items-center gap-3"
+          >
+            {theme === 'dark' ? <Sun className="h-4 w-4 text-muted-foreground" /> : <Moon className="h-4 w-4 text-muted-foreground" />}
+            <span className="flex-1">
+              {language === 'ar' ? (theme === 'dark' ? 'الوضع الفاتح' : 'الوضع الداكن') : (theme === 'dark' ? 'Light mode' : 'Dark mode')}
+            </span>
+          </CommandItem>
+          <CommandItem
+            value="action-toggle-lang"
+            onSelect={() => { setLanguage(language === 'ar' ? 'en' : 'ar'); onOpenChange(false); }}
+            className="flex items-center gap-3"
+          >
+            <LangIcon className="h-4 w-4 text-muted-foreground" />
+            <span className="flex-1">
+              {language === 'ar' ? 'English' : 'العربية'}
+            </span>
+          </CommandItem>
+        </CommandGroup>
+
+        <CommandSeparator />
+
         
         {(['posts', 'reports', 'roadmaps', 'snippets'] as ContentType[]).map((type) => {
           const items = groupedResults[type];
