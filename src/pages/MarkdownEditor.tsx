@@ -45,6 +45,9 @@ export default function MarkdownEditor() {
   const [title, setTitle] = useState<string>(() => localStorage.getItem(TITLE_KEY) || '');
   const [text, setText] = useState<string>(() => localStorage.getItem(STORAGE_KEY) ?? SAMPLE);
   const [view, setView] = useState<'split' | 'edit' | 'preview'>('split');
+  const [mode, setMode] = useState<'normal' | 'focus' | 'zen'>('normal');
+  const [fullscreen, setFullscreen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const id = setTimeout(() => localStorage.setItem(STORAGE_KEY, text), 300);
