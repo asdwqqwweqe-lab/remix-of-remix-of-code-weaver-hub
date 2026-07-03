@@ -38,6 +38,7 @@ const Playground = lazy(() => import("./pages/Playground"));
 const Pomodoro = lazy(() => import("./pages/Pomodoro"));
 const KanbanBoard = lazy(() => import("./pages/KanbanBoard"));
 const MarkdownEditor = lazy(() => import("./pages/MarkdownEditor"));
+const MindMap = lazy(() => import("./pages/MindMap"));
 const Collections = lazy(() => import("./pages/Collections"));
 const CollectionDetails = lazy(() => import("./pages/CollectionDetails"));
 const Favorites = lazy(() => import("./pages/Favorites"));
