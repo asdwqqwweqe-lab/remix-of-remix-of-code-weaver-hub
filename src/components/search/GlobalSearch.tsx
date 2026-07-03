@@ -47,7 +47,8 @@ interface SearchResult {
 
 export default function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
   const { t } = useTranslation();
-  const { language } = useLanguage();
+  const { language, setLanguage } = useLanguage();
+  const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   
   const [query, setQuery] = useState('');
