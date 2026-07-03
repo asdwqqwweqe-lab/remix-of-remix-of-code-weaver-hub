@@ -33,6 +33,7 @@ const CategoryDetails = lazy(() => import("./pages/CategoryDetails"));
 const TagDetails = lazy(() => import("./pages/TagDetails"));
 const Snippets = lazy(() => import("./pages/Snippets"));
 const Collaborate = lazy(() => import("./pages/Collaborate"));
+const DataCenter = lazy(() => import("./pages/DataCenter"));
 const Collections = lazy(() => import("./pages/Collections"));
 const CollectionDetails = lazy(() => import("./pages/CollectionDetails"));
 const Favorites = lazy(() => import("./pages/Favorites"));
