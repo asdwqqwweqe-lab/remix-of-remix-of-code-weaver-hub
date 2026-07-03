@@ -298,6 +298,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
         {/* Quick Notes */}
         <QuickNotes />
       </div>
+      <InstallPrompt />
     </div>
   );
 };
