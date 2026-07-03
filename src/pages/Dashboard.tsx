@@ -28,6 +28,7 @@ import {
   RoadmapProgressChart,
 } from '@/components/dashboard/DashboardCharts';
 import ReadingAnalytics from '@/components/dashboard/ReadingAnalytics';
+import CommunityDiscover from '@/components/dashboard/CommunityDiscover';
 import StudyStreakCard from '@/components/dashboard/StudyStreakCard';
 
 
@@ -203,6 +204,9 @@ export default function Dashboard() {
 
       {/* Reading Analytics */}
       <ReadingAnalytics />
+
+      {/* Community Discover */}
+      <CommunityDiscover />
 
 
 
