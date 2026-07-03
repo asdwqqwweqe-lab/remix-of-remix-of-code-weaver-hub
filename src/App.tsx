@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -56,7 +56,13 @@ const RouteFallback = () => (
   </div>
 );
 
-const App = () => (
+const App = () => {
+  useEffect(() => {
+    // Run weekly auto-backup on app boot (silent no-op if signed out or run <7d ago)
+    import("@/lib/backupService").then(({ maybeRunWeeklyBackup }) => maybeRunWeeklyBackup());
+  }, []);
+
+  return (
   <HelmetProvider>
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
@@ -134,6 +140,7 @@ const App = () => (
       </ThemeProvider>
     </QueryClientProvider>
   </HelmetProvider>
-);
+  );
+};
 
 export default App;
