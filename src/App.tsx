@@ -37,6 +37,7 @@ const DataCenter = lazy(() => import("./pages/DataCenter"));
 const Playground = lazy(() => import("./pages/Playground"));
 const Pomodoro = lazy(() => import("./pages/Pomodoro"));
 const KanbanBoard = lazy(() => import("./pages/KanbanBoard"));
+const MarkdownEditor = lazy(() => import("./pages/MarkdownEditor"));
 const Collections = lazy(() => import("./pages/Collections"));
 const CollectionDetails = lazy(() => import("./pages/CollectionDetails"));
 const Favorites = lazy(() => import("./pages/Favorites"));
@@ -129,6 +130,7 @@ const App = () => {
                                     <Route path="/playground" element={<Playground />} />
                                     <Route path="/pomodoro" element={<Pomodoro />} />
                                     <Route path="/kanban" element={<KanbanBoard />} />
+                                    <Route path="/markdown" element={<MarkdownEditor />} />
                                     <Route path="/collections" element={<Collections />} />
                                     <Route path="/collections/:slug" element={<CollectionDetails />} />
                                     <Route path="/favorites" element={<Favorites />} />
