@@ -45,6 +45,25 @@ export default function DataPortability() {
   const { posts } = useBlogStore();
   const inputRef = useRef<HTMLInputElement>(null);
   const [pendingImport, setPendingImport] = useState<string | null>(null);
+  const [snapshots, setSnapshots] = useState<Snapshot[]>(readSnapshots);
+
+  useEffect(() => { writeSnapshots(snapshots); }, [snapshots]);
+
+  const takeSnapshot = () => {
+    const snap: Snapshot = {
+      id: crypto.randomUUID(),
+      createdAt: Date.now(),
+      label: new Date().toLocaleString(isAr ? 'ar' : 'en'),
+      data: collectLocalData(),
+    };
+    setSnapshots((prev) => [snap, ...prev].slice(0, MAX_SNAPSHOTS));
+    toast.success(isAr ? 'أُخذت نسخة سريعة' : 'Snapshot captured');
+  };
+  const restoreSnapshot = (s: Snapshot) => {
+    if (!confirm(isAr ? 'استعادة هذه النسخة؟ سيتم استبدال البيانات الحالية.' : 'Restore this snapshot? Current data will be replaced.')) return;
+    setPendingImport(s.data);
+  };
+  const deleteSnapshot = (id: string) => setSnapshots((prev) => prev.filter((s) => s.id !== id));
 
   const readTodos = () => {
     try {
