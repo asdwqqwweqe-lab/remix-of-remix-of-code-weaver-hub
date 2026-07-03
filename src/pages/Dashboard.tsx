@@ -27,6 +27,8 @@ import {
   ViewsDistributionChart,
   RoadmapProgressChart,
 } from '@/components/dashboard/DashboardCharts';
+import ReadingAnalytics from '@/components/dashboard/ReadingAnalytics';
+
 
 export default function Dashboard() {
   const { language } = useLanguage();
@@ -194,6 +196,10 @@ export default function Dashboard() {
         <ViewsDistributionChart />
         <RoadmapProgressChart />
       </div>
+
+      {/* Reading Analytics */}
+      <ReadingAnalytics />
+
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Roadmap Progress */}

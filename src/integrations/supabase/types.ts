@@ -101,6 +101,39 @@ export type Database = {
         }
         Relationships: []
       }
+      reading_analytics: {
+        Row: {
+          created_at: string
+          id: string
+          language: string | null
+          post_id: string
+          scroll_depth: number
+          section_id: string | null
+          session_id: string
+          time_on_page: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          language?: string | null
+          post_id: string
+          scroll_depth?: number
+          section_id?: string | null
+          session_id: string
+          time_on_page?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          language?: string | null
+          post_id?: string
+          scroll_depth?: number
+          section_id?: string | null
+          session_id?: string
+          time_on_page?: number
+        }
+        Relationships: []
+      }
       saved_explanations: {
         Row: {
           created_at: string

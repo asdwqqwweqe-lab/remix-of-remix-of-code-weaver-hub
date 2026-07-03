@@ -42,6 +42,9 @@ import ContentNavigation from '@/components/navigation/ContentNavigation';
 import ReadingMode from '@/components/common/ReadingMode';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { useReadingAnalytics } from '@/hooks/useReadingAnalytics';
+
+
 
 const PostDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -83,6 +86,14 @@ const PostDetails = () => {
       incrementViews(post.id);
     }
   }, [id]);
+
+  useReadingAnalytics({
+    postId: post?.id || '',
+    language: post?.mainLanguage,
+    enabled: !!post,
+  });
+
+
 
   if (!post) {
     return (
