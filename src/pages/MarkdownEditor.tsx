@@ -109,7 +109,53 @@ export default function MarkdownEditor() {
     setText('');
   };
 
-  const t = (ar: string, en: string) => language === 'ar' ? ar : en;
+  const toggleFullscreen = async () => {
+    if (!document.fullscreenElement) {
+      try { await rootRef.current?.requestFullscreen(); setFullscreen(true); }
+      catch { setFullscreen(true); /* CSS fallback */ }
+    } else {
+      try { await document.exitFullscreen(); } catch {}
+      setFullscreen(false);
+    }
+  };
+
+  useEffect(() => {
+    const onFsChange = () => setFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', onFsChange);
+    return () => document.removeEventListener('fullscreenchange', onFsChange);
+  }, []);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { setMode('normal'); if (fullscreen) toggleFullscreen(); }
+      const ta = document.getElementById('md-textarea');
+      if (document.activeElement !== ta) return;
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') { e.preventDefault(); wrap('**', '**', t('نص عريض', 'bold text')); }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'i') { e.preventDefault(); wrap('*', '*', t('نص مائل', 'italic')); }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); wrap('[', '](https://)', t('نص الرابط', 'link text')); }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [text, fullscreen]);
+
+  const insertImageFromFile = (file: File) => {
+    if (!file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = String(reader.result || '');
+      setText((prev) => `${prev}\n\n![${file.name}](${dataUrl})\n`);
+      toast.success(t('أُدرجت الصورة', 'Image inserted'));
+    };
+    reader.readAsDataURL(file);
+  };
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const f = e.dataTransfer.files?.[0]; if (f) insertImageFromFile(f);
+  };
+  const onPaste = (e: React.ClipboardEvent) => {
+    const item = Array.from(e.clipboardData.items).find((i) => i.type.startsWith('image/'));
+    if (item) { const f = item.getAsFile(); if (f) insertImageFromFile(f); }
 
   const toolbar = [
     { icon: Heading1, label: 'H1', act: () => prefixLine('# ') },
