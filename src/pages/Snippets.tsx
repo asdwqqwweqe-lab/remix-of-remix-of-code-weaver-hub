@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Plus, Edit, Trash2, Copy, Layers, Search, Play, Sparkles } from 'lucide-react';
+import { Plus, Edit, Trash2, Copy, Layers, Search, Play, Sparkles, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 import hljs from 'highlight.js';
 import 'highlight.js/styles/github-dark.css';
@@ -29,6 +29,8 @@ import Pagination from '@/components/common/Pagination';
 import AIGenerateButton from '@/components/common/AIGenerateButton';
 import CodePlayground, { detectRuntime } from '@/components/snippets/CodePlayground';
 import AICodeReviewDialog from '@/components/snippets/AICodeReviewDialog';
+import { publishSnippet } from '@/lib/sharedLibraryService';
+import type { Snippet } from '@/types/blog';
 
 const ITEMS_PER_PAGE = 8;
 
@@ -48,6 +50,25 @@ const Snippets = () => {
   });
   const [playSnippetId, setPlaySnippetId] = useState<string | null>(null);
   const [reviewSnippetId, setReviewSnippetId] = useState<string | null>(null);
+  const [sharingId, setSharingId] = useState<string | null>(null);
+
+  const handleShare = async (snippet: Snippet) => {
+    setSharingId(snippet.id);
+    try {
+      const lang = getLanguageById(snippet.languageId);
+      await publishSnippet({
+        title: snippet.title,
+        description: snippet.description,
+        code: snippet.code,
+        language: lang?.name?.toLowerCase(),
+      });
+      toast.success(t('snippets.published', { defaultValue: 'Published to Shared Library' }));
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setSharingId(null);
+    }
+  };
 
   // Filter snippets
   const filteredSnippets = useMemo(() => {
@@ -317,6 +338,15 @@ const Snippets = () => {
                   <Button variant="outline" size="sm" onClick={() => handleEdit(snippet)}>
                     <Edit className="w-4 h-4 me-1" />
                     {t('common.edit')}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleShare(snippet)}
+                    disabled={sharingId === snippet.id}
+                  >
+                    <Share2 className="w-4 h-4 me-1" />
+                    {sharingId === snippet.id ? '…' : t('snippets.share', { defaultValue: 'Share' })}
                   </Button>
                   <Button
                     variant="outline"

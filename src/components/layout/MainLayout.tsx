@@ -41,6 +41,7 @@ import {
   Network,
   CalendarDays,
   Rss,
+  Users2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -90,6 +91,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
     { path: '/graph', icon: Network, label: language === 'ar' ? 'خريطة المعرفة' : 'Knowledge Graph' },
     { path: '/calendar', icon: CalendarDays, label: language === 'ar' ? 'تقويم المحتوى' : 'Content Calendar' },
     { path: '/feeds', icon: Rss, label: language === 'ar' ? 'خلاصات RSS' : 'RSS Feeds' },
+    { path: '/library', icon: Users2, label: language === 'ar' ? 'المكتبة المشتركة' : 'Shared Library' },
     { path: '/favorites', icon: Star, label: t('nav.favorites') },
     { path: '/statistics', icon: BarChart3, label: t('nav.statistics') },
     { path: '/settings', icon: Settings, label: language === 'ar' ? 'الإعدادات' : 'Settings' },
