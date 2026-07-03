@@ -1,53 +1,47 @@
-## خطة تنفيذ المرحلة التالية (4 ميزات بالتوازي)
+## خطة تنفيذ المرحلة التالية (4 مسارات بالتوازي)
 
-### 1) لوحة إحصائيات شاملة — `/analytics`
-- **`src/pages/Analytics.tsx`**: صفحة جديدة مع مخططات Recharts
-  - **KPI cards**: إجمالي المقالات، المهام (منجزة/معلقة)، جلسات التركيز، الملاحظات، خرائط ذهنية
-  - **مخططات**:
-    - Line chart: نشاط آخر 30 يوم (مقالات + مهام + جلسات)
-    - Bar chart: توزيع المهام حسب الأولوية
-    - Pie chart: توزيع المقالات حسب التصنيف/الوسوم
-    - Area chart: وقت التركيز اليومي (من `focus-sessions`)
-  - **Streak counter**: أيام النشاط المتتالية
-  - يقرأ من: `localStorage` (`tasks-v1`, `focus-sessions`, `quick-notes`, `mindmap-*`) + Supabase (articles/roadmaps)
+### 1) تحسينات المقالات — `src/components/posts/*` و`src/pages/PostDetails.tsx`
+- **`TableOfContents.tsx` (جديد)**: يستخرج H1-H3 من محتوى المقال، عرض جانبي لاصق مع تمرير سلس وإبراز القسم النشط عبر `IntersectionObserver`
+- **`ReadingProgress.tsx` (جديد)**: شريط تقدّم القراءة أعلى الصفحة + وقت قراءة تقديري
+- **تمييز الكود**: تفعيل `highlight.js` (موجود على الأغلب) داخل `marked` renderer لجميع كتل الكود مع أزرار نسخ لكل كتلة
+- **`PostDiffDialog.tsx` (جديد)**: مقارنة إصداري المقال (النسخة الحالية vs. المُخزّنة مسبقاً في `post-drafts-v1`) عبر خوارزمية diff بسيطة سطرية بألوان أخضر/أحمر
+- دمج المكوّنات داخل `PostDetails.tsx`
 
-### 2) محرر Markdown متقدم — `src/components/editor/AdvancedMarkdownEditor.tsx`
-- شريط أدوات كامل: عناوين H1-H3، **B**/*I*/~~S~~، قوائم، اقتباس، كود inline/block، جدول، رابط، صورة
-- **معاينة مباشرة** جنبًا إلى جنب (split view) أو تبديل
-- اختصارات: Ctrl+B/I/K، Tab للمسافة البادئة
-- **إدراج صور** عبر paste/drag-drop (base64) أو URL
-- **أوضاع**: عادي، مركّز (تخفي الشريط الجانبي)، ملء الشاشة، Zen (كتابة فقط)
-- عدّاد كلمات/أحرف/وقت قراءة
-- استبدال في: `ArticleEditor` (إذا موجود) وإتاحته في Quick Notes
+### 2) بحث عالمي — `src/components/search/CommandPalette.tsx`
+- استخدام `cmdk` (موجود ضمن shadcn) لعرض Dialog يُفتح بـ`Cmd/Ctrl+K`
+- **مصادر البحث الموحّدة**:
+  - المقالات من `useBlogStore()`
+  - المهام من `tasks-v1`
+  - الملاحظات السريعة `quick-notes`
+  - الخرائط الذهنية `mindmap-*`
+  - المقتطفات `snippets` والقصاصات
+  - أوامر التنقّل (كل مسارات nav)
+- Fuzzy matching بسيط + Groups مع أيقونات + اختصار على اليمين
+- تسجيل في `useKeyboardShortcuts` (موجود) لفتح Palette
+- استبدال زر `SearchTrigger` الحالي بحيث يفتح Palette الجديد
 
-### 3) نظام الإشعارات والتذكيرات — `src/lib/notifications.ts` + `src/hooks/useReminders.ts`
-- طلب Permission عند التفعيل من الإعدادات
-- **مصادر التذكيرات**:
-  - مهام لها `dueDate` — تنبيه قبل 15 دقيقة/عند الاستحقاق
-  - نهاية جلسة التركيز (موجود جزئيًا — نوسّعه ليدعم Web Notification)
-  - تذكيرات مخصصة (إضافة/حذف من صفحة جديدة `/reminders` أو دمجها في `/tasks`)
-- خدمة polling كل دقيقة عبر `setInterval` في `App.tsx` (hook global)
-- Fallback: toast داخل التطبيق إذا Permission مرفوض
-- تخزين آخر تنبيه لكل عنصر في `localStorage` لتفادي التكرار
+### 3) دعم PWA وتثبيت التطبيق — Manifest-only
+- **`public/manifest.webmanifest`**: name/short_name عربي، `display: "standalone"`، theme/background colors من التوكنز، icons 192/512
+- توليد أيقونتين PNG (192, 512) بنفس الشعار الحالي عبر `imagegen`
+- **`index.html`**: تعديل `<head>` لإضافة `<link rel="manifest">`, `theme-color`, `apple-touch-icon`
+- **`InstallPrompt.tsx` (جديد)**: يستمع لحدث `beforeinstallprompt`، يعرض شريطاً صغيراً بالأسفل مع زر "تثبيت التطبيق"، يُخفى إذا رُفض
+- **بدون Service Worker** — الأمر Manifest-only فقط (لم يطلب المستخدم offline)
 
-### 4) تصدير/استيراد شامل — `src/pages/BackupRestore.tsx`
-- **تصدير**:
-  - JSON كامل: كل مفاتيح `localStorage` ذات الصلة + Supabase (articles, roadmaps, notes)
-  - ZIP اختياري عبر `jszip` يحوي: `data.json` + مجلد `articles/*.md` منفصل
-- **استيراد**:
-  - رفع ملف JSON/ZIP
-  - معاينة قبل الاستيراد (عدد العناصر لكل نوع)
-  - خيارات: **دمج** (بدون تكرار عبر `id`) أو **استبدال كامل**
-  - تأكيد PIN (4419) قبل الاستبدال
-- **نسخ تلقائية**: زر "نسخة سريعة" تُخزّن آخر 5 نسخ في `localStorage["backups"]`
+### 4) لوحة أدوات المطوّر — `src/pages/DevTools.tsx`
+- تبويبات (Tabs):
+  - **JSON/YAML Formatter**: تنسيق/تصغير/التحقق + عدد المفاتيح
+  - **Diff Viewer**: مقارنة نصّين جنباً إلى جنب مع تمييز الفروقات
+  - **Regex Tester**: RegExp حي مع مطابقات مُبرَزة وعرض المجموعات
+  - **Encoders**: Base64 (encode/decode)، URL (encode/decode)، JWT decoder (header/payload/expiry — بدون تحقق توقيع)
+  - **UUID/ULID Generator**
+  - **Timestamp Converter**: Unix ↔ ISO ↔ readable
+- كل تبويب مكوّن مستقل تحت `src/components/devtools/`
+- إضافة المسار `/devtools` + عنصر nav بأيقونة `Wrench`
 
 ### التغييرات المشتركة
-- **`src/App.tsx`**: مسارات جديدة `/analytics`, `/backup` (+ hook `useReminders` global)
-- **`src/components/layout/MainLayout.tsx`**: عناصر تنقّل جديدة بأيقونات `BarChart3`, `Bell`, `Database`
-- **`src/pages/Appearance.tsx`**: تبديل تفعيل الإشعارات
-- **`bun add jszip recharts`** (recharts موجود على الأغلب)
+- **`src/App.tsx`**: مسار جديد `/devtools`
+- **`src/components/layout/MainLayout.tsx`**: عنصر nav للأدوات + دمج `CommandPalette` global + `InstallPrompt` global
+- **`index.html`**: manifest links
 
-### التنفيذ بالتوازي
-كل ملف مستقل — سنكتبها في نفس الدفعة عبر tool calls متوازية.
-
-هل أبدأ التنفيذ؟
+### التنفيذ المتوازي
+كل ملف مستقل — يمكن كتابة الكل في نفس الدفعة.
