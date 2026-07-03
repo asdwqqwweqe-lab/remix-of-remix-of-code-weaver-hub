@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, useCallback } from 'react';
-import { Users2, Search, Heart, Copy, Trash2, Code2, Sparkles, RefreshCcw, Loader2, Share2, User as UserIcon, Image as ImageIcon } from 'lucide-react';
+import { Users2, Search, Heart, Copy, Trash2, Code2, Sparkles, RefreshCcw, Loader2, Share2, User as UserIcon, Image as ImageIcon, MessageCircle } from 'lucide-react';
 import hljs from 'highlight.js';
 import 'highlight.js/styles/github-dark.css';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,6 +19,8 @@ import {
   listSharedGallery, listMyGalleryPublications, toggleGalleryLike, unpublishGalleryItem,
   type SharedSnippet, type SharedGalleryItem,
 } from '@/lib/sharedLibraryService';
+import { countComments } from '@/lib/sharedCommentsService';
+import CommentsDialog from '@/components/library/CommentsDialog';
 
 function Highlighted({ code, language }: { code: string; language?: string | null }) {
   const html = useMemo(() => {
