@@ -65,7 +65,8 @@ const toTags = (v: unknown): string[] => {
 };
 
 export function mdToHtml(md: string): string {
-  return DOMPurify.sanitize(marked.parse(md, { async: false, gfm: true, breaks: false }) as string);
+  const html = marked.parse(md, { async: false, gfm: true, breaks: false }) as string;
+  return typeof window === 'undefined' ? html : DOMPurify.sanitize(html);
 }
 
 export function parseAiResponse(raw: string): ParsedImport | null {
