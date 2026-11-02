@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import AIImportDialog from '@/components/common/AIImportDialog';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from '@/contexts/LanguageContext';
