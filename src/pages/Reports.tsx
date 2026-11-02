@@ -115,10 +115,13 @@ const Reports = () => {
               : `${reports.length} reports`}
           </p>
         </div>
-        <Button onClick={() => navigate('/reports/new')} className="gap-2">
-          <Plus className="w-4 h-4" />
-          {language === 'ar' ? 'تقرير جديد' : 'New Report'}
-        </Button>
+        <div className="flex gap-2">
+          <AIImportDialog kind="report" />
+          <Button onClick={() => navigate('/reports/new')} className="gap-2">
+            <Plus className="w-4 h-4" />
+            {language === 'ar' ? 'تقرير جديد' : 'New Report'}
+          </Button>
+        </div>
       </div>
 
       {/* Bulk Actions Toolbar */}
