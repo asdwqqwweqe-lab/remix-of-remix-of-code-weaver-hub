@@ -44,6 +44,20 @@ export default function AIImportDialog({ kind }: { kind: ImportKind }) {
     toast.success(ar ? 'تم نسخ البرومبت' : 'Prompt copied');
   };
 
+  // يفتح ChatGPT مباشرة بالبرومبت عبر معامل ?q= (يُعبّئ صندوق الكتابة تلقائياً)
+  // مع نسخة احتياطية في الحافظة في حال طال البرومبت عن حدّ الرابط.
+  const openChatGPT = async () => {
+    try { await navigator.clipboard.writeText(prompt); } catch { /* ignore */ }
+    const MAX_URL = 7000;
+    if (prompt.length <= MAX_URL) {
+      window.open(`https://chatgpt.com/?q=${encodeURIComponent(prompt)}`, '_blank', 'noopener');
+      toast.success(ar ? 'تم نسخ البرومبت وفتح ChatGPT — إن لم يُرسل تلقائياً اضغط لصق ثم Enter' : 'Prompt copied & ChatGPT opened — if not auto-sent, paste then press Enter');
+    } else {
+      window.open('https://chatgpt.com/', '_blank', 'noopener');
+      toast.info(ar ? 'البرومبت طويل: انسخه من الحافظة والصقه في ChatGPT' : 'Prompt is long: paste it from the clipboard into ChatGPT');
+    }
+  };
+
   const pasteClip = async () => {
     try { setRaw(await navigator.clipboard.readText()); } catch { toast.error(ar ? 'الصق يدوياً (Ctrl+V)' : 'Paste manually (Ctrl+V)'); }
   };
