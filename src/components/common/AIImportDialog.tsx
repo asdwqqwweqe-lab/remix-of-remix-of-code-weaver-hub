@@ -44,6 +44,20 @@ export default function AIImportDialog({ kind }: { kind: ImportKind }) {
     toast.success(ar ? 'تم نسخ البرومبت' : 'Prompt copied');
   };
 
+  // يفتح ChatGPT مباشرة بالبرومبت عبر معامل ?q= (يُعبّئ صندوق الكتابة تلقائياً)
+  // مع نسخة احتياطية في الحافظة في حال طال البرومبت عن حدّ الرابط.
+  const openChatGPT = async () => {
+    try { await navigator.clipboard.writeText(prompt); } catch { /* ignore */ }
+    const MAX_URL = 7000;
+    if (prompt.length <= MAX_URL) {
+      window.open(`https://chatgpt.com/?q=${encodeURIComponent(prompt)}`, '_blank', 'noopener');
+      toast.success(ar ? 'تم نسخ البرومبت وفتح ChatGPT — إن لم يُرسل تلقائياً اضغط لصق ثم Enter' : 'Prompt copied & ChatGPT opened — if not auto-sent, paste then press Enter');
+    } else {
+      window.open('https://chatgpt.com/', '_blank', 'noopener');
+      toast.info(ar ? 'البرومبت طويل: انسخه من الحافظة والصقه في ChatGPT' : 'Prompt is long: paste it from the clipboard into ChatGPT');
+    }
+  };
+
   const pasteClip = async () => {
     try { setRaw(await navigator.clipboard.readText()); } catch { toast.error(ar ? 'الصق يدوياً (Ctrl+V)' : 'Paste manually (Ctrl+V)'); }
   };
@@ -108,9 +122,9 @@ export default function AIImportDialog({ kind }: { kind: ImportKind }) {
             </div>
             <Textarea readOnly value={prompt} dir="ltr" className="font-mono text-xs min-h-[220px]" />
             <div className="flex flex-wrap gap-2">
-              <Button onClick={copyPrompt} className="gap-2"><Copy className="w-4 h-4" />{ar ? 'نسخ البرومبت' : 'Copy prompt'}</Button>
-              <Button variant="outline" asChild className="gap-2">
-                <a href="https://chatgpt.com/" target="_blank" rel="noreferrer"><ExternalLink className="w-4 h-4" />ChatGPT</a>
+              <Button onClick={copyPrompt} variant="outline" className="gap-2"><Copy className="w-4 h-4" />{ar ? 'نسخ فقط' : 'Copy only'}</Button>
+              <Button onClick={openChatGPT} className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white">
+                <ExternalLink className="w-4 h-4" />{ar ? 'نسخ وفتح ChatGPT' : 'Copy & open ChatGPT'}
               </Button>
             </div>
           </TabsContent>
