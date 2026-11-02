@@ -122,7 +122,6 @@ export default function AIImportDialog({ kind }: { kind: ImportKind }) {
             </div>
             <Textarea readOnly value={prompt} dir="ltr" className="font-mono text-xs min-h-[220px]" />
             <div className="flex flex-wrap gap-2">
-              <Button onClick={copyPrompt} className="gap-2"><Copy className="w-4 h-4" />{ar ? 'نسخ البرومبت' : 'Copy prompt'}</Button>
               <Button onClick={copyPrompt} variant="outline" className="gap-2"><Copy className="w-4 h-4" />{ar ? 'نسخ فقط' : 'Copy only'}</Button>
               <Button onClick={openChatGPT} className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white">
                 <ExternalLink className="w-4 h-4" />{ar ? 'نسخ وفتح ChatGPT' : 'Copy & open ChatGPT'}
