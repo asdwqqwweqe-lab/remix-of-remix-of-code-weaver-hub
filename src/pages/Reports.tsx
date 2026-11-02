@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import AIImportDialog from '@/components/common/AIImportDialog';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -115,10 +116,13 @@ const Reports = () => {
               : `${reports.length} reports`}
           </p>
         </div>
-        <Button onClick={() => navigate('/reports/new')} className="gap-2">
-          <Plus className="w-4 h-4" />
-          {language === 'ar' ? 'تقرير جديد' : 'New Report'}
-        </Button>
+        <div className="flex gap-2">
+          <AIImportDialog kind="report" />
+          <Button onClick={() => navigate('/reports/new')} className="gap-2">
+            <Plus className="w-4 h-4" />
+            {language === 'ar' ? 'تقرير جديد' : 'New Report'}
+          </Button>
+        </div>
       </div>
 
       {/* Bulk Actions Toolbar */}

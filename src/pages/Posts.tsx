@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import AIImportDialog from '@/components/common/AIImportDialog';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -73,6 +74,7 @@ const Posts = () => {
               <LayoutList className="w-4 h-4" />
             </Button>
           </div>
+          <AIImportDialog kind="post" />
           <Link to="/posts/new">
             <Button className="gap-2"><Plus className="w-4 h-4" />{t('nav.newPost')}</Button>
           </Link>
