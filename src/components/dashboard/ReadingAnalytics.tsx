@@ -41,19 +41,24 @@ export default function ReadingAnalytics() {
   const { posts } = useBlogStore();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
+  const [unavailable, setUnavailable] = useState(false);
 
   useEffect(() => {
     let mounted = true;
     (async () => {
       const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('reading_analytics')
         .select('*')
         .gte('created_at', since)
         .order('created_at', { ascending: false })
         .limit(2000);
       if (mounted) {
-        setRows((data as Row[]) || []);
+        if (error) {
+          setUnavailable(true);
+        } else {
+          setRows((data as Row[]) || []);
+        }
         setLoading(false);
       }
     })();
@@ -160,6 +165,25 @@ export default function ReadingAnalytics() {
         <CardContent>
           <div className="text-sm text-muted-foreground">{t('جاري التحميل...', 'Loading...')}</div>
         </CardContent>
+      </Card>
+    );
+  }
+
+  if (unavailable) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <LineChartIcon className="w-5 h-5 text-primary" />
+            {t('تحليلات القراءة', 'Reading Analytics')}
+          </CardTitle>
+          <CardDescription>
+            {t(
+              'تم إيقاف عرض تفاصيل نشاط القراءة لحماية خصوصية القراء.',
+              'Reading activity details are not currently displayed to protect reader privacy.',
+            )}
+          </CardDescription>
+        </CardHeader>
       </Card>
     );
   }
